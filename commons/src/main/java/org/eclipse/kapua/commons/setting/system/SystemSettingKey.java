@@ -192,6 +192,15 @@ public enum SystemSettingKey implements SettingKey {
      */
     KAPUA_INSERT_MAX_RETRY("commons.entity.insert.max.retry"),
 
+    // TODO: insert here a new variable to specify the ldap server url
+    //  (then the variable can be set in dev-config.properties)
+    LDAP_URL("commons.ldap.url"),
+    LDAP_DN_TEMPLATE("commons.ldap.dntemplate"),
+    LDAP_SEARCHBASE("commons.ldap.searchbase"),
+    LDAP_DN_TEMPLATE_PREFIX("commons.ldap.dntemplate.prefix"),
+    NEWUSER_POLICY("commons.newuser.policy"),
+    // TODO: add ldap security params
+
     /**
      * Url of the event bus
      */

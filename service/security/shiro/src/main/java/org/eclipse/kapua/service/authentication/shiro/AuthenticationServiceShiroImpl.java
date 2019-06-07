@@ -19,11 +19,7 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.Session;
-import org.apache.shiro.session.mgt.AbstractSessionManager;
-import org.apache.shiro.session.mgt.AbstractValidatingSessionManager;
 import org.apache.shiro.session.mgt.SimpleSession;
 import org.apache.shiro.subject.Subject;
 import org.eclipse.kapua.KapuaEntityNotFoundException;
@@ -66,8 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
@@ -83,7 +77,7 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
     private UserService userService = KapuaLocator.getInstance().getService(UserService.class);
     private CredentialService credentialService = KapuaLocator.getInstance().getService(CredentialService.class);
 
-    static {
+   /* static {
         // Make the SecurityManager instance available to the entire application:
         Collection<Realm> realms = new ArrayList<>();
         try {
@@ -113,7 +107,7 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
         } else {
             LOG.warn("Cannot disable Shiro session validator scheduler.");
         }
-    }
+    }*/
 
     @Override
     public AccessToken login(LoginCredentials loginCredentials) throws KapuaException {
@@ -131,6 +125,10 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
             shiroAuthenticationToken = new ApiKeyCredentialsImpl(((ApiKeyCredentialsImpl) loginCredentials).getApiKey());
         } else if (loginCredentials instanceof JwtCredentialsImpl) {
             shiroAuthenticationToken = new JwtCredentialsImpl(((JwtCredentialsImpl) loginCredentials).getJwt());
+/*        } else if (loginCredentials instanceof LdapCredentialsImpl) {
+            // TODO: remove this part, now ldap uses the same Credential as UserPassword
+            LdapCredentialsImpl ldapCredentials = (LdapCredentialsImpl) loginCredentials;
+            shiroAuthenticationToken = new LdapCredentialsImpl(ldapCredentials.getUsername(), ldapCredentials.getPassword());*/
         } else {
             throw new KapuaAuthenticationException(KapuaAuthenticationErrorCodes.INVALID_CREDENTIALS_TYPE_PROVIDED);
         }

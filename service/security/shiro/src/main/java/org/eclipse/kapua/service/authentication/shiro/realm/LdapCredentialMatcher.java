@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2016 Eurotech and/or its affiliates and others
+ * Copyright (c) 2019 Eurotech and/or its affiliates and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -9,32 +9,8 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.service.authentication.credential;
+package org.eclipse.kapua.service.authentication.shiro.realm;
 
-/**
- * Available credential types
- * 
- * @since 1.0.0
- */
-public enum CredentialType {
-    /**
-     * Password
-     */
-    PASSWORD,
+public class LdapCredentialMatcher extends UserPassCredentialsMatcher {
 
-    /**
-     * API key
-     */
-    API_KEY,
-
-    /**
-     * Json Web Token
-     */
-    JWT,
-
-    // FIXME: check usage for LDAP credential type
-    /**
-     * Json Web Token
-     */
-    LDAP;
 }
