@@ -54,7 +54,6 @@ import org.eclipse.kapua.service.user.UserStatus;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
