@@ -23,9 +23,9 @@ import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.eclipse.kapua.KapuaDuplicateNameException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaRuntimeException;
-import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
@@ -52,7 +52,9 @@ import org.eclipse.kapua.service.user.UserService;
 import org.eclipse.kapua.service.user.UserStatus;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
@@ -189,7 +191,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                     if (credentialList != null && !credentialList.isEmpty()) {
                         Credential credentialMatched = null;
                         for (Credential c : credentialList.getItems()) {
-                            if (CredentialType.PASSWORD.equals(c.getCredentialType())) {
+                            if (CredentialType.LDAP.equals(c.getCredentialType())) {
                                 credentialMatched = c;
                                 break;
                             }
@@ -261,45 +263,70 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                 throw new ShiroException("Error while getting services!", kre);
             }
 
-            // FIXME: is this the correct way to have a scopeId?
-            KapuaId scopeId = (KapuaEid) SecurityUtils.getSubject().getSession().getAttribute("scopeId");
-
             try {
 
-                final UserCreator userCreator = userFactory.newCreator(scopeId, ldapUsername);
+                // First gather the account information from the ldap groups to which the user belong
+                // TODO: implement the ldap group name gathering
+
+                // if no groups are available, assign to an existing group (dummy) for the moment
+                // I create it
+
+                // FIXME: I am checking if the account I want to create already exists, but I don't like how this is implemented!
+                try {
+                    // retriving the parent (system) account
+                    String adminAccountName = SystemSetting.getInstance().getString(SystemSettingKey.SYS_ADMIN_ACCOUNT);
+                    Account adminAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(adminAccountName));
+
+                    // creating a new account
+                    final AccountCreator accountCreator = accountFactory.newCreator(adminAccount.getId(), ldapUsername);
+                    accountCreator.setOrganizationName(adminAccount.getOrganization().getName());
+                    //String adminEmail = adminAccount.getOrganization().
+                    accountCreator.setOrganizationEmail(ldapUsername + "@eclipse.org"); // FIXME: where can I find the domain?
+                    // FIXME: settare il numero di figli come massimo
+                    newAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.create(accountCreator));
+                } catch (KapuaDuplicateNameException dne) {
+                    newAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(ldapUsername));
+                } catch (Exception e) {
+                    throw e;
+                }
+                // retrieving the new account id
+                KapuaId newAccountId = newAccount.getId();
+                KapuaId parentAccountId = newAccount.getScopeId();
+
+                // setting the infiniteChild Entities attribute
+                Map<String, Object> valueMap = new HashMap<>();
+                valueMap.put("maxNumberChildEntities", "100");
+                valueMap.put("infiniteChildEntities", true);
+                try {
+                    KapuaSecurityUtils.doPrivileged(() -> userService.setConfigValues(newAccountId, parentAccountId, valueMap));
+
+                    Map<String, Object> finalConfig = KapuaSecurityUtils.doPrivileged(() -> userService.getConfigValues(newAccountId));
+                    boolean allowInfiniteChildEntities = (boolean) finalConfig.get("infiniteChildEntities");
+                    System.out.println("allowInfiniteChildEntities is : " + allowInfiniteChildEntities);
+
+                } catch (KapuaException ex) {
+                    ex.printStackTrace();
+                }
+
+                // create the new user
+                final UserCreator userCreator = userFactory.newCreator(newAccountId, ldapUsername);
                 // FIXME: null for the moment, maybe I can retrieve all those from ldap?
-                userCreator.setDisplayName(null);
-                userCreator.setEmail(null);
-                userCreator.setPhoneNumber(null);
-                userCreator.setExpirationDate(null);
-                userCreator.setUserStatus(null);
+                //userCreator.setEmail(null);
+                //userCreator.setUserStatus(null);
 
                 //
                 // Create the User
-                newUser = userService.create(userCreator);
+                newUser = KapuaSecurityUtils.doPrivileged(() -> userService.create(userCreator));
 
                 //
                 // Create credentials
-                CredentialCreator credentialCreator = credentialFactory.newCreator(scopeId,
-                            newUser.getId(),
-                            CredentialType.PASSWORD,  // FIXME: change to LDAPsomething...
-                            null, // something.getPassword(),
-                            CredentialStatus.ENABLED,
-                            null);
-                newCredential = credentialService.create(credentialCreator);
-
-            } catch (Throwable t) {
-                //KapuaExceptionHandler.handle(t);
-            }
-
-            // now gather the account information from the ldap groups to which the user belong
-            // TODO: implement the ldap group name gathering
-
-            // if no groups are available, assign to an existing group (dummy) for the moment
-            // I create it
-            try {
-                final AccountCreator accountCreator = accountFactory.newCreator(scopeId, ldapUsername);
-                newAccount = accountService.create(accountCreator);
+                CredentialCreator credentialCreator = credentialFactory.newCreator(newAccountId,
+                        newUser.getId(),
+                        CredentialType.LDAP,  // FIXME: change to LDAPsomething...
+                        "LDAP", // something.getPassword(),
+                        CredentialStatus.ENABLED,
+                        null);
+                newCredential = KapuaSecurityUtils.doPrivileged(() -> credentialService.create(credentialCreator));
 
                 //
                 // BuildAuthenticationInfo
@@ -309,7 +336,8 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                         newCredential,
                         null);
             } catch (Throwable t) {
-
+                //KapuaExceptionHandler.handle(t);
+                t.printStackTrace();
             }
 
             throw new UnknownAccountException();
@@ -318,12 +346,19 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
         //return null;
     }
 
+
     @Override
     protected void assertCredentialsMatch(AuthenticationToken authcToken, AuthenticationInfo info)
             throws AuthenticationException {
         final LoginAuthenticationInfo kapuaInfo = (LoginAuthenticationInfo) info;
 
-        super.assertCredentialsMatch(authcToken, info);
+        try {
+            super.assertCredentialsMatch(authcToken, info);
+        } catch (AuthenticationException authenticationEx) {
+
+            // do something?
+            throw authenticationEx;
+        }
 
         final Subject currentSubject = SecurityUtils.getSubject();
         Session session = currentSubject.getSession();

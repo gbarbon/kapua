@@ -74,7 +74,7 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
         ArgumentValidator.notNull(credentialCreator.getUserId(), "credentialCreator.userId");
         ArgumentValidator.notNull(credentialCreator.getCredentialType(), "credentialCreator.credentialType");
         ArgumentValidator.notNull(credentialCreator.getCredentialStatus(), "credentialCreator.credentialStatus");
-        if (credentialCreator.getCredentialType() != CredentialType.API_KEY) {
+        if (credentialCreator.getCredentialType() != CredentialType.API_KEY && credentialCreator.getCredentialType() != CredentialType.LDAP) {
             ArgumentValidator.notEmptyOrNull(credentialCreator.getCredentialPlainKey(), "credentialCreator.credentialKey");
         }
 
@@ -136,6 +136,7 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
                             credentialCreator.getExpirationDate());
 
                     break;
+                case LDAP:
                 case PASSWORD:
                 default:
                     // Don't do nothing special
@@ -153,6 +154,9 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
             switch (credentialCreator.getCredentialType()) {
                 case API_KEY:
                     credential.setCredentialKey(fullKey);
+                    break;
+                case LDAP:
+                    // do nothing
                     break;
                 case PASSWORD:
                 default:

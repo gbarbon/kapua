@@ -22,9 +22,9 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.pam.AuthenticationStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
-import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
-import org.eclipse.kapua.service.authentication.shiro.realm.LdapAuthenticatingRealm;
-import org.eclipse.kapua.service.authentication.shiro.realm.UserPassAuthenticatingRealm;
+//import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
+//import org.eclipse.kapua.service.authentication.shiro.realm.LdapAuthenticatingRealm;
+//import org.eclipse.kapua.service.authentication.shiro.realm.UserPassAuthenticatingRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +50,12 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
         List<Throwable> exceptionList = new ArrayList<>();
         boolean loginSucceeded = false;
         boolean supportedRealmFound = false;
-
+/*
         // new boolean variables. I don't like them, since this code should be realm-agnostic
         boolean ldapRealmSucceeded = false;
         boolean allTheOtherRealmsFailed = true;
         Realm failedUserPassRealm = null;
-
+*/
         for (Realm realm : realms) {
             aggregate = strategy.beforeAttempt(realm, token, aggregate);
             if (realm.supports(token)) {
@@ -66,13 +66,13 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                 try {
                     info = realm.getAuthenticationInfo(token);
                     loginSucceeded = true;
-
+/*
                     if (realm instanceof LdapAuthenticatingRealm) {
                         ldapRealmSucceeded = true;
                     } else {
                         allTheOtherRealmsFailed = false;
                     }
-
+*/
                 } catch (Exception exception) {
                     t = exception;
                     if (logger.isDebugEnabled()) {
@@ -80,11 +80,12 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                                 + "] threw an exception during a multi-realm authentication attempt:";
                         logger.debug(msg, t);
                     }
+/*
 
                     if (realm instanceof UserPassAuthenticatingRealm) {
                         failedUserPassRealm = realm;
                     }
-
+*/
                 }
                 aggregate = strategy.afterAttempt(realm, token, info, aggregate, t);
                 exceptionList.add(t);
@@ -92,6 +93,7 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                 logger.debug("Realm [{}] does not support token {}.  Skipping realm.", realm, token);
             }
         }
+        /*
 
         // handling creation of a user when the user exists only in ldap
         // this is done to handle successful LDAP and all the other realms are failed
@@ -99,7 +101,7 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
 
             switch (Integer.parseInt(SystemSettingKey.NEWUSER_POLICY.key())) {
 
-                /*case 1:  // creation of a user on DB
+                case 1:  // creation of a user on DB
                     UsernamePasswordToken upToken = (UsernamePasswordToken) token;
                     // TODO: insert user/account (?) in the database
 
@@ -116,7 +118,7 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                             logger.debug(msg, e);
                         }
                     }
-                    break;*/
+                    break;
 
                 case 2:  // mimics the case in which I do not want to create a user in db,
                     // and I want to wait the intervention of an administrator to create the account, mimics 4.c
@@ -125,7 +127,7 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                     logger.debug("The user exists in LDAP, but has not been assigned yet to a Kapua account");
                     throw (AuthenticationException) exceptionList.get(0);
 
-                /*case 3:
+                case 3:
                     // TODO: create a new user on db by using the ldap groups, mimics 4.c
 
                     // TODO: first search for the user on ldap (already done)
@@ -136,10 +138,9 @@ public class KapuaAuthenticator extends ModularRealmAuthenticator {
                     //      Problem: I think that an ldap administrator is the only one that can perform such
                     //      searches... Indeed I must log with the passwords to perform the search.
 
-                    throw new NotImplementedException();*/
+                    throw new NotImplementedException();
             }
-        }
-
+        } */
         // modified behavior from the ModularRealmAuthenticator to provide a more significantly exception message to the user if the login fails
         if (supportedRealmFound && !loginSucceeded) {
             // if there is no realm able to authenticate the AuthenticationToken (but at least one realm for this AuthenticationToken was found) lets check the exceptions thrown by the logins
