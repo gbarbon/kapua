@@ -110,14 +110,12 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             - if the user exists on Kapua, fill LoginAuthenticationInfo with the info from Kapua (use findByName)
             - if the user does not exist on Kapua, create the user with UserService,
                 use Credential Factory for adding the credentials
-                - credentials remain external, andled by ldap, we must create an ldap type for the password
+                - credentials remain external, handled by ldap, we must create an ldap type for the password
                 - account:  - if the account already exists, add the user to the account gathered with ldap
                           - if the account do not exist, add to a dummy one (for testing "ldap-account")
          */
 
         // ASSUMPTION: user must have the same username in ldap and in kapua
-
-        // Now checking for the user existence
 
         //
         // Get Services
@@ -133,9 +131,14 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             throw new ShiroException("Error while getting services!", kre);
         }
 
+        User user;
+        Account account;
+        Credential credential;
+        Map<String, Object> credentialServiceConfig = null;
+
+        // Now checking for the user existence
         //
         // Get the associated user by name
-        final User user;
         try {
             user = KapuaSecurityUtils.doPrivileged(() -> userService.findByName(ldapUsername));
         } catch (AuthenticationException ae) {
@@ -156,11 +159,12 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                 throw new ExpiredCredentialsException();
             }
 
-            //
+            final KapuaId userScopeID = user.getScopeId();
+            final KapuaId userId = user.getId();
+
             // Find account
-            final Account account;
             try {
-                account = KapuaSecurityUtils.doPrivileged(() -> accountService.find(user.getScopeId()));
+                account = KapuaSecurityUtils.doPrivileged(() -> accountService.find(userScopeID));
             } catch (AuthenticationException ae) {
                 throw ae;
             } catch (Exception e) {
@@ -182,10 +186,9 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             //
             // Find credentials
             // FIXME: manage multiple credentials and multiple credentials type
-            Credential credential;
             try {
                 credential = KapuaSecurityUtils.doPrivileged(() -> {
-                    CredentialListResult credentialList = credentialService.findByUserId(user.getScopeId(), user.getId());
+                    CredentialListResult credentialList = credentialService.findByUserId(userScopeID, userId);
 
                     if (credentialList != null && !credentialList.isEmpty()) {
                         Credential credentialMatched = null;
@@ -206,6 +209,9 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                 throw new ShiroException("Error while find credentials!", e);
             }
 
+            // FIXME: should I perform an LDAP authentication to check the user credentials? (or at least retrieve the
+            //  credentials)?
+
             // Check existence
             if (credential == null) {
                 throw new UnknownAccountException();
@@ -222,9 +228,9 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             }
 
             // Check if lockout policy is blocking credential
-            Map<String, Object> credentialServiceConfig;
             try {
-                credentialServiceConfig = KapuaSecurityUtils.doPrivileged(() -> credentialService.getConfigValues(account.getId()));
+                final KapuaId accountId = account.getId();
+                credentialServiceConfig = KapuaSecurityUtils.doPrivileged(() -> credentialService.getConfigValues(accountId));
                 boolean lockoutPolicyEnabled = (boolean) credentialServiceConfig.get("lockoutPolicy.enabled");
                 if (lockoutPolicyEnabled) {
                     Date now = new Date();
@@ -235,114 +241,109 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             } catch (KapuaException kex) {
                 throw new ShiroException("Error while checking lockout policy", kex);
             }
-
-            //
-            // BuildAuthenticationInfo
-            return new LoginAuthenticationInfo(getName(),
-                    account,
-                    user,
-                    credential,
-                    credentialServiceConfig);
         } else {
             // create new user and the credentials
-            User newUser = null;
-            Account newAccount;
-            Credential newCredential = null;
 
             // Get Factories
             UserFactory userFactory;
             AccountFactory accountFactory;
             CredentialFactory credentialFactory;
-
             try {
                 userFactory = LOCATOR.getFactory(UserFactory.class);
                 accountFactory = LOCATOR.getFactory(AccountFactory.class);
                 credentialFactory = LOCATOR.getFactory(CredentialFactory.class);
             } catch (KapuaRuntimeException kre) {
-                throw new ShiroException("Error while getting services!", kre);
+                throw new ShiroException("Error while getting factories!", kre);
             }
 
+            // First gather the account information from the ldap groups to which the user belong
+            // TODO: implement the ldap group name gathering
+
+            // TODO: if no groups are available, assign to an existing group (dummy) for the moment  I create it
+
+            // Retrieve the parent (admin) account
+            Account adminAccount;
             try {
+                String adminAccountName = SystemSetting.getInstance().getString(SystemSettingKey.SYS_ADMIN_ACCOUNT);
+                adminAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(adminAccountName));
+            } catch (KapuaException ke) {
+                throw new ShiroException("Error while retrieving the parent account", ke);
+            }
 
-                // First gather the account information from the ldap groups to which the user belong
-                // TODO: implement the ldap group name gathering
+            // Check parent account existence
+            if (adminAccount == null) {
+                throw new UnknownAccountException("Unknown parent account");
+            }
 
-                // if no groups are available, assign to an existing group (dummy) for the moment
-                // I create it
-
+            // Create a new child account of the parent one
+            try {
+                final AccountCreator accountCreator = accountFactory.newCreator(adminAccount.getId(), ldapUsername);
+                accountCreator.setOrganizationName(adminAccount.getOrganization().getName());
+                accountCreator.setOrganizationEmail(ldapUsername + "@eclipse.org"); // FIXME: where can I find the domain?
+                account = KapuaSecurityUtils.doPrivileged(() -> accountService.create(accountCreator));
+            } catch (KapuaDuplicateNameException dne) {
                 // FIXME: I am checking if the account I want to create already exists, but I don't like how this is implemented!
                 try {
-                    // retriving the parent (system) account
-                    String adminAccountName = SystemSetting.getInstance().getString(SystemSettingKey.SYS_ADMIN_ACCOUNT);
-                    Account adminAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(adminAccountName));
-
-                    // creating a new account
-                    final AccountCreator accountCreator = accountFactory.newCreator(adminAccount.getId(), ldapUsername);
-                    accountCreator.setOrganizationName(adminAccount.getOrganization().getName());
-                    //String adminEmail = adminAccount.getOrganization().
-                    accountCreator.setOrganizationEmail(ldapUsername + "@eclipse.org"); // FIXME: where can I find the domain?
-                    // FIXME: settare il numero di figli come massimo
-                    newAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.create(accountCreator));
-                } catch (KapuaDuplicateNameException dne) {
-                    newAccount = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(ldapUsername));
-                } catch (Exception e) {
-                    throw e;
+                    account = KapuaSecurityUtils.doPrivileged(() -> accountService.findByName(ldapUsername));
+                } catch (KapuaException ke) {
+                    throw new ShiroException("Error while finding the account", ke);
                 }
-                // retrieving the new account id
-                KapuaId newAccountId = newAccount.getId();
-                KapuaId parentAccountId = newAccount.getScopeId();
-
-                // setting the infiniteChild Entities attribute
-                Map<String, Object> valueMap = new HashMap<>();
-                valueMap.put("maxNumberChildEntities", "100");
-                valueMap.put("infiniteChildEntities", true);
-                try {
-                    KapuaSecurityUtils.doPrivileged(() -> userService.setConfigValues(newAccountId, parentAccountId, valueMap));
-
-                    Map<String, Object> finalConfig = KapuaSecurityUtils.doPrivileged(() -> userService.getConfigValues(newAccountId));
-                    boolean allowInfiniteChildEntities = (boolean) finalConfig.get("infiniteChildEntities");
-                    System.out.println("allowInfiniteChildEntities is : " + allowInfiniteChildEntities);
-
-                } catch (KapuaException ex) {
-                    ex.printStackTrace();
-                }
-
-                // create the new user
-                final UserCreator userCreator = userFactory.newCreator(newAccountId, ldapUsername);
-                // FIXME: null for the moment, maybe I can retrieve all those from ldap?
-                //userCreator.setEmail(null);
-                //userCreator.setUserStatus(null);
-
-                //
-                // Create the User
-                newUser = KapuaSecurityUtils.doPrivileged(() -> userService.create(userCreator));
-
-                //
-                // Create credentials
-                CredentialCreator credentialCreator = credentialFactory.newCreator(newAccountId,
-                        newUser.getId(),
-                        CredentialType.LDAP,  // FIXME: change to LDAPsomething...
-                        "LDAP", // something.getPassword(),
-                        CredentialStatus.ENABLED,
-                        null);
-                newCredential = KapuaSecurityUtils.doPrivileged(() -> credentialService.create(credentialCreator));
-
-                //
-                // BuildAuthenticationInfo
-                return new LoginAuthenticationInfo(getName(),
-                        newAccount,
-                        newUser,
-                        newCredential,
-                        null);
-            } catch (Throwable t) {
-                //KapuaExceptionHandler.handle(t);
-                t.printStackTrace();
+            } catch (KapuaException ke) {
+                throw new ShiroException("Error while creating the account", ke);
             }
 
-            throw new UnknownAccountException();
+            //
+            // retrieving the new account id
+            final KapuaId newAccountId = account.getId();
+            final KapuaId parentAccountId = account.getScopeId();
+
+            //
+            // setting the infiniteChild Entities attribute
+            // TODO: can I move this inside the account creation?
+            Map<String, Object> valueMap = new HashMap<>();
+            valueMap.put("maxNumberChildEntities", "1000");
+            valueMap.put("infiniteChildEntities", true);
+            try {
+                KapuaSecurityUtils.doPrivileged(() -> userService.setConfigValues(newAccountId, parentAccountId, valueMap));
+            } catch (KapuaException ke) {
+                throw new ShiroException("Error while setting infinitechild users for the account " + account.getName(), ke);
+            }
+
+            // Create the ldap user on the db
+            final UserCreator userCreator;
+            try {
+                userCreator = userFactory.newCreator(newAccountId, ldapUsername);
+                user = KapuaSecurityUtils.doPrivileged(() -> userService.create(userCreator));
+                // TODO: set email etc? Maybe I can retrieve all those from ldap?
+                //  note that this kind of info should stay only in LDAP, since an update after the user creation can
+                //  compromise data integrity.
+            } catch (KapuaException ke) {
+                throw new ShiroException("Error while creating the ldap user on the db", ke);
+            }
+
+            // Create credentials
+            final CredentialCreator credentialCreator;
+            try {
+                credentialCreator = credentialFactory.newCreator(newAccountId,
+                        user.getId(),
+                        CredentialType.LDAP,
+                        "LDAP",
+                        CredentialStatus.ENABLED,
+                        null);
+                credential = KapuaSecurityUtils.doPrivileged(() -> credentialService.create(credentialCreator));
+            } catch (KapuaException ke) {
+                throw new ShiroException("Error while creating the ldap credentials", ke);
+            }
+
+            // TODO: add credentialServiceConfig?
         }
 
-        //return null;
+        // BuildAuthenticationInfo
+        return new LoginAuthenticationInfo(getName(),
+                account,
+                user,
+                credential,
+                credentialServiceConfig);
     }
 
 
