@@ -192,14 +192,45 @@ public enum SystemSettingKey implements SettingKey {
      */
     KAPUA_INSERT_MAX_RETRY("commons.entity.insert.max.retry"),
 
-    // TODO: insert here a new variable to specify the ldap server url
-    //  (then the variable can be set in dev-config.properties)
+    /**
+     * LDAP server url
+     */
     LDAP_URL("commons.ldap.url"),
-    LDAP_DN_TEMPLATE("commons.ldap.dntemplate"),
+
+    /**
+     * LDAP DN template
+     */
+    //LDAP_DN_TEMPLATE("commons.ldap.dntemplate"),
+    // FIXME: remove this one?
+
+    /**
+     * LDAP suffix used in the DN template composition
+     */
     LDAP_SEARCHBASE("commons.ldap.searchbase"),
+
+    /**
+     * LDAP prefix used in the DN template composition
+     */
     LDAP_DN_TEMPLATE_PREFIX("commons.ldap.dntemplate.prefix"),
-    NEWUSER_POLICY("commons.newuser.policy"),
+
     // TODO: add ldap security params
+
+    //FIXME: check ldap policies
+
+    /**
+     * Allow the use of LDAP groups in order to retrieve the account name
+     */
+    LDAP_USE_GROUPS("commons.ldap.useGroups"),
+
+    /**
+     * Allow to use LDAP_ACCOUNT as parents of the new ldap users
+     */
+    LDAP_USERS_DEFAULT_ACCOUNT("commons.ldap.useDefaultAccount"),
+
+    /**
+     * The default account to which users are added if LDAP_USERS_DEFAULT_ACCOUNT = true
+     */
+    LDAP_ACCOUNT("commons.ldap.defaultAccount"),
 
     /**
      * Url of the event bus

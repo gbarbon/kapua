@@ -119,16 +119,12 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
         AuthenticationToken shiroAuthenticationToken;
         if (loginCredentials instanceof UsernamePasswordCredentialsImpl) {
             UsernamePasswordCredentialsImpl usernamePasswordCredentials = (UsernamePasswordCredentialsImpl) loginCredentials;
-
+            // note that the ldap realm also use the UsernamePasswordCredentials
             shiroAuthenticationToken = new UsernamePasswordCredentialsImpl(usernamePasswordCredentials.getUsername(), usernamePasswordCredentials.getPassword());
         } else if (loginCredentials instanceof ApiKeyCredentialsImpl) {
             shiroAuthenticationToken = new ApiKeyCredentialsImpl(((ApiKeyCredentialsImpl) loginCredentials).getApiKey());
         } else if (loginCredentials instanceof JwtCredentialsImpl) {
             shiroAuthenticationToken = new JwtCredentialsImpl(((JwtCredentialsImpl) loginCredentials).getJwt());
-/*        } else if (loginCredentials instanceof LdapCredentialsImpl) {
-            // TODO: remove this part, now ldap uses the same Credential as UserPassword
-            LdapCredentialsImpl ldapCredentials = (LdapCredentialsImpl) loginCredentials;
-            shiroAuthenticationToken = new LdapCredentialsImpl(ldapCredentials.getUsername(), ldapCredentials.getPassword());*/
         } else {
             throw new KapuaAuthenticationException(KapuaAuthenticationErrorCodes.INVALID_CREDENTIALS_TYPE_PROVIDED);
         }
