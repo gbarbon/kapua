@@ -142,6 +142,7 @@ public class UserPassAuthenticatingRealm extends AuthenticatingRealm {
         //
         // Find credentials
         // FIXME: manage multiple credentials and multiple credentials type
+        //  Note that this should never match LDAP type! LDAP authentication is performed only by the LDAP realm
         Credential credential;
         try {
             credential = KapuaSecurityUtils.doPrivileged(() -> {

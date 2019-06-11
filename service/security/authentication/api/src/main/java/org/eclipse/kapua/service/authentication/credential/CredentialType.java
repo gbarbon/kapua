@@ -32,9 +32,8 @@ public enum CredentialType {
      */
     JWT,
 
-    // FIXME: check usage for LDAP credential type
     /**
-     * Json Web Token
+     * LDAP
      */
     LDAP;
 }

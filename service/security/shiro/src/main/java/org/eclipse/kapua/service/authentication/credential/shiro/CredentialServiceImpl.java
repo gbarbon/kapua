@@ -136,7 +136,7 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
                             credentialCreator.getExpirationDate());
 
                     break;
-                case LDAP:
+                case LDAP:  //TODO: check this!
                 case PASSWORD:
                 default:
                     // Don't do nothing special
@@ -157,6 +157,7 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
                     break;
                 case LDAP:
                     // do nothing
+                    // TODO: check this!
                     break;
                 case PASSWORD:
                 default:

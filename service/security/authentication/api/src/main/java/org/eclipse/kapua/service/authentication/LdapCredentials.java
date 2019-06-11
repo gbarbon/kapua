@@ -11,13 +11,18 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authentication;
 
-        import javax.xml.bind.annotation.XmlAccessType;
-        import javax.xml.bind.annotation.XmlAccessorType;
-        import javax.xml.bind.annotation.XmlRootElement;
-        import javax.xml.bind.annotation.XmlType;
+/*
+// TODO: remove this?
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "ldapCredentials")
 @XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(propOrder = { "username", "password" }, factoryClass = AuthenticationXmlRegistry.class, factoryMethod = "newLdapCredentials")
+@XmlType(propOrder = {"username", "password"}, factoryClass = AuthenticationXmlRegistry.class, factoryMethod = "newLdapCredentials")
 public interface LdapCredentials extends UsernamePasswordCredentials {
 }
+
+ */

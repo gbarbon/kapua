@@ -52,7 +52,7 @@ public class CredentialDAO extends ServiceDAO {
             break;
         case LDAP:
             // do nothing
-            cryptedCredential = "LDAP";
+            cryptedCredential = "LDAP";  // FIXME: this has no sense at all...
             break;
         case PASSWORD:
         default:

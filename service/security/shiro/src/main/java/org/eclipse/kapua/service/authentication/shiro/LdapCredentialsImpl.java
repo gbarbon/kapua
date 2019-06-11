@@ -11,6 +11,10 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authentication.shiro;
 
+// TODO: remove this?
+
+/*
+
 import org.apache.shiro.authc.AuthenticationToken;
 import org.eclipse.kapua.service.authentication.LdapCredentials;
 
@@ -19,11 +23,13 @@ public class LdapCredentialsImpl implements LdapCredentials, AuthenticationToken
     private String username;
     private String password;
 
-    /**
+    */
+/**
      * Constructor
      *  @param username
      * @param password
-     */
+     *//*
+
     public LdapCredentialsImpl(String username, String password) {
         this.username = username;
         this.password = password;
@@ -59,3 +65,4 @@ public class LdapCredentialsImpl implements LdapCredentials, AuthenticationToken
         return password;
     }
 }
+*/
