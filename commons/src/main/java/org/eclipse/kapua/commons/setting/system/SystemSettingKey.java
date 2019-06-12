@@ -219,6 +219,11 @@ public enum SystemSettingKey implements SettingKey {
     LDAP_SEARCHBASE("commons.ldap.searchbase"),
 
     /**
+     *
+     */
+    LDAP_GROUP_SEARCHFILTER("commons.ldap.groupSearchFilter"),
+
+    /**
      * LDAP prefix used in the DN template composition
      */
     LDAP_DN_TEMPLATE_PREFIX("commons.ldap.dntemplate.prefix"),
