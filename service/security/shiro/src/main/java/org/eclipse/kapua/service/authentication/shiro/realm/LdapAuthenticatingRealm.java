@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authentication.shiro.realm;
 
+import com.sun.jndi.ldap.LdapReferralException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -52,8 +53,17 @@ import org.eclipse.kapua.service.user.UserFactory;
 import org.eclipse.kapua.service.user.UserService;
 import org.eclipse.kapua.service.user.UserStatus;
 
+import javax.naming.AuthenticationNotSupportedException;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LdapAuthenticatingRealm extends DefaultLdapRealm {
@@ -70,20 +80,60 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
      *
      * @throws KapuaException
      */
-    public LdapAuthenticatingRealm() throws KapuaException {
+    public LdapAuthenticatingRealm() throws ShiroException {
         super();
         setName(REALM_NAME);
 
         // setting DN template
-        String dnTemplate = (SystemSetting.getInstance().getString(SystemSettingKey.LDAP_DN_TEMPLATE_PREFIX) +
-                SystemSetting.getInstance().getString(SystemSettingKey.LDAP_SEARCHBASE));
-                // replace("\"", ""); // 'replace' needed to remove quotes
-        setUserDnTemplate(dnTemplate);
+        try {
+            String dnTemplate = (SystemSetting.getInstance().getString(SystemSettingKey.LDAP_DN_TEMPLATE_PREFIX) +
+                    SystemSetting.getInstance().getString(SystemSettingKey.LDAP_SEARCHBASE));
+            // replace("\"", ""); // 'replace' needed to remove quotes
+            setUserDnTemplate(dnTemplate);
+        } catch (IllegalArgumentException iae) {
+            throw new ShiroException("Invalid user DN template", iae);
+        }
 
-        // setting LDAP url
+        // Set LDAP server url
         JndiLdapContextFactory cf = (JndiLdapContextFactory) getContextFactory();
-        String url = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL);
+        String url;
+        if (SystemSetting.getInstance().getBoolean(SystemSettingKey.LDAP_SSL)) {
+            url = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL_SSL);
+        } else {
+            url = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL);
+        }
         cf.setUrl(url);
+        // TODO: build a regex in the CommonsValidationRegex in order to check the format of the LDAP url
+
+        // Checking the SASL mechanism
+        String ldapAuthMechs = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_AUTH_MECH);
+        if (!ldapAuthMechs.equals("none") && !ldapAuthMechs.equals("simple")) {
+            // a SASL authentication method is provided, now check that the server provides it
+
+            try {
+                DirContext ctx = new InitialDirContext();
+                Attributes attrs = ctx.getAttributes(
+                        SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL),
+                        new String[]{"supportedSASLMechanisms"});
+                List<String> listAttr = new ArrayList<>(Arrays.asList(ldapAuthMechs.split(" ")));
+                boolean atLeastOneFound = false;
+                for (String myAttr : listAttr) {
+                    if (attrs.get("supportedSASLMechanisms").contains(myAttr)) {
+                        atLeastOneFound = true;
+                        break;
+                    }
+                }
+                if (!atLeastOneFound) {
+                    throw new AuthenticationNotSupportedException(
+                            "Provided LDAP authentication methods are not supported by the server");
+                }
+            } catch (NamingException e) {
+                throw new ShiroException("Error while retrieving LDAP supported SASL mechanism", e);
+            }
+        }
+
+        // Set LDAP authentication mechanism
+        cf.setAuthenticationMechanism(ldapAuthMechs);
     }
 
     /**
@@ -340,7 +390,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                     credentialCreator = credentialFactory.newCreator(newAccountId,
                             user.getId(),
                             CredentialType.LDAP,
-                            "LDAP",  // FIXME: this is awful! But the credentialKey cannot be null...
+                            null,  // FIXME: check this! But the credentialKey cannot be null...
                             CredentialStatus.ENABLED,
                             null);
                     credential = KapuaSecurityUtils.doPrivileged(() -> credentialService.create(credentialCreator));
@@ -380,8 +430,6 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
     protected void assertCredentialsMatch(AuthenticationToken authcToken, AuthenticationInfo info)
             throws AuthenticationException {
         final LoginAuthenticationInfo kapuaInfo = (LoginAuthenticationInfo) info;
-
-        // FIXME: is this sufficient?
 
         try {
             super.assertCredentialsMatch(authcToken, info);

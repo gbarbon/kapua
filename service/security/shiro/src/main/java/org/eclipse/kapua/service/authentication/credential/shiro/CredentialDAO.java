@@ -51,8 +51,8 @@ public class CredentialDAO extends ServiceDAO {
             cryptedCredential = cryptApiKey(credentialCreator.getCredentialPlainKey());
             break;
         case LDAP:
-            // do nothing
-            cryptedCredential = "LDAP";  // FIXME: this has no sense at all...
+            // dummy credential key, since it is up to ldap to manage credentials
+            cryptedCredential = "LDAP";
             break;
         case PASSWORD:
         default:

@@ -198,6 +198,16 @@ public enum SystemSettingKey implements SettingKey {
     LDAP_URL("commons.ldap.url"),
 
     /**
+     * LDAPS server url (LDAP over SSL)
+     */
+    LDAP_URL_SSL("commons.ldap.url.ssl"),
+
+    /**
+     * Allow LDAP over SSL
+     */
+    LDAP_SSL("commons.ldap.ssl"),
+
+    /**
      * LDAP DN template
      */
     //LDAP_DN_TEMPLATE("commons.ldap.dntemplate"),
@@ -213,10 +223,6 @@ public enum SystemSettingKey implements SettingKey {
      */
     LDAP_DN_TEMPLATE_PREFIX("commons.ldap.dntemplate.prefix"),
 
-    // TODO: add ldap security params
-
-    //FIXME: check ldap policies
-
     /**
      * Allow the use of LDAP groups in order to retrieve the account name
      */
@@ -231,6 +237,14 @@ public enum SystemSettingKey implements SettingKey {
      * The default account to which users are added if LDAP_USERS_DEFAULT_ACCOUNT = true
      */
     LDAP_ACCOUNT("commons.ldap.defaultAccount"),
+
+
+    // TODO: add ldap security params
+    /**
+     * The
+     */
+    LDAP_AUTH_MECH("commons.ldap.authMech"),
+
 
     /**
      * Url of the event bus
