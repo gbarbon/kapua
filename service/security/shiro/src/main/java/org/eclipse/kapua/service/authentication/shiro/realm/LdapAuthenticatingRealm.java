@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authentication.shiro.realm;
 
-import com.sun.jndi.ldap.LdapReferralException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -21,11 +20,8 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.LdapContextFactory;
-import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.eclipse.kapua.KapuaDuplicateNameException;
@@ -68,7 +64,6 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -528,6 +523,8 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                     // TODO: remove this: now used only to print attributes..
                     System.out.println(attr);
 
+                    // note that there will be only one attribute which is 'memberOf'
+                    // then all the groups to which the user belongs will be listed there (am I sure of this?)
                     if (attr.getID().equals("memberOf")) {
 
                         // FICME: work here
