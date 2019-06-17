@@ -20,8 +20,8 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
-import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.eclipse.kapua.KapuaDuplicateNameException;
@@ -46,6 +46,7 @@ import org.eclipse.kapua.service.authentication.credential.CredentialType;
 import org.eclipse.kapua.service.authentication.shiro.UsernamePasswordCredentialsImpl;
 import org.eclipse.kapua.service.authentication.shiro.exceptions.ExpiredAccountException;
 import org.eclipse.kapua.service.authentication.shiro.exceptions.TemporaryLockedAccountException;
+import org.eclipse.kapua.service.authentication.shiro.utils.KapuaLdapContextFactory;
 import org.eclipse.kapua.service.user.User;
 import org.eclipse.kapua.service.user.UserCreator;
 import org.eclipse.kapua.service.user.UserFactory;
@@ -71,6 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * {@link LdapAuthenticatingRealm} based {@link DefaultLdapRealm} implementation.
+ */
 public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
     private static final KapuaLocator LOCATOR = KapuaLocator.getInstance();
@@ -86,25 +90,36 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
      * @throws KapuaException
      */
     public LdapAuthenticatingRealm() throws ShiroException {
-        super();
+
+        // following part is the same as DefaultLdapRealm constructor
+        setCredentialsMatcher(new AllowAllCredentialsMatcher());
+        setAuthenticationTokenClass(AuthenticationToken.class);
+
+        // starting from here the constructor differs from the DefaultLdapRealm one
+        setContextFactory(new KapuaLdapContextFactory());
         setName(REALM_NAME);
 
         // setting DN template
         try {
             String dnTemplate = (SystemSetting.getInstance().getString(SystemSettingKey.LDAP_DN_TEMPLATE_PREFIX) +
                     SystemSetting.getInstance().getString(SystemSettingKey.LDAP_SEARCHBASE));
-            // replace("\"", ""); // 'replace' needed to remove quotes
             setUserDnTemplate(dnTemplate);
         } catch (IllegalArgumentException iae) {
             throw new ShiroException("Invalid user DN template", iae);
         }
 
-        // Set LDAP server url
-        JndiLdapContextFactory cf = (JndiLdapContextFactory) getContextFactory();
+        KapuaLdapContextFactory cf = (KapuaLdapContextFactory) getContextFactory();
+
+        // Set LDAP server URL; if SSL is required
         String url;
         if (SystemSetting.getInstance().getBoolean(SystemSettingKey.LDAP_SSL)) {
             url = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL_SSL);
-            //cf.setEnvironment(new HashMap<String, String>() {{put("java.naming.security.protocol","ssl");}});
+            cf.setSecurityProtocol("ssl");
+            // FIXME: SSL not working, exception in handling certificate:
+            //  javax.naming.CommunicationException: simple bind failed: localhost:636
+            //  [Root exception is javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException:
+            //  PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
+            //  unable to find valid certification path to requested target]
         } else {
             url = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_URL);
         }
@@ -114,8 +129,8 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
         // Checking the SASL mechanism
         String ldapAuthMechs = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_AUTH_MECH);
         if (!ldapAuthMechs.equals("none") && !ldapAuthMechs.equals("simple")) {
-            // a SASL authentication method is provided, now check that the server provides it
 
+            // a SASL authentication method is provided, now check that the server provides it
             try {
                 DirContext ctx = new InitialDirContext();
                 Attributes attrs = ctx.getAttributes(
@@ -140,6 +155,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
         // Set LDAP authentication mechanism
         cf.setAuthenticationMechanism(ldapAuthMechs);
+
     }
 
     /**
@@ -155,12 +171,10 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
         String ldapUsername;
         try {
-            // FIXME: it is working also while the ldap server is down!!
-            //  Only when I do a specific setEnvironment
             // Checking user existence on ldap and extracting credentials
             AuthenticationInfo info = super.doGetAuthenticationInfo(authenticationToken);
             ldapUsername = info.getPrincipals().getPrimaryPrincipal().toString();
-            // FIXME: I can also extract credentials here... would this make ant sense?
+            // TODO: I can also extract credentials here... would this make ant sense?
         } catch (Exception e) {
             throw new UnknownAccountException("Unknown LDAP user", e);
         }
@@ -187,7 +201,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
         } catch (AuthenticationException ae) {
             throw ae;
         } catch (Exception e) {
-            throw new ShiroException("Error while find user!", e);
+            throw new ShiroException("Error while finding user!", e);
         }
 
         // Now checking for the user existence
@@ -213,11 +227,12 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             } catch (AuthenticationException ae) {
                 throw ae;
             } catch (Exception e) {
-                throw new ShiroException("Error while find account!", e);
+                throw new ShiroException("Error while finding account!", e);
             }
 
-            // FIXME: should I handle also the case in which the account is different from the ldap group?
-            //      (match the retrieved account name with the ldap group, if they are not the same throw an exception)
+            // TODO: should I handle also the case in which the account is different from the ldap group?
+            //  (match the retrieved account name with the ldap group, if they are not the same throw an exception)
+            //  note: this make sense only if we are using LDAP groups as kapua accounts
 
             // Check account existence
             if (account == null) {
@@ -250,7 +265,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             } catch (AuthenticationException ae) {
                 throw ae;
             } catch (Exception e) {
-                throw new ShiroException("Error while find credentials!", e);
+                throw new ShiroException("Error while finding credentials!", e);
             }
 
             // Note that the LDAP authentication is always performed at the beginning of this method, the credentials
@@ -288,37 +303,37 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
 
             // Handle ldap account policies
             if (SystemSetting.getInstance().getBoolean(SystemSettingKey.LDAP_USE_GROUPS)) {
-                // TODO: initial idea for groups, handle ldap groups as follows:
-                //  - first retrieve the account as group name from ldap
-                //  (gather the account information from the ldap groups to which the user belong), then:
-                //      - if the an account corresponding to that group already exists, use that one
-                //      - otherwise, create a new account (with the group name)
 
-                // TODO: new proposed solution:
+                // TODO:
+                //  - retrieve the account as group name from ldap by checking the memberOf attribute of the user
+                //  (gather the account information from the ldap groups to which the user belong):
+                //      - if it is set, then use the name of the group as account name:
+                //          - add the user to it if such account already exists in Kapua
+                //          - or create a new account (if not existing) with the group name and add the user
+                //      - otherwise the authentication fails (throw an exception)
+                //  PROBLEM: I must also verify that the groups are actually kapua accounts
+                //  SOLUTION1: however, the DN already contains the ou=kapua-accounts, so it is sufficient to check that!
+                //  (the DN of the group that is contained as value of the memberOf attribute)
+                //  OR (SOLUTION2) we can target the memberOf only for groups that are in the ou=kapua-accounts
+                //  (using the search filter)?
+
+                // Retrieve the account
+                try {
+                    String accountName = getAccountForUser(ldapUsername);
+                } catch (NamingException ne) {
+                    throw new ShiroException("Error while finding account!", ne);
+                }
+
+                // FIXME: two main problems: cannot see memberOF as ldap attribute AND cannot perform a search without
+                //  being admin (I guess because I should enable anonymous ldapsearch)
+
+                // TODO: alternative solution (but I don't like it):
                 //  - retrieve all the account names
                 //  - for each account, check if the user belongs (memberOf) to one of these (by looping)
                 //  if so, break loop and retrieve account information
                 //      - if the an account corresponding to that group already exists, use that one
                 //      - otherwise, create a new account (with the group name)
                 //  else, do nothing
-
-                // TODO: alternative solution:
-                //  check only the memberOf attribute of the user: if it is set, the use the name of the group as
-                //  account name (add the user to it if it alredy exists, or create a new one), otherwise the
-                //  authentication fails (throw an exception)
-                //  PROBLEM: I must also verify that the groups are actually kapua accounts
-                //  SOLUTION1: however, the DN already contains the ou=kapua-accounts, so it is sufficient to check that!
-                //  (the DN of the group that is contained as value of the memberOf attribute)
-                //  OR (SOLUTION2) we can target the memberOf only for groups that are in that ou (in the search filter)?
-
-                // FIXME: two main problems: cannot see memberOF as ldap attribute AND cannot perform a search without
-                //  being admin (I guess because I should enable anonymous ldapsearch)...
-
-                try {
-                    getAccountForUser(ldapUsername);
-                } catch (NamingException ne) {
-                    ne.printStackTrace();
-                }
 
                 throw new NotImplementedException("LDAP groups are not implemented yet");
             } else {
@@ -425,7 +440,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                     credentialCreator = credentialFactory.newCreator(newAccountId,
                             user.getId(),
                             CredentialType.LDAP,
-                            null,  // FIXME: check this! But the credentialKey cannot be null...
+                            null,
                             CredentialStatus.ENABLED,
                             null);
                     credential = KapuaSecurityUtils.doPrivileged(() -> credentialService.create(credentialCreator));
@@ -466,13 +481,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             throws AuthenticationException {
         final LoginAuthenticationInfo kapuaInfo = (LoginAuthenticationInfo) info;
 
-        try {
-            super.assertCredentialsMatch(authcToken, info);
-        } catch (AuthenticationException authenticationEx) {
-
-            // FIXME: do something?
-            throw authenticationEx;
-        }
+        super.assertCredentialsMatch(authcToken, info);
 
         final Subject currentSubject = SecurityUtils.getSubject();
         Session session = currentSubject.getSession();
@@ -486,31 +495,30 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
     }
 
     /**
-     * Retrieves the kapua ldap account name for the specific user
+     * Retrieves the kapua ldap account name for the given user
      *
-     * @param username
-     * @return
-     * @throws NamingException
+     * @param username the name of the user to look for
+     * @return the string containing the account name
+     * @throws NamingException is thrown by the ldap search
      */
     private String getAccountForUser(String username) throws NamingException {
         Set<String> groupsForUser = new LinkedHashSet<>();
 
-        LdapContext ldapContext = getContextFactory().getLdapContext("cn=admin,dc=example,dc=org", "admin");
-        //LdapContext ldapContext = getContextFactory().getSystemLdapContext();
+        LdapContext ldapContext = getContextFactory().getLdapContext(
+                "cn=admin,dc=example,dc=org", "admin");
+        // LdapContext ldapContext = getContextFactory().getSystemLdapContext();
         // FIXME: not possible to perform a search if the user is not the admin...
+        //  I should enable anonymous ldapsearch in the ldap server
 
-        //"(&(objectClass=*)(userPrincipalName={0}))";
+        // parameters for the ldapsearch
         String searchBase = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_SEARCHBASE);
-
         String searchFilter = SystemSetting.getInstance().getString(SystemSettingKey.LDAP_GROUP_SEARCHFILTER);
-
         Object[] searchArguments = new Object[]{username};
-
         SearchControls searchCtls = new SearchControls();
         searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
+        // perform ldapsearch and analyze the answer
         NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments, searchCtls);
-
         while (answer.hasMoreElements()) {
             SearchResult sr = (SearchResult) answer.next();
             Attributes attrs = sr.getAttributes();
@@ -520,21 +528,13 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
                 while (ae.hasMore()) {
                     Attribute attr = (Attribute) ae.next();
 
-                    // TODO: remove this: now used only to print attributes..
-                    System.out.println(attr);
-
                     // note that there will be only one attribute which is 'memberOf'
                     // then all the groups to which the user belongs will be listed there (am I sure of this?)
                     if (attr.getID().equals("memberOf")) {
 
-                        // FICME: work here
-
-                        //Collection<String> groupNames = LdapUtils.getAllAttributeValues(attr);
+                        // Collection<String> groupNames = LdapUtils.getAllAttributeValues(attr);
                         // groupNames contains the groups found for the user
-                        // TODO: why multiple elements?
-
                         // TODO: check if groupNames contains "kapua-accounts" -> to use as a property
-                        System.out.println();
 
                         //groupsForUser.addAll(groupNames);
                     }
@@ -542,6 +542,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             }
         }
 
-        return null;
+        throw new NotImplementedException("LDAP groups are not implemented yet");
+        //return null;
     }
 }
