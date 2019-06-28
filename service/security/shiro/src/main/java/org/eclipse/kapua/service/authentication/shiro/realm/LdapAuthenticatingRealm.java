@@ -542,7 +542,7 @@ public class LdapAuthenticatingRealm extends DefaultLdapRealm {
             }
         }
 
-        throw new NotImplementedException("LDAP groups are not implemented yet");
-        //return null;
+        //throw new NotImplementedException("LDAP groups are not implemented yet");
+        return null;
     }
 }
