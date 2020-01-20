@@ -13,6 +13,7 @@ package org.eclipse.kapua.commons.jpa;
 
 import org.eclipse.kapua.KapuaEntityExistsException;
 import org.eclipse.kapua.KapuaException;
+import org.eclipse.kapua.KapuaIllegalArgumentException;
 import org.eclipse.kapua.commons.event.ServiceEventScope;
 import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.service.event.store.api.EventStoreRecord;
@@ -347,7 +348,12 @@ public class EntityManagerSession {
                 }
 
                 transactionManager.commit(manager);
-                //TODO check for detach
+
+                //TODO check for detach (lighter way than instanceof check?)
+                if (manager instanceof KapuaEntity) {
+                    manager.detach((KapuaEntity)result);
+                }
+
                 if (container.onAfterResult!=null) {
                     container.onAfterResult.onAfter(result);
                 }
@@ -364,13 +370,9 @@ public class EntityManagerSession {
             }
         }
         else {
-            //TODO check service events annotations
-            manager = entityManagerFactory.createEntityManager();
-            transactionManager.beginTransaction(manager);
-            if (manager.isTransactionActive()) {
-                appendKapuaEvent(result, manager);
-            }
-            transactionManager.commit(manager);
+            //if the onBeforeResult return an entity we need to check if the method has annotations to throw event and, in this case, we must sent it
+            //e.g. we executed a find (so with a cache hit) annotated to throw events. We must send the event (in this case there is not too much advantage using the cache)
+            appendKapuaEvent(result);
         }
         return result;
     }
@@ -453,53 +455,70 @@ public class EntityManagerSession {
         return instance;
     }
 
-    private <T> EventStoreRecord appendKapuaEvent(EntityManager manager) throws KapuaException {
-        return appendKapuaEvent(null, manager);
+    private org.eclipse.kapua.event.ServiceEvent getServiceEventIfPresent(Object instance) {
+        if (!(instance instanceof EventStoreRecord)) {
+            return ServiceEventScope.get();
+        }
+        else {
+            return null;
+        }
     }
 
     private <T> EventStoreRecord appendKapuaEvent(Object instance, EntityManager em) throws KapuaException {
         EventStoreRecord persistedKapuaEvent = null;
-
-        //persist the kapua event only if the instance is not a kapua event instance
-        if (!(instance instanceof EventStoreRecord)) {
-
-            // If a kapua event is in scope then persist it along with the entity
-            org.eclipse.kapua.event.ServiceEvent serviceEventBus = ServiceEventScope.get();
-            if (serviceEventBus != null) {
-                if (instance instanceof KapuaEntity) {
-                    KapuaEntity kapuaEntity = (KapuaEntity) instance;
-                    //make sense to override the entity id and type without checking for previous empty values?
-                    //override only if parameters are not evaluated
-                    logger.info("Updating service event entity infos (type, id and scope id) if missing...");
-                    if (serviceEventBus.getEntityType() == null || serviceEventBus.getEntityType().trim().length() <= 0) {
-                        logger.info("Kapua event - update entity type to '{}'", kapuaEntity.getClass().getName());
-                        serviceEventBus.setEntityType(kapuaEntity.getClass().getName());
-                    }
-                    if (serviceEventBus.getEntityId() == null) {
-                        logger.info("Kapua event - update entity id to '{}'", kapuaEntity.getId());
-                        serviceEventBus.setEntityId(kapuaEntity.getId());
-                    }
-                    if (serviceEventBus.getEntityScopeId() == null) {
-                        logger.info("Kapua event - update entity scope id to '{}'", kapuaEntity.getScopeId());
-                        serviceEventBus.setEntityScopeId(kapuaEntity.getScopeId());
-                    }
-                    logger.info("Updating service event entity infos (type, id and scope id) if missing... DONE");
-                    logger.info("Entity '{}' with id '{}' and scope id '{}' found!", instance.getClass().getName(), kapuaEntity.getId(), kapuaEntity.getScopeId());
-                }
-
-                //insert the kapua event only if it's a new entity
-                if (isNewEvent(serviceEventBus)) {
-                    persistedKapuaEvent = EventStoreDAO.create(em, ServiceEventUtil.fromServiceEventBus(serviceEventBus));
-                } else {
-                    persistedKapuaEvent = EventStoreDAO.update(em,
-                            ServiceEventUtil.mergeToEntity(EventStoreDAO.find(em, serviceEventBus.getScopeId(), KapuaEid.parseCompactId(serviceEventBus.getId())), serviceEventBus));
-                }
-                // update event id on Event
-                // persistedKapuaEvent.getId() cannot be null since is generated by the database
-                serviceEventBus.setId(persistedKapuaEvent.getId().toCompactId());
-            }
+        org.eclipse.kapua.event.ServiceEvent serviceEventBus = getServiceEventIfPresent(instance);
+        if (serviceEventBus != null) {
+            persistServiceEvent(em, serviceEventBus, instance, persistedKapuaEvent);
         }
         return persistedKapuaEvent;
+    }
+
+    private <T> EventStoreRecord appendKapuaEvent(Object instance) throws KapuaException {
+        EventStoreRecord persistedKapuaEvent = null;
+        org.eclipse.kapua.event.ServiceEvent serviceEventBus = getServiceEventIfPresent(instance);
+        EntityManager manager = null;
+        if (serviceEventBus != null) {
+            manager = entityManagerFactory.createEntityManager();
+            notTransacted.beginTransaction(manager);
+            appendKapuaEvent(instance, manager);
+            persistServiceEvent(manager, serviceEventBus, instance, persistedKapuaEvent);
+            notTransacted.commit(manager);
+        }
+        return persistedKapuaEvent;
+    }
+
+    private void persistServiceEvent(EntityManager em, org.eclipse.kapua.event.ServiceEvent serviceEventBus, Object instance, EventStoreRecord persistedKapuaEvent) throws KapuaIllegalArgumentException, KapuaException {
+        if (instance instanceof KapuaEntity) {
+            KapuaEntity kapuaEntity = (KapuaEntity) instance;
+            //make sense to override the entity id and type without checking for previous empty values?
+            //override only if parameters are not evaluated
+            logger.info("Updating service event entity infos (type, id and scope id) if missing...");
+            if (serviceEventBus.getEntityType() == null || serviceEventBus.getEntityType().trim().length() <= 0) {
+                logger.info("Kapua event - update entity type to '{}'", kapuaEntity.getClass().getName());
+                serviceEventBus.setEntityType(kapuaEntity.getClass().getName());
+            }
+            if (serviceEventBus.getEntityId() == null) {
+                logger.info("Kapua event - update entity id to '{}'", kapuaEntity.getId());
+                serviceEventBus.setEntityId(kapuaEntity.getId());
+            }
+            if (serviceEventBus.getEntityScopeId() == null) {
+                logger.info("Kapua event - update entity scope id to '{}'", kapuaEntity.getScopeId());
+                serviceEventBus.setEntityScopeId(kapuaEntity.getScopeId());
+            }
+            logger.info("Updating service event entity infos (type, id and scope id) if missing... DONE");
+            logger.info("Entity '{}' with id '{}' and scope id '{}' found!", instance.getClass().getName(), kapuaEntity.getId(), kapuaEntity.getScopeId());
+        }
+
+        //insert the kapua event only if it's a new entity
+        if (isNewEvent(serviceEventBus)) {
+            persistedKapuaEvent = EventStoreDAO.create(em, ServiceEventUtil.fromServiceEventBus(serviceEventBus));
+        } else {
+            persistedKapuaEvent = EventStoreDAO.update(em,
+                    ServiceEventUtil.mergeToEntity(EventStoreDAO.find(em, serviceEventBus.getScopeId(), KapuaEid.parseCompactId(serviceEventBus.getId())), serviceEventBus));
+        }
+        // update event id on Event
+        // persistedKapuaEvent.getId() cannot be null since is generated by the database
+        serviceEventBus.setId(persistedKapuaEvent.getId().toCompactId());
     }
 
     private boolean isNewEvent(org.eclipse.kapua.event.ServiceEvent event) {
