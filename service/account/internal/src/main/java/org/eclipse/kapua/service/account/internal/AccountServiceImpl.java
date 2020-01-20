@@ -245,7 +245,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do delete
-        entityManagerSession.onTransactedAction(em -> {
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<Account>create().onVoidResultHandler(em -> {
             // Entity needs to be loaded in the context of the same EntityManger to be able to delete it afterwards
             Account accountx = AccountDAO.find(em, scopeId, accountId);
             if (accountx == null) {
@@ -263,7 +263,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             }
 
             AccountDAO.delete(em, scopeId, accountId);
-        });
+        }));
     }
 
     @Override
@@ -307,16 +307,26 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do find
-        //TODO fix it, example using new container
+
         return entityManagerSession.onResult(EntityManagerContainer.<Account>create().onResultHandler(em -> {
-                Account account = AccountDAO.findByName(em, name);
-                if (account != null) {
-                    checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
+                    Account account = AccountDAO.findByName(em, name);
+                    if (account != null) {
+                        checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
+                    }
+                    return account;
                 }
-                return account;
-            }
-         ).onBeforeResult(() -> (Account)cache.get(name))
-         .onAfterResult((entity) -> (Account)cache.put(name, entity)));
+        ));
+
+//        //TODO fix it, example using new container
+//        return entityManagerSession.onResult(EntityManagerContainer.<Account>create().onResultHandler(em -> {
+//                Account account = AccountDAO.findByName(em, name);
+//                if (account != null) {
+//                    checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
+//                }
+//                return account;
+//            }
+//         ).onBeforeResult(() -> (Account)cache.get(name))
+//         .onAfterResult((entity) -> (Account)cache.put(name, entity)));
     }
 
     @Override
@@ -335,7 +345,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         //
         // Check Access
         checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
-        return entityManagerSession.onResult(em -> {
+        return entityManagerSession.onResult(EntityManagerContainer.<AccountListResult>create().onResultHandler(em -> {
             AccountListResult result = null;
             TypedQuery<Account> q;
             q = em.createNamedQuery("Account.findChildAccountsRecursive", Account.class);
@@ -344,7 +354,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             result = new AccountListResultImpl();
             result.addItems(q.getResultList());
             return result;
-        });
+        }));
     }
 
     @Override
@@ -359,7 +369,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> AccountDAO.query(em, query));
+        return entityManagerSession.onResult(
+                EntityManagerContainer.<AccountListResult>create().onResultHandler(em -> AccountDAO.query(em, query))
+        );
     }
 
     @Override
@@ -374,7 +386,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do count
-        return entityManagerSession.onResult(em -> AccountDAO.count(em, query));
+        return entityManagerSession.onResult(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> AccountDAO.count(em, query))
+        );
     }
 
     /**
@@ -392,7 +406,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> AccountDAO.find(em, null, accountId));
+        return entityManagerSession.onResult(
+                EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
+        );
     }
 
     private AccountListResult findChildAccountsTrusted(KapuaId accountId)
@@ -404,7 +420,10 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> AccountDAO.query(em, new AccountQueryImpl(accountId)));
+        return entityManagerSession.onResult(
+                EntityManagerContainer.<AccountListResult>create().onResultHandler(em -> AccountDAO.query(em,
+                        new AccountQueryImpl(accountId)))
+        );
     }
 
     @Override
