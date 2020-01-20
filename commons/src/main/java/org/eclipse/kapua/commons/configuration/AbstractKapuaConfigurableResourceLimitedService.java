@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Eurotech and/or its affiliates and others
+ * Copyright (c) 2016, 2020 Eurotech and/or its affiliates and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,7 +15,7 @@ import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
-import org.eclipse.kapua.commons.service.internal.Cache;
+import org.eclipse.kapua.commons.service.internal.KapuaCache;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.KapuaEntityAttributes;
@@ -41,7 +41,6 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
 
     private final Class<S> serviceClass;
     private final Class<F> factoryClass;
-    protected Cache cache;
 
     //============================================================================
     //
