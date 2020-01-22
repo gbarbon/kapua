@@ -11,20 +11,33 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.jpa;
 
+import java.util.Collection;
+
 public class CacheConfigurationFactory {
 
     private String cacheName;
+    private Collection<String> cacheNames;
 
+    @Deprecated
     public CacheConfigurationFactory(String cacheName) {
         this.cacheName = cacheName;
     }
 
+    public CacheConfigurationFactory(Collection<String> cacheNames) {
+        this.cacheNames = cacheNames;
+    }
+
+    @Deprecated
     public String getCacheName() {
         return cacheName;
     }
 
-    public void setCacheName(String cacheName) {
-        this.cacheName = cacheName;
+    public Collection<String> getCacheNames() {
+        return cacheNames;
     }
+
+//    public void setCacheName(String cacheName) {
+//        this.cacheName = cacheName;
+//    }
 
 }

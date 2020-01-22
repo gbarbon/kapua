@@ -11,11 +11,18 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
+import org.eclipse.kapua.model.KapuaNamedEntity;
+
+import java.io.Serializable;
+
 public interface KapuaCache {
+    // FIXME: use JCache directly instead?
 
-    Object get(Object key);
+    KapuaNamedEntity get(Serializable key);
 
-    Object put(Object key, Object value);
+    void put(Serializable key, KapuaNamedEntity value);
 
-    Object invalidate(Object key);
+    Serializable remove(Serializable key);
+
+    void invalidate();
 }

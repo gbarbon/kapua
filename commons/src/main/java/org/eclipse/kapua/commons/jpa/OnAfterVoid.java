@@ -14,10 +14,8 @@ package org.eclipse.kapua.commons.jpa;
 /**
  * Entity manager callback result service definition.
  *
- * @param <T> Execution result return type
- * @since 1.0
  */
-public interface OnAfterResult<T> {
+public interface OnAfterVoid {
 
-    void onAfter(T result);
+    void onAfter();
 }

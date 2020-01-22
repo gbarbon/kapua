@@ -13,7 +13,6 @@
 package org.eclipse.kapua.service.account.internal;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.eclipse.kapua.KapuaDuplicateNameException;
 import org.eclipse.kapua.KapuaDuplicateNameInAnotherAccountError;
 import org.eclipse.kapua.KapuaEntityNotFoundException;
@@ -24,6 +23,7 @@ import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
+import org.eclipse.kapua.commons.service.internal.KapuaCache;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
@@ -46,7 +46,6 @@ import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 
 import javax.inject.Inject;
 import javax.persistence.TypedQuery;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -64,6 +63,11 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
     @Inject
     private PermissionFactory permissionFactory;
+
+    // FIXME: I don't like this, I prefer to maintain the cache in a common place. But with different caches, is this
+    //  possible?
+    private KapuaCache accountIdCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
+    private KapuaCache accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
 
     /**
      * Constructor.
@@ -221,7 +225,10 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
             // Update
             return AccountDAO.update(em, account);
-        }));
+        }).onBeforeVoid(() -> {
+            accountNameCache.remove(account.getName());
+            accountIdCache.remove(account.getId());
+        })); // TODO: do we need also to update the caches with the onAfterResult ?
     }
 
     @Override
@@ -263,6 +270,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             }
 
             AccountDAO.delete(em, scopeId, accountId);
+        }).onAfterVoid(() -> {
+            accountNameCache.remove(accountIdCache.get(accountId).getName());
+            accountIdCache.remove(accountId);
         }));
     }
 
@@ -315,18 +325,11 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                     }
                     return account;
                 }
-        ));
-
-//        //TODO fix it, example using new container
-//        return entityManagerSession.onResult(EntityManagerContainer.<Account>create().onResultHandler(em -> {
-//                Account account = AccountDAO.findByName(em, name);
-//                if (account != null) {
-//                    checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
-//                }
-//                return account;
-//            }
-//         ).onBeforeResult(() -> (Account)cache.get(name))
-//         .onAfterResult((entity) -> (Account)cache.put(name, entity)));
+        ).onBeforeResult(() -> (Account) accountNameCache.get(name))
+                .onAfterResult((entity) -> {
+                    accountNameCache.put(name, entity);
+                    accountIdCache.put(entity.getId(), entity);
+                }));
     }
 
     @Override
@@ -408,6 +411,11 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Do find
         return entityManagerSession.onResult(
                 EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
+                        .onBeforeResult(() -> (Account) accountIdCache.get(accountId))
+                        .onAfterResult((entity) -> {
+                            accountIdCache.put(accountId, entity);
+                            accountNameCache.put(entity.getName(), entity);
+                        })
         );
     }
 

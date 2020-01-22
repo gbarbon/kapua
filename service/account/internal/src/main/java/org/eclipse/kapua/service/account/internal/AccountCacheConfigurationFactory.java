@@ -13,13 +13,26 @@ package org.eclipse.kapua.service.account.internal;
 
 import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
 
+import java.util.Arrays;
+
 public class AccountCacheConfigurationFactory extends CacheConfigurationFactory {
 
+    private static final String ACCOUNTID_CACHE_NAME = "AccountId";
+    private static final String ACCOUNTNAME_CACHE_NAME = "AccountName";
+
     private AccountCacheConfigurationFactory() {
-        super("Account");
+        super(Arrays.asList(ACCOUNTID_CACHE_NAME, ACCOUNTNAME_CACHE_NAME));
     }
 
-    public static AccountCacheConfigurationFactory getInstance() {
+    protected static AccountCacheConfigurationFactory getInstance() {
         return new AccountCacheConfigurationFactory();
+    }
+
+    protected static String getAccountIdCacheName() {
+        return ACCOUNTID_CACHE_NAME;
+    }
+
+    protected static String getAccountNameCacheName() {
+        return ACCOUNTNAME_CACHE_NAME;
     }
 }

@@ -290,6 +290,10 @@ public class EntityManagerSession {
             }
 
             transactionManager.commit(manager);
+
+            if (container.onAfterVoid!=null ) {
+                container.onAfterVoid.onAfter();
+            }
         } catch (Exception e) {
             if (manager != null) {
                 manager.rollback();
@@ -334,6 +338,9 @@ public class EntityManagerSession {
     private <T> T internalOnResult(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
         EntityManager manager = null;
         T result = null;
+        if (container.onBeforeVoid != null) {
+            container.onBeforeVoid.onBefore();
+        }
         if (container.onBeforeResult != null) {
             result = container.onBeforeResult.onBefore();
         }
@@ -354,7 +361,7 @@ public class EntityManagerSession {
                     manager.detach((KapuaEntity)result);
                 }
 
-                if (container.onAfterResult!=null) {
+                if (container.onAfterResult!=null && result != null) {
                     container.onAfterResult.onAfter(result);
                 }
                 return result;

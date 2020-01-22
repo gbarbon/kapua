@@ -14,26 +14,38 @@ package org.eclipse.kapua.commons.service.internal;
 import org.eclipse.kapua.model.KapuaNamedEntity;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
-public class DummyKapuaCache implements KapuaCache {
+public class HashMapCache implements KapuaCache{
+
+    // FIXME: implement this using JCache instead
+
+    private HashMap<Serializable,KapuaNamedEntity> hashMap;
+
+    HashMapCache() {
+        hashMap = new HashMap<>();
+    }
+
 
     @Override
     public KapuaNamedEntity get(Serializable key) {
-        return null;
+        return hashMap.get(key);
     }
 
     @Override
     public void put(Serializable key, KapuaNamedEntity value) {
+        hashMap.put(key, value);
     }
 
     @Override
     public Serializable remove(Serializable key) {
-        return null;
+        return hashMap.remove(key);
     }
 
     @Override
     public void invalidate() {
-
+        hashMap.clear();
     }
+
 
 }

@@ -30,7 +30,8 @@ public class AbstractKapuaService {
 
     protected EntityManagerFactory entityManagerFactory;
     protected EntityManagerSession entityManagerSession;
-    protected KapuaCache kapuaCache;
+    //protected KapuaCache kapuaCache;
+    protected ServiceCacheManager serviceCacheManager;
 
     //============================================================================
     //
@@ -55,7 +56,8 @@ public class AbstractKapuaService {
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory, CacheConfigurationFactory cacheConfigurationFactory) {
         this.entityManagerFactory = entityManagerFactory;
         this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
-        kapuaCache = CacheManager.getCache(cacheConfigurationFactory.getCacheName());
+        //kapuaCache = CacheManager.getCache(cacheConfigurationFactory.getCacheName());
+        serviceCacheManager = CacheManager.getServiceCacheManager(cacheConfigurationFactory.getCacheNames());
     }
 
     public EntityManagerSession getEntityManagerSession() {
