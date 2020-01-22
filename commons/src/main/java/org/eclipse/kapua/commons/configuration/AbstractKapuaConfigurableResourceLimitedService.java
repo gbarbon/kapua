@@ -41,7 +41,6 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
 
     private final Class<S> serviceClass;
     private final Class<F> factoryClass;
-    protected KapuaCache kapuaCache;
 
     //============================================================================
     //
