@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Eurotech and/or its affiliates and others
+ * Copyright (c) 2016, 2020 Eurotech and/or its affiliates and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -225,7 +225,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
     private ServiceConfig createConfig(ServiceConfig serviceConfig)
             throws KapuaException {
 
-        return entityManagerSession.onResult(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig)));
+        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig)));
     }
 
     /**
@@ -237,7 +237,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
      */
     private ServiceConfig updateConfig(ServiceConfig serviceConfig)
             throws KapuaException {
-        return entityManagerSession.onResult(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> {
+        return entityManagerSession.onTransactedResult(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> {
             ServiceConfig oldServiceConfig = ServiceConfigDAO.find(em, serviceConfig.getScopeId(), serviceConfig.getId());
             if (oldServiceConfig == null) {
                 throw new KapuaEntityNotFoundException(ServiceConfig.TYPE, serviceConfig.getId());

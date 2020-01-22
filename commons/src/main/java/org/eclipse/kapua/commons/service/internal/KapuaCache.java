@@ -11,21 +11,11 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
-public class DummyCache implements Cache {
+public interface KapuaCache {
 
-    @Override
-    public Object get(Object key) {
-        return null;
-    }
+    Object get(Object key);
 
-    @Override
-    public Object put(Object key, Object value) {
-        return null;
-    }
+    Object put(Object key, Object value);
 
-    @Override
-    public Object invalidate(Object key) {
-        return null;
-    }
-
+    Object invalidate(Object key);
 }

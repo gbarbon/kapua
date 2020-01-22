@@ -16,24 +16,24 @@ import java.util.Map;
 
 public class CacheManager {
 
-    private static Map<String, Cache> cacheMap = new HashMap<>();
+    private static Map<String, KapuaCache> cacheMap = new HashMap<>();
 
     private CacheManager() {
     }
 
-    public static Cache getCache(String cacheName) {
+    public static KapuaCache getCache(String cacheName) {
         //TODO check configuration to choose the proper cache type to instantiate
-        Cache cache = cacheMap.get(cacheName);
-        if (cache==null) {
+        KapuaCache kapuaCache = cacheMap.get(cacheName);
+        if (kapuaCache ==null) {
             synchronized (cacheMap) {
-                cache = cacheMap.get(cacheName);
-                if (cache==null) {
-                    cache = new DummyCache();
-                    cacheMap.put(cacheName, cache);
+                kapuaCache = cacheMap.get(cacheName);
+                if (kapuaCache ==null) {
+                    kapuaCache = new DummyKapuaCache();
+                    cacheMap.put(cacheName, kapuaCache);
                 }
             }
         }
-        return cache;
+        return kapuaCache;
     }
 
 }
