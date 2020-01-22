@@ -9,15 +9,20 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.jpa;
+package org.eclipse.kapua.commons.service.internal;
 
-/**
- * Entity manager callback result service definition.
- *
- * @param <T> Execution result return type
- * @since 1.0
- */
-public interface OnAfterResult<T> {
+import java.util.Map;
 
-    void onAfter(T result);
+public class ServiceCacheManager {
+
+    private Map<String, KapuaCache> caches;
+
+    public ServiceCacheManager(Map<String, KapuaCache> caches) {
+        this.caches = caches;
+    }
+
+    public KapuaCache getCache(String cacheName) {
+        return caches.get(cacheName);
+    }
+
 }
