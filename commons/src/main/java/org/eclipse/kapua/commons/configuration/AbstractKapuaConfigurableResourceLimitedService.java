@@ -15,7 +15,6 @@ import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
-import org.eclipse.kapua.commons.service.internal.KapuaCache;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.KapuaEntityAttributes;

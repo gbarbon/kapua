@@ -41,7 +41,6 @@ public class CacheManager {
 
     public static ServiceCacheManager getServiceCacheManager(Collection<String> cachesNames) {
         Map<String, KapuaCache> serviceCacheMap = new HashMap<>();
-
         cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName)));
         return new ServiceCacheManager(serviceCacheMap);
     }

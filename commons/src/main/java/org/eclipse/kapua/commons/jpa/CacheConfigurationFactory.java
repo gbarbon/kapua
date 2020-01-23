@@ -18,6 +18,10 @@ public class CacheConfigurationFactory {
     private String cacheName;
     private Collection<String> cacheNames;
 
+    /**
+     * @deprecated temporarily deprecated
+     * @param cacheName
+     */
     @Deprecated
     public CacheConfigurationFactory(String cacheName) {
         this.cacheName = cacheName;
@@ -27,6 +31,9 @@ public class CacheConfigurationFactory {
         this.cacheNames = cacheNames;
     }
 
+    /**
+     * @deprecated temporarily deprecated
+     */
     @Deprecated
     public String getCacheName() {
         return cacheName;
