@@ -23,7 +23,6 @@ import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
-import org.eclipse.kapua.commons.service.internal.KapuaCache;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
@@ -44,6 +43,7 @@ import org.eclipse.kapua.service.account.AccountService;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 
+import javax.cache.Cache;
 import javax.inject.Inject;
 import javax.persistence.TypedQuery;
 import java.util.Map;
@@ -66,8 +66,8 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
     // FIXME: I don't like this, I prefer to maintain the cache in a common place. But with different caches, is this
     //  possible?
-    private KapuaCache accountIdCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
-    private KapuaCache accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
+    private Cache accountIdCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
+    private Cache accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
 
     /**
      * Constructor.
@@ -225,7 +225,20 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
             // Update
             return AccountDAO.update(em, account);
-        }).onBeforeVoid(() -> {
+        }).onBeforeVoidHandler(() -> {
+
+            //
+            // Verify unchanged parent account ID and parent account path
+            if (!Objects.equals(oldAccount.getScopeId(), account.getScopeId())) {
+                throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.scopeId");
+            }
+            if (!oldAccount.getParentAccountPath().equals(account.getParentAccountPath())) {
+                throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.parentAccountPath");
+            }
+            if (!oldAccount.getName().equals(account.getName())) {
+                throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.name");
+            }
+
             accountNameCache.remove(account.getName());
             accountIdCache.remove(account.getId());
         })); // TODO: do we need also to update the caches with the onAfterResult ?
@@ -236,8 +249,8 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
     public void delete(KapuaId scopeId, KapuaId accountId) throws KapuaException {
         //
         // Argument validation
-        ArgumentValidator.notNull(accountId, "scopeId");
-        ArgumentValidator.notNull(scopeId, "accountId");
+        ArgumentValidator.notNull(scopeId, "scopeId");
+        ArgumentValidator.notNull(accountId, "accountId");
 
         //
         // Check Access
@@ -270,8 +283,11 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             }
 
             AccountDAO.delete(em, scopeId, accountId);
-        }).onAfterVoid(() -> {
-            accountNameCache.remove(accountIdCache.get(accountId).getName());
+        }).onAfterVoidHandler(() -> {
+            Account account = (Account) accountIdCache.get(accountId);
+            if (account != null) {
+                accountNameCache.remove(account.getName());
+            }
             accountIdCache.remove(accountId);
         }));
     }
@@ -325,11 +341,20 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                     }
                     return account;
                 }
-        ).onBeforeResult(() -> (Account) accountNameCache.get(name))
-                .onAfterResult((entity) -> {
-                    accountNameCache.put(name, entity);
-                    accountIdCache.put(entity.getId(), entity);
-                }));
+        ).onBeforeResultHandler(() -> {
+            Account account = (Account) accountNameCache.get(name);
+/*            if (account!=null) {
+                account = account.clone();
+            }*/
+            if (account != null) {
+                checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
+            }
+
+            return account;
+        }).onAfterResultHandler((entity) -> {
+            accountNameCache.put(name, entity);
+            accountIdCache.put(entity.getId(), entity);
+        }));
     }
 
     @Override
@@ -411,8 +436,14 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Do find
         return entityManagerSession.onResult(
                 EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
-                        .onBeforeResult(() -> (Account) accountIdCache.get(accountId))
-                        .onAfterResult((entity) -> {
+                       .onBeforeResultHandler(() -> {
+                           Account tmp = (Account) accountIdCache.get(accountId);
+/*                           if (tmp!=null) {
+                               tmp = tmp.clone();
+                           }*/
+                           return tmp;
+                       })
+                        .onAfterResultHandler((entity) -> {
                             accountIdCache.put(accountId, entity);
                             accountNameCache.put(entity.getName(), entity);
                         })

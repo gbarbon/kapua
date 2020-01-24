@@ -16,11 +16,13 @@ import org.eclipse.kapua.model.KapuaNamedEntity;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class HashMapCache implements KapuaCache{
+/**
+ * @deprecated use JCacheHashMapCache instead
+ */
+@Deprecated
+public class HashMapCache implements KapuaCache {
 
-    // FIXME: implement this using JCache instead
-
-    private HashMap<Serializable,KapuaNamedEntity> hashMap;
+    private HashMap<Serializable, KapuaNamedEntity> hashMap;
 
     HashMapCache() {
         hashMap = new HashMap<>();

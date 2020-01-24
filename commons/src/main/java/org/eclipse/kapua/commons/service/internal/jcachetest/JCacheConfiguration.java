@@ -9,24 +9,24 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.service.internal.jcachetest;
 
-import org.eclipse.kapua.model.KapuaNamedEntity;
+import javax.cache.configuration.Configuration;
 
-import java.io.Serializable;
+public class JCacheConfiguration<K, V> implements Configuration<K, V> {
 
-/**
- * @deprecated use JCache instead
- */
-@Deprecated
-public interface KapuaCache {
-    // FIXME: use JCache directly instead?
+    @Override
+    public Class<K> getKeyType() {
+        return (Class<K>) Object.class;
+    }
 
-    KapuaNamedEntity get(Serializable key);
+    @Override
+    public Class<V> getValueType() {
+        return (Class<V>) Object.class;
+    }
 
-    void put(Serializable key, KapuaNamedEntity value);
-
-    Serializable remove(Serializable key);
-
-    void invalidate();
+    @Override
+    public boolean isStoreByValue() {
+        throw new UnsupportedOperationException();
+    }
 }
