@@ -22,10 +22,8 @@ import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -196,7 +194,7 @@ public class JCacheHashMapCache<K, V> implements Cache<K, V> {
 
     private Object clone(Object object) throws InvocationTargetException, IllegalAccessException,
             InstantiationException {
-        if (object!=null) {
+        if (object != null) {
             try {
                 Class<?> objectClass = object.getClass();
                 Constructor<?> objectConstructor = objectClass.getDeclaredConstructor();
@@ -215,7 +213,7 @@ public class JCacheHashMapCache<K, V> implements Cache<K, V> {
                     }
                 }
 
-                if (setterMethods.size()==0) {
+                if (setterMethods.size() == 0) {
                     return object;
                 }
 

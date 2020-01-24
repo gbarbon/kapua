@@ -20,9 +20,9 @@ import java.util.HashMap;
  * @deprecated use JCacheHashMapCache instead
  */
 @Deprecated
-public class HashMapCache implements KapuaCache{
+public class HashMapCache implements KapuaCache {
 
-    private HashMap<Serializable,KapuaNamedEntity> hashMap;
+    private HashMap<Serializable, KapuaNamedEntity> hashMap;
 
     HashMapCache() {
         hashMap = new HashMap<>();

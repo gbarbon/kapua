@@ -14,15 +14,15 @@ package org.eclipse.kapua.commons.service.internal;
 import javax.cache.Cache;
 import java.util.Map;
 
-public class ServiceCacheManager {
+public class ServiceCacheManager<K, V> {
 
-    private Map<String, Cache> caches;
+    private Map<String, Cache<K, V>> caches;
 
-    public ServiceCacheManager(Map<String, Cache> caches) {
+    public ServiceCacheManager(Map<String, Cache<K, V>> caches) {
         this.caches = caches;
     }
 
-    public Cache getCache(String cacheName) {
+    public Cache<K, V> getCache(String cacheName) {
         return caches.get(cacheName);
     }
 

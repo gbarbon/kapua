@@ -26,9 +26,9 @@ public class JCacheCachingProvider implements CachingProvider {
     }
 
     public static JCacheCachingProvider getInstance() {
-        if (instance== null) {
+        if (instance == null) {
             synchronized (JCacheCachingProvider.class) {
-                if (instance== null) {
+                if (instance == null) {
                     instance = new JCacheCachingProvider();
                 }
             }

@@ -13,7 +13,7 @@ package org.eclipse.kapua.commons.service.internal.jcachetest;
 
 import javax.cache.configuration.Configuration;
 
-public class JCacheConfiguration<K,V> implements Configuration {
+public class JCacheConfiguration<K, V> implements Configuration<K, V> {
 
     @Override
     public Class<K> getKeyType() {

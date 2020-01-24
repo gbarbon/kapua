@@ -17,14 +17,13 @@ import org.eclipse.kapua.model.KapuaNamedEntity;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-import javax.cache.configuration.Configuration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class KapuaCacheManager {
 
-    private static Map<String, Cache> cacheMap = new HashMap<>();
+    private static Map<String, Cache<String, KapuaNamedEntity>> cacheMap = new HashMap<>();
 
     private KapuaCacheManager() {
     }
@@ -33,37 +32,17 @@ public class KapuaCacheManager {
     //  For the one using the name, (scopeId, String)
 
     private static Cache<String, KapuaNamedEntity> addCache(String cacheName) {
-        //kapuaCache = new DummyKapuaCache();
-        //kapuaCache = new SimpleRedissonCache();
-        //KapuaCache kapuaCache = new HashMapCache();
-        //cacheMap.put(cacheName, kapuaCache);
-        //return kapuaCache;
-
-        Configuration<String, KapuaNamedEntity> config = new JCacheConfiguration();
+        JCacheConfiguration<String, KapuaNamedEntity> config = new JCacheConfiguration<>();
         CacheManager manager = JCacheCachingProvider.getInstance().getCacheManager();
         Cache<String, KapuaNamedEntity> cache = manager.createCache(cacheName, config);
         cacheMap.put(cacheName, cache);
         return cache;
     }
 
-/*    public static KapuaCache getCache(String cacheName) {
+    public static Cache<String, KapuaNamedEntity> getCache(String cacheName) {
         //TODO check configuration to choose the proper cache type to instantiate
-        KapuaCache kapuaCache = cacheMap.get(cacheName);
-        if (kapuaCache ==null) {
-            synchronized (cacheMap) {
-                kapuaCache = cacheMap.get(cacheName);
-                if (kapuaCache == null) {
-                    kapuaCache = addCache(cacheName);
-                }
-            }
-        }
-        return kapuaCache;
-    }*/
-
-    public static Cache getCache(String cacheName) {
-        //TODO check configuration to choose the proper cache type to instantiate
-        Cache kapuaCache = cacheMap.get(cacheName);
-        if (kapuaCache ==null) {
+        Cache<String, KapuaNamedEntity> kapuaCache = cacheMap.get(cacheName);
+        if (kapuaCache == null) {
             synchronized (cacheMap) {
                 kapuaCache = cacheMap.get(cacheName);
                 if (kapuaCache == null) {
@@ -74,21 +53,11 @@ public class KapuaCacheManager {
         return kapuaCache;
     }
 
-/*    public static ServiceCacheManager getServiceCacheManager(Collection<String> cachesNames) {
-        Map<String, KapuaCache> serviceCacheMap = new HashMap<>();
+    public static ServiceCacheManager<String, KapuaNamedEntity> getServiceCacheManager(Collection<String> cachesNames) {
+        Map<String, Cache<String, KapuaNamedEntity>> serviceCacheMap = new HashMap<>();
         cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName)));
-        return new ServiceCacheManager(serviceCacheMap);
-    }*/
-
-    public static ServiceCacheManager getServiceCacheManager(Collection<String> cachesNames) {
-        Map<String, Cache> serviceCacheMap = new HashMap<>();
-        cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName)));
-        return new ServiceCacheManager(serviceCacheMap);
+        return new ServiceCacheManager<>(serviceCacheMap);
     }
-
-/*    public static void invalidateAll() {
-        cacheMap.forEach((cacheKey, cache) -> cache.invalidate());
-    }*/
 
     public static void invalidateAll() {
         cacheMap.forEach((cacheKey, cache) -> cache.clear());

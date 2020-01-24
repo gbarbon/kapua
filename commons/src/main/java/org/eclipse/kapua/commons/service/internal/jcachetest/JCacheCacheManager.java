@@ -11,10 +11,6 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal.jcachetest;
 
-import org.eclipse.kapua.commons.jpa.SimpleSqlScriptExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
@@ -31,9 +27,9 @@ public class JCacheCacheManager implements CacheManager {
     }
 
     public static JCacheCacheManager getInstance() {
-        if (instance== null) {
+        if (instance == null) {
             synchronized (JCacheCacheManager.class) {
-                if (instance== null) {
+                if (instance == null) {
                     instance = new JCacheCacheManager();
                 }
             }

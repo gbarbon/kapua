@@ -24,10 +24,11 @@ import java.util.Set;
 
 /**
  * Dummy JCache implementation, returns always null.
+ *
  * @param <K>
  * @param <V>
  */
-public class DummyJCache<K,V> implements Cache<K,V> {
+public class DummyJCache<K, V> implements Cache<K, V> {
 
     DummyJCache() {
 
