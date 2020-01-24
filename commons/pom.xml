@@ -108,6 +108,18 @@
             <artifactId>reflections</artifactId>
         </dependency>
 
+        <!-- Caching dependencies -->
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
         <!-- -->
         <!-- Testing dependencies -->
         <dependency>

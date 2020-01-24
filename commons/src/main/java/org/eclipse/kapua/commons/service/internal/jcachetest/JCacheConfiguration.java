@@ -9,21 +9,24 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.service.internal.jcachetest;
 
-import javax.cache.Cache;
-import java.util.Map;
+import javax.cache.configuration.Configuration;
 
-public class ServiceCacheManager {
+public class JCacheConfiguration<K,V> implements Configuration {
 
-    private Map<String, Cache> caches;
-
-    public ServiceCacheManager(Map<String, Cache> caches) {
-        this.caches = caches;
+    @Override
+    public Class<K> getKeyType() {
+        return (Class<K>) Object.class;
     }
 
-    public Cache getCache(String cacheName) {
-        return caches.get(cacheName);
+    @Override
+    public Class<V> getValueType() {
+        return (Class<V>) Object.class;
     }
 
+    @Override
+    public boolean isStoreByValue() {
+        throw new UnsupportedOperationException();
+    }
 }

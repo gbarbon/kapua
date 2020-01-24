@@ -29,22 +29,22 @@ public class EntityManagerContainer<T> {
     private EntityManagerContainer() {
     }
 
-    public EntityManagerContainer<T> onAfterResult(OnAfterResult<T> onAfterResult) {
+    public EntityManagerContainer<T> onAfterResultHandler(OnAfterResult<T> onAfterResult) {
         this.onAfterResult = onAfterResult;
         return this;
     }
 
-    public EntityManagerContainer<T> onAfterVoid(OnAfterVoid onAfterVoid) {
+    public EntityManagerContainer<T> onAfterVoidHandler(OnAfterVoid onAfterVoid) {
         this.onAfterVoid = onAfterVoid;
         return this;
     }
 
-    public EntityManagerContainer<T> onBeforeResult(OnBeforeResult<T> onBeforeResult) {
+    public EntityManagerContainer<T> onBeforeResultHandler(OnBeforeResult<T> onBeforeResult) {
         this.onBeforeResult = onBeforeResult;
         return this;
     }
 
-    public EntityManagerContainer<T> onBeforeVoid(OnBeforeVoid onBeforeVoid) {
+    public EntityManagerContainer<T> onBeforeVoidHandler(OnBeforeVoid onBeforeVoid) {
         this.onBeforeVoid = onBeforeVoid;
         return this;
     }

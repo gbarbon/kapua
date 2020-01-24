@@ -107,4 +107,6 @@ public interface Account extends KapuaNamedEntity {
      */
     List<Account> getChildAccounts();
 
+    Account clone();
+
 }

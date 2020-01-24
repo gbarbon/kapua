@@ -15,6 +15,10 @@ import org.eclipse.kapua.model.KapuaNamedEntity;
 
 import java.io.Serializable;
 
+/**
+ * @deprecated use DummyJCache instead
+ */
+@Deprecated
 public class DummyKapuaCache implements KapuaCache {
 
     @Override

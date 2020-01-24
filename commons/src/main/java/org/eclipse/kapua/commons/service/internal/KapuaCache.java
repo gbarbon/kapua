@@ -15,6 +15,10 @@ import org.eclipse.kapua.model.KapuaNamedEntity;
 
 import java.io.Serializable;
 
+/**
+ * @deprecated use JCache instead
+ */
+@Deprecated
 public interface KapuaCache {
     // FIXME: use JCache directly instead?
 
