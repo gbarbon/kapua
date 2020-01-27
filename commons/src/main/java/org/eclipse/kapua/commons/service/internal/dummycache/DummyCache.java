@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.commons.service.internal.dummycache;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -23,14 +23,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Dummy JCache implementation, returns always null.
+ * Dummy Cache implementation, returns always null.
  *
  * @param <K>
  * @param <V>
  */
-public class DummyJCache<K, V> implements Cache<K, V> {
+public class DummyCache<K, V> implements Cache<K, V> {
 
-    DummyJCache() {
+    public DummyCache() {
 
     }
 

@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.commons.service.internal.dummycache;
 
 import javax.cache.CacheManager;
 import javax.cache.configuration.OptionalFeature;
@@ -17,68 +17,54 @@ import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class JCacheCachingProvider implements CachingProvider {
-
-    private static JCacheCachingProvider instance;
-
-    public static JCacheCachingProvider getInstance() {
-        if (instance == null) {
-            synchronized (JCacheCachingProvider.class) {
-                if (instance == null) {
-                    instance = new JCacheCachingProvider();
-                }
-            }
-        }
-        return instance;
-    }
-
+public class DummyCachingProvider implements CachingProvider {
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader classLoader, Properties properties) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public ClassLoader getDefaultClassLoader() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public URI getDefaultURI() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Properties getDefaultProperties() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader classLoader) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public CacheManager getCacheManager() {
-        return JCacheCacheManager.getInstance();
+        return DummyCacheManager.getInstance();
     }
 
     @Override
     public void close() {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void close(ClassLoader classLoader) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void close(URI uri, ClassLoader classLoader) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public boolean isSupported(OptionalFeature optionalFeature) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 }

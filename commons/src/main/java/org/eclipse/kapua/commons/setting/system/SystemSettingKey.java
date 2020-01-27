@@ -256,7 +256,16 @@ public enum SystemSettingKey implements SettingKey {
     /**
      * Allow System Settings to be updatable at runtime via System.setProperty()
      */
-    SETTINGS_HOTSWAP("commons.settings.hotswap");
+    SETTINGS_HOTSWAP("commons.settings.hotswap"),
+
+    /**
+     * Provide the classname for the Cache Provider
+     */
+    CACHING_PROVIDER("commons.cache.provider.classname"),
+    /**
+     * Enable the cache for the account service.
+     */
+    ACCOUNT_CACHE("commons.cache.account.enabled");
 
     private String key;
 
