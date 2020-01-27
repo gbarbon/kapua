@@ -28,6 +28,7 @@ import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.commons.util.CommonsValidationRegex;
 import org.eclipse.kapua.locator.KapuaProvider;
+import org.eclipse.kapua.model.KapuaNamedEntity;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.domain.Domain;
 import org.eclipse.kapua.model.id.KapuaId;
@@ -46,6 +47,7 @@ import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import javax.cache.Cache;
 import javax.inject.Inject;
 import javax.persistence.TypedQuery;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
@@ -66,8 +68,10 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
     // FIXME: I don't like this, I prefer to maintain the cache in a common place. But with different caches, is this
     //  possible?
-    private Cache accountIdCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
-    private Cache accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
+    private Cache<Serializable, KapuaNamedEntity> accountIdCache =
+            serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
+    private Cache<Serializable, KapuaNamedEntity>
+            accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
 
     /**
      * Constructor.
@@ -238,8 +242,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             if (!oldAccount.getName().equals(account.getName())) {
                 throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.name");
             }
-
-            accountNameCache.remove(account.getName());
+            accountNameCache.remove( account.getName());
             accountIdCache.remove(account.getId());
         })); // TODO: do we need also to update the caches with the onAfterResult ?
     }
@@ -343,9 +346,6 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                 }
         ).onBeforeResultHandler(() -> {
             Account account = (Account) accountNameCache.get(name);
-/*            if (account!=null) {
-                account = account.clone();
-            }*/
             if (account != null) {
                 checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
             }
@@ -436,13 +436,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Do find
         return entityManagerSession.onResult(
                 EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
-                       .onBeforeResultHandler(() -> {
-                           Account tmp = (Account) accountIdCache.get(accountId);
-/*                           if (tmp!=null) {
-                               tmp = tmp.clone();
-                           }*/
-                           return tmp;
-                       })
+                       .onBeforeResultHandler(() ->
+                           (Account) accountIdCache.get(accountId)
+                       )
                         .onAfterResultHandler((entity) -> {
                             accountIdCache.put(accountId, entity);
                             accountNameCache.put(entity.getName(), entity);

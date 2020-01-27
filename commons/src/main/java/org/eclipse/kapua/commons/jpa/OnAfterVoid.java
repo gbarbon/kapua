@@ -11,11 +11,13 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.jpa;
 
+import org.eclipse.kapua.KapuaException;
+
 /**
  * Entity manager callback result service definition.
  *
  */
 public interface OnAfterVoid {
 
-    void onAfter();
+    void onAfter() throws KapuaException;
 }

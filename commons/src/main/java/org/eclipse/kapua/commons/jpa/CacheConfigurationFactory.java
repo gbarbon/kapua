@@ -15,36 +15,20 @@ import java.util.Collection;
 
 public class CacheConfigurationFactory {
 
-    private String cacheName;
     private Collection<String> cacheNames;
+    private boolean isEnabled;
 
-    /**
-     * @deprecated temporarily deprecated
-     * @param cacheName
-     */
-    @Deprecated
-    public CacheConfigurationFactory(String cacheName) {
-        this.cacheName = cacheName;
-    }
-
-    public CacheConfigurationFactory(Collection<String> cacheNames) {
+    public CacheConfigurationFactory(Collection<String> cacheNames, boolean isEnabled) {
         this.cacheNames = cacheNames;
-    }
-
-    /**
-     * @deprecated temporarily deprecated
-     */
-    @Deprecated
-    public String getCacheName() {
-        return cacheName;
+        this.isEnabled = isEnabled;
     }
 
     public Collection<String> getCacheNames() {
         return cacheNames;
     }
 
-//    public void setCacheName(String cacheName) {
-//        this.cacheName = cacheName;
-//    }
+    public boolean isEnabled() {
+        return isEnabled;
+    }
 
 }

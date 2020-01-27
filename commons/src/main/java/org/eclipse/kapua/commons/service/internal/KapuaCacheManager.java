@@ -11,51 +11,68 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
-import org.eclipse.kapua.commons.service.internal.jcachetest.JCacheCachingProvider;
-import org.eclipse.kapua.commons.service.internal.jcachetest.JCacheConfiguration;
+import org.eclipse.kapua.commons.setting.system.SystemSetting;
+import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.model.KapuaNamedEntity;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.spi.CachingProvider;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class KapuaCacheManager {
 
-    private static Map<String, Cache<String, KapuaNamedEntity>> cacheMap = new HashMap<>();
+    private static final SystemSetting SYSTEM_SETTING = SystemSetting.getInstance();
+    private static final String DUMMY_CACHING_PROVIDER =
+            "org.eclipse.kapua.commons.service.internal.dummycache.DummyCachingProvider";
+    private static final String CACHING_PROVIDER_CLASS_NAME = SYSTEM_SETTING.getString(SystemSettingKey.CACHING_PROVIDER,
+            DUMMY_CACHING_PROVIDER);  // use the dummy cache if no provider exists
+
+    private static Map<String, Cache<Serializable, KapuaNamedEntity>> cacheMap = new HashMap<>();
 
     private KapuaCacheManager() {
     }
 
-    // TODO: use an entity for the key, composed of two KapuaId (scopeId + EntityId) -> for the one using Id
-    //  For the one using the name, (scopeId, String)
-
-    private static Cache<String, KapuaNamedEntity> addCache(String cacheName) {
-        JCacheConfiguration<String, KapuaNamedEntity> config = new JCacheConfiguration<>();
-        CacheManager manager = JCacheCachingProvider.getInstance().getCacheManager();
-        Cache<String, KapuaNamedEntity> cache = manager.createCache(cacheName, config);
-        cacheMap.put(cacheName, cache);
-        return cache;
+    private static CacheManager getCacheManager(boolean isEnabled) {
+        CachingProvider cachingProvider;
+        if (isEnabled) {
+            cachingProvider = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME);
+        } else {
+            // cache not enabled for the given service, using the dummy one
+            cachingProvider = Caching.getCachingProvider(DUMMY_CACHING_PROVIDER);
+        }
+        return cachingProvider.getCacheManager();
     }
 
-    public static Cache<String, KapuaNamedEntity> getCache(String cacheName) {
-        //TODO check configuration to choose the proper cache type to instantiate
-        Cache<String, KapuaNamedEntity> kapuaCache = cacheMap.get(cacheName);
-        if (kapuaCache == null) {
+    public static Cache<Serializable, KapuaNamedEntity> getCache(String cacheName, boolean isEnabled) {
+        Cache<Serializable, KapuaNamedEntity> cache = cacheMap.get(cacheName);
+        if (cache == null) {
             synchronized (cacheMap) {
-                kapuaCache = cacheMap.get(cacheName);
-                if (kapuaCache == null) {
-                    kapuaCache = addCache(cacheName);
+                cache = cacheMap.get(cacheName);
+                if (cache == null) {
+                    MutableConfiguration<Serializable, KapuaNamedEntity> config = new MutableConfiguration<>();
+                    cache = getCacheManager(isEnabled).createCache(cacheName, config);
+                    cacheMap.put(cacheName, cache);
                 }
             }
         }
-        return kapuaCache;
+        return cache;
     }
 
-    public static ServiceCacheManager<String, KapuaNamedEntity> getServiceCacheManager(Collection<String> cachesNames) {
-        Map<String, Cache<String, KapuaNamedEntity>> serviceCacheMap = new HashMap<>();
-        cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName)));
+    /**
+     * Get the cache manager for a given service.
+     *
+     * @param cachesNames collection of caches names for the given service.
+     * @return the ServiceCacheManager fro the given service.
+     */
+    public static ServiceCacheManager<Serializable, KapuaNamedEntity> getServiceCacheManager(Collection<String> cachesNames, boolean isEnabled) {
+        Map<String, Cache<Serializable, KapuaNamedEntity>> serviceCacheMap = new HashMap<>();
+        cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName, isEnabled)));
         return new ServiceCacheManager<>(serviceCacheMap);
     }
 
