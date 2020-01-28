@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.account.steps;
 
+import com.codahale.metrics.Timer;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -24,6 +25,7 @@ import org.apache.shiro.SecurityUtils;
 import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaIllegalNullArgumentException;
+import org.eclipse.kapua.commons.metric.MetricServiceFactory;
 import org.eclipse.kapua.commons.model.id.IdGenerator;
 import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
@@ -50,6 +52,10 @@ import org.eclipse.kapua.service.account.Organization;
 import org.eclipse.kapua.service.account.AccountQuery;
 import org.eclipse.kapua.service.account.AccountListResult;
 import org.eclipse.kapua.service.account.AccountAttributes;
+import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataChannel;
+import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataMessage;
+import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataPayload;
+import org.eclipse.kapua.translator.kura.kapua.TranslatorDataKuraKapua;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -947,6 +953,48 @@ public class AccountServiceSteps extends TestBase {
         } catch (KapuaException ex) {
             verifyException(ex);
         }
+    }
+
+    @Then("^I am able to use the cache for the account \"(.*)\"$")
+    public void useCache(String accountName) throws Exception {
+        Account account = accountService.findByName(accountName);
+
+        Timer d = MetricServiceFactory.getInstance().getTimer("datastore", "datastore", "cache");
+        Timer.Context context = d.time();
+        translateMessages(account);
+        context.stop();
+
+        LOGGER.info("Mean: {}", d.getSnapshot().getMean());
+        LOGGER.info("98Percentile: {}", d.getSnapshot().get98thPercentile());
+    }
+
+    private void translateMessages(Account account) throws KapuaException {
+        for (int i = 0 ; i < 500 ; i++) {
+            TranslatorDataKuraKapua translatorDataKuraKapua = new TranslatorDataKuraKapua();
+            translatorDataKuraKapua.translate(messageProducer(account));
+        }
+    }
+
+    private KuraDataMessage messageProducer(Account account) {
+
+        KuraDataMessage message = new KuraDataMessage();
+        message.setChannel(new KuraDataChannel());
+        message.getChannel().setScope(account.getName());
+        message.getChannel().setClientId(account.getId().toStringId());
+        List<String> semanticTopicList = new ArrayList<>();
+        semanticTopicList.add("semantictopic");
+        message.getChannel().setSemanticChannelParts(semanticTopicList);
+
+        KuraDataPayload messagePayload = new KuraDataPayload();
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("float", (float) 0.01);
+        messagePayload.setMetrics(metrics);
+        String stringPayload = "This is my payload!";
+        byte[] payload = stringPayload.getBytes();
+        messagePayload.setBody(payload);
+        message.setPayload(messagePayload);
+
+        return message;
     }
 
     // *****************
