@@ -15,11 +15,14 @@ import com.google.common.collect.Lists;
 import org.eclipse.kapua.KapuaDuplicateNameException;
 import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
+import org.eclipse.kapua.KapuaIllegalArgumentException;
 import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.locator.KapuaProvider;
+import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
 import org.eclipse.kapua.service.device.registry.Device;
@@ -34,6 +37,9 @@ import org.eclipse.kapua.service.device.registry.common.DeviceValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.cache.Cache;
+import java.io.Serializable;
+
 /**
  * {@link DeviceRegistryService} implementation.
  *
@@ -45,13 +51,20 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryServiceImpl.class);
 
+    private Cache<Serializable, KapuaUpdatableEntity> deviceIdCache =
+            serviceCacheManager.getCache(DeviceRegistryCacheConfigurationFactory.getDeviceIdCacheName());
+    private Cache<Serializable, KapuaUpdatableEntity> deviceClientIdCache =
+            serviceCacheManager.getCache(DeviceRegistryCacheConfigurationFactory.getDeviceClientIdCacheName());
+
     /**
      * Constructor
      *
      * @param deviceEntityManagerFactory
      */
     public DeviceRegistryServiceImpl(DeviceEntityManagerFactory deviceEntityManagerFactory) {
-        super(DeviceRegistryService.class.getName(), DeviceDomains.DEVICE_DOMAIN, deviceEntityManagerFactory, DeviceRegistryService.class, DeviceFactory.class);
+        super(DeviceRegistryService.class.getName(), DeviceDomains.DEVICE_DOMAIN, deviceEntityManagerFactory,
+                DeviceRegistryCacheConfigurationFactory.getInstance(), DeviceRegistryService.class,
+                DeviceFactory.class);
     }
 
     /**
@@ -81,67 +94,97 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             throw new KapuaDuplicateNameException(deviceCreator.getClientId());
         }
 
-        return entityManagerSession.onTransactedInsert(entityManager -> DeviceDAO.create(entityManager, deviceCreator));
+        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.create(entityManager, deviceCreator)));
     }
 
     @Override
     public Device update(Device device) throws KapuaException {
         DeviceValidation.validateUpdatePreconditions(device);
 
-        return entityManagerSession.onTransactedResult(entityManager -> {
+        return entityManagerSession.onTransactedResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> {
             Device currentDevice = DeviceDAO.find(entityManager, device.getScopeId(), device.getId());
             if (currentDevice == null) {
                 throw new KapuaEntityNotFoundException(Device.TYPE, device.getId());
             }
             // Update
             return DeviceDAO.update(entityManager, device);
-        });
+        }).onBeforeVoidHandler(() -> {
+            deviceIdCache.remove(concatenateCacheKey(device.getScopeId(), device.getId()));
+            deviceClientIdCache.remove(concatenateCacheKey(device.getScopeId(), device.getClientId()));
+        }));
     }
 
     @Override
     public Device find(KapuaId scopeId, KapuaId entityId) throws KapuaException {
         DeviceValidation.validateFindPreconditions(scopeId, entityId);
 
-        return entityManagerSession.onResult(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId));
+        return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
+                .onBeforeResultHandler(() -> {
+                            Device device = (Device) deviceIdCache.get(concatenateCacheKey(scopeId, entityId));
+                            if (device!=null && !device.getScopeId().equals(scopeId)) {
+                                throw new KapuaIllegalArgumentException("scopeId", "scopeId does not correspond to the device one");
+                            }
+                            return device;
+                        })
+                .onAfterResultHandler((entity) -> {
+                    deviceIdCache.put(concatenateCacheKey(scopeId, entityId), entity);
+                    deviceClientIdCache.put(concatenateCacheKey(scopeId, entity.getClientId()), entity);
+                }));
     }
 
     @Override
     public DeviceListResult query(KapuaQuery<Device> query) throws KapuaException {
         DeviceValidation.validateQueryPreconditions(query);
 
-        return entityManagerSession.onResult(entityManager -> DeviceDAO.query(entityManager, query));
+        return entityManagerSession.onResult(EntityManagerContainer.<DeviceListResult>create().onResultHandler(entityManager -> DeviceDAO.query(entityManager, query)));
     }
 
     @Override
     public long count(KapuaQuery<Device> query) throws KapuaException {
         DeviceValidation.validateCountPreconditions(query);
 
-        return entityManagerSession.onResult(entityManager -> DeviceDAO.count(entityManager, query));
+        return entityManagerSession.onResult(EntityManagerContainer.<Long>create().onResultHandler(entityManager -> DeviceDAO.count(entityManager, query)));
     }
 
     @Override
     public void delete(KapuaId scopeId, KapuaId deviceId) throws KapuaException {
         DeviceValidation.validateDeletePreconditions(scopeId, deviceId);
 
-        entityManagerSession.onTransactedAction(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId));
+        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onVoidResultHandler(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId))
+                .onAfterVoidHandler(() -> {
+                    Device device = (Device) deviceIdCache.get(concatenateCacheKey(scopeId, deviceId));
+                    if (device != null) {
+                        deviceClientIdCache.remove(concatenateCacheKey(scopeId, device.getClientId()));
+                    }
+                    deviceIdCache.remove(concatenateCacheKey(scopeId, deviceId));
+                }));
     }
 
     @Override
     public Device findByClientId(KapuaId scopeId, String clientId) throws KapuaException {
+
         DeviceValidation.validateFindByClientIdPreconditions(scopeId, clientId);
+        Device device = (Device) deviceClientIdCache.get(concatenateCacheKey(scopeId, clientId));
 
-        DeviceQueryImpl query = new DeviceQueryImpl(scopeId);
-        query.setPredicate(query.attributePredicate(DeviceAttributes.CLIENT_ID, clientId));
-        query.setFetchAttributes(Lists.newArrayList(DeviceAttributes.CONNECTION, DeviceAttributes.LAST_EVENT));
+        if (device==null) {  // FIXME!!!
 
-        //
-        // Query and parse result
-        Device device = null;
-        DeviceListResult result = query(query);
-        if (!result.isEmpty()) {
-            device = result.getFirstItem();
+            DeviceQueryImpl query = new DeviceQueryImpl(scopeId);
+            query.setPredicate(query.attributePredicate(DeviceAttributes.CLIENT_ID, clientId));
+            query.setFetchAttributes(Lists.newArrayList(DeviceAttributes.CONNECTION, DeviceAttributes.LAST_EVENT));
+
+            //
+            // Query and parse result
+            DeviceListResult result = query(query);
+            if (!result.isEmpty()) {
+                device = result.getFirstItem();
+            }
+            if (device!=null) {
+                deviceIdCache.put(concatenateCacheKey(scopeId, device.getId()), device);
+                deviceClientIdCache.put(concatenateCacheKey(scopeId, clientId), device);
+            }
+        } else if (!device.getScopeId().equals(scopeId)) {
+            throw new KapuaIllegalArgumentException("scopeId", "scopeId does not correspond to the device one");
         }
-
         return device;
     }
 
@@ -185,6 +228,33 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         for (Device d : devicesToDelete.getItems()) {
             delete(d.getScopeId(), d.getId());
         }
+    }
+
+    private String concatenateCacheKey(Serializable firstKey, Serializable secondKey) throws KapuaException {
+        String firstKeyString;
+        String secondKeyString;
+
+        if (firstKey instanceof String) {
+            firstKeyString = (String) firstKey;
+        } else if (firstKey instanceof KapuaId) {
+            firstKeyString = ((KapuaId) firstKey).toStringId();
+        } else {
+            throw new KapuaIllegalArgumentException("firstKey", "Unexpected type");
+        }
+
+        if (secondKey instanceof String) {
+            secondKeyString = (String) secondKey;
+        } else if (secondKey instanceof KapuaId) {
+            secondKeyString = ((KapuaId) secondKey).toStringId();
+        } else {
+            throw new KapuaIllegalArgumentException("secondKey", "Unexpected type");
+        }
+
+        StringBuilder newKey = new StringBuilder();
+        newKey.append(firstKeyString);
+        newKey.append(secondKeyString);
+
+        return newKey.toString();
     }
 
 }
