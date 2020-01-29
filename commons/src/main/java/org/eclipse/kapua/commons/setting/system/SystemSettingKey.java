@@ -264,8 +264,14 @@ public enum SystemSettingKey implements SettingKey {
     CACHING_PROVIDER("commons.cache.provider.classname"),
     /**
      * Enable the cache for the account service.
+     * TODO: remove from here
      */
-    ACCOUNT_CACHE("commons.cache.account.enabled");
+    ACCOUNT_CACHE("commons.cache.account.enabled"),
+    /**
+     * Enable the cache for the device registry service.
+     * TODO: remove from here
+     */
+    DEVICE_REGISTRY_CACHE("commons.cache.device.registry.enabled");
 
     private String key;
 

@@ -28,7 +28,7 @@ import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.commons.util.CommonsValidationRegex;
 import org.eclipse.kapua.locator.KapuaProvider;
-import org.eclipse.kapua.model.KapuaNamedEntity;
+import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.domain.Domain;
 import org.eclipse.kapua.model.id.KapuaId;
@@ -66,11 +66,9 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
     @Inject
     private PermissionFactory permissionFactory;
 
-    // FIXME: I don't like this, I prefer to maintain the cache in a common place. But with different caches, is this
-    //  possible?
-    private Cache<Serializable, KapuaNamedEntity> accountIdCache =
+    private Cache<Serializable, KapuaUpdatableEntity> accountIdCache =
             serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
-    private Cache<Serializable, KapuaNamedEntity>
+    private Cache<Serializable, KapuaUpdatableEntity>
             accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
 
     /**

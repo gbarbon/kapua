@@ -17,7 +17,7 @@ import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerSession;
 import org.eclipse.kapua.event.ServiceEventBusException;
 import org.eclipse.kapua.event.ServiceEventBusListener;
-import org.eclipse.kapua.model.KapuaNamedEntity;
+import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.service.KapuaService;
 
 import java.io.Serializable;
@@ -33,11 +33,11 @@ public class AbstractKapuaService {
 
     protected EntityManagerFactory entityManagerFactory;
     protected EntityManagerSession entityManagerSession;
-    protected ServiceCacheManager<Serializable, KapuaNamedEntity> serviceCacheManager;
+    protected ServiceCacheManager<Serializable, KapuaUpdatableEntity> serviceCacheManager;
 
     //============================================================================
     //
-    // old constructor
+    // old constructor   TODO: to be deleted when caches are all implemented
     //
     //============================================================================
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory) {
