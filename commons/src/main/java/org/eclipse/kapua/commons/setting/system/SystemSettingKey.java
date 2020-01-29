@@ -271,7 +271,12 @@ public enum SystemSettingKey implements SettingKey {
      * Enable the cache for the device registry service.
      * TODO: remove from here
      */
-    DEVICE_REGISTRY_CACHE("commons.cache.device.registry.enabled");
+    DEVICE_REGISTRY_CACHE("commons.cache.device.registry.enabled"),
+    /**
+     * Enable the cache for the device registry service.
+     * TODO: remove from here
+     */
+    USER_CACHE("commons.cache.user.enabled");
 
     private String key;
 
