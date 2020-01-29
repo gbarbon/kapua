@@ -20,5 +20,10 @@ Feature: Account cache feature
   Bla
     When I login as user with name "kapua-sys" and password "kapua-password"
     Given I create a generic account with name "test_account"
-    Then I am able to use the cache for the account "test_account"
+    And I configure the device registry service
+      | type    | name                   | value |
+      | boolean | infiniteChildEntities  | true  |
+      | integer | maxNumberChildEntities |  1000   |
+    And The device "client-id-1"
+    Then I am able to use the cache for the account "test_account" and clientId "client-id-1"
     And I logout

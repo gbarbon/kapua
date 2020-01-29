@@ -22,7 +22,8 @@ import org.junit.runner.RunWith;
         features = {"classpath:features/account/AccountCache.feature"},
         glue = {"org.eclipse.kapua.qa.common",
                 "org.eclipse.kapua.service.account.steps",
-                "org.eclipse.kapua.service.user.steps"
+                "org.eclipse.kapua.service.user.steps",
+                "org.eclipse.kapua.service.device.registry.steps"
         },
         plugin = {"pretty",
                 "html:target/cucumber/AccountServiceI9n",
@@ -43,5 +44,6 @@ import org.junit.runner.RunWith;
 @CucumberProperty(key="certificate.jwt.certificate", value= "")
 @CucumberProperty(key="broker.ip", value= "")
 @CucumberProperty(key="commons.cache.account.enabled",value="false")
+@CucumberProperty(key="commons.cache.device.registry.enabled",value="false")
 public class RunAccountServiceCacheDisabledTest {
 }
