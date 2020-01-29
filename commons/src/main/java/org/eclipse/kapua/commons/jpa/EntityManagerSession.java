@@ -55,7 +55,7 @@ public class EntityManagerSession {
 
     //============================================================================
     //
-    // old methods
+    // old methods   TODO: to be deleted when caches are all implemented
     //
     //============================================================================
     /**
@@ -359,6 +359,7 @@ public class EntityManagerSession {
                 //TODO check for detach (lighter way than instanceof check?)
                 if (manager instanceof KapuaEntity) {
                     manager.detach((KapuaEntity)result);
+                    // TODO: check behaviour without the detach (when all caches are implemented)
                 }
 
                 if (container.onAfterResult!=null && result != null) {

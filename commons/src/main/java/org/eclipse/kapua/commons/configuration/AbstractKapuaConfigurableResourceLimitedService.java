@@ -43,7 +43,7 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
 
     //============================================================================
     //
-    // old constructor
+    // old constructor  TODO: to be deleted when caches are all implemented
     //
     //============================================================================
     protected AbstractKapuaConfigurableResourceLimitedService(

@@ -44,14 +44,14 @@ import org.eclipse.kapua.qa.common.TestBase;
 import org.eclipse.kapua.qa.common.TestJAXBContextProvider;
 import org.eclipse.kapua.qa.common.cucumber.CucAccount;
 import org.eclipse.kapua.qa.common.cucumber.CucConfig;
-import org.eclipse.kapua.service.account.AccountService;
-import org.eclipse.kapua.service.account.AccountFactory;
 import org.eclipse.kapua.service.account.Account;
-import org.eclipse.kapua.service.account.AccountCreator;
-import org.eclipse.kapua.service.account.Organization;
-import org.eclipse.kapua.service.account.AccountQuery;
-import org.eclipse.kapua.service.account.AccountListResult;
 import org.eclipse.kapua.service.account.AccountAttributes;
+import org.eclipse.kapua.service.account.AccountCreator;
+import org.eclipse.kapua.service.account.AccountFactory;
+import org.eclipse.kapua.service.account.AccountListResult;
+import org.eclipse.kapua.service.account.AccountQuery;
+import org.eclipse.kapua.service.account.AccountService;
+import org.eclipse.kapua.service.account.Organization;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataChannel;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataMessage;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataPayload;
@@ -608,7 +608,7 @@ public class AccountServiceSteps extends TestBase {
             account.setExpirationDate(expirationDate);
             account = accountService.update(account);
             stepData.put("LastAccount", account);
-        } catch (KapuaException|ParseException ex) {
+        } catch (KapuaException | ParseException ex) {
             verifyException(ex);
         }
     }
@@ -914,21 +914,21 @@ public class AccountServiceSteps extends TestBase {
     public void findMyAccountById() throws Exception {
         Account account = (Account) stepData.get("LastAccount");
         Account selfAccount = accountService.find(account.getId());
-        stepData.put("LastAccount",selfAccount);
+        stepData.put("LastAccount", selfAccount);
     }
 
     @When("^I look for my account by id and scope id$")
     public void findMyAccountByIdAndScopeId() throws Exception {
         Account account = (Account) stepData.get("LastAccount");
         Account selfAccount = accountService.find(account.getId(), account.getScopeId());
-        stepData.put("LastAccount",selfAccount);
+        stepData.put("LastAccount", selfAccount);
     }
 
     @When("^I look for my account by name$")
     public void findMyAccountByName() throws Exception {
         Account account = (Account) stepData.get("LastAccount");
         Account selfAccount = accountService.findByName(account.getName());
-        stepData.put("LastAccount",selfAccount);
+        stepData.put("LastAccount", selfAccount);
     }
 
     @Then("^I am able to read my account info")
@@ -955,32 +955,39 @@ public class AccountServiceSteps extends TestBase {
         }
     }
 
-    @Then("^I am able to use the cache for the account \"(.*)\"$")
-    public void useCache(String accountName) throws Exception {
+    @Then("^I am able to use the cache for the account \"(.*)\" and clientId \"(.*)\"$")
+    public void useCache(String accountName, String clientId) throws Exception {
         Account account = accountService.findByName(accountName);
 
         Timer d = MetricServiceFactory.getInstance().getTimer("datastore", "datastore", "cache");
         Timer.Context context = d.time();
-        translateMessages(account);
+
+        long averageTime = translateMessages(account, clientId);
         context.stop();
 
         LOGGER.info("Mean: {}", d.getSnapshot().getMean());
         LOGGER.info("98Percentile: {}", d.getSnapshot().get98thPercentile());
+        LOGGER.info("Average time currentTimeMillis: {}", averageTime);
     }
 
-    private void translateMessages(Account account) throws KapuaException {
-        for (int i = 0 ; i < 500 ; i++) {
+    private long translateMessages(Account account, String clientId) throws KapuaException {
+        final int nMessages = 5000;
+        long averageTime = 0;
+        for (int i = 0; i < nMessages; i++) {
+            long initialTime = System.currentTimeMillis();
             TranslatorDataKuraKapua translatorDataKuraKapua = new TranslatorDataKuraKapua();
-            translatorDataKuraKapua.translate(messageProducer(account));
+            translatorDataKuraKapua.translate(messageProducer(account, clientId));
+            averageTime += System.currentTimeMillis() - initialTime;
         }
+        return averageTime / nMessages;
     }
 
-    private KuraDataMessage messageProducer(Account account) {
+    private KuraDataMessage messageProducer(Account account, String clientId) {
 
         KuraDataMessage message = new KuraDataMessage();
         message.setChannel(new KuraDataChannel());
         message.getChannel().setScope(account.getName());
-        message.getChannel().setClientId(account.getId().toStringId());
+        message.getChannel().setClientId(clientId);
         List<String> semanticTopicList = new ArrayList<>();
         semanticTopicList.add("semantictopic");
         message.getChannel().setSemanticChannelParts(semanticTopicList);
