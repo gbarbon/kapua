@@ -25,7 +25,6 @@ import org.eclipse.kapua.locator.KapuaProvider;
 import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
-import org.eclipse.kapua.service.account.Account;
 import org.eclipse.kapua.service.device.registry.Device;
 import org.eclipse.kapua.service.device.registry.DeviceAttributes;
 import org.eclipse.kapua.service.device.registry.DeviceCreator;

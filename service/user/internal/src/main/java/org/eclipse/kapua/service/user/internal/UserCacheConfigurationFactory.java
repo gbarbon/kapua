@@ -24,9 +24,10 @@ public class UserCacheConfigurationFactory extends CacheConfigurationFactory {
 
     private static final String USERID_CACHE_NAME = "UserId";
     private static final String USERNAME_CACHE_NAME = "UserName";
+    private static final String EXTERNALID_CACHE_NAME = "ExternalId";
 
     private UserCacheConfigurationFactory() {
-        super(Arrays.asList(USERID_CACHE_NAME, USERNAME_CACHE_NAME), IS_ENABLED);
+        super(Arrays.asList(USERID_CACHE_NAME, USERNAME_CACHE_NAME, EXTERNALID_CACHE_NAME), IS_ENABLED);
     }
 
     protected static UserCacheConfigurationFactory getInstance() {
@@ -39,5 +40,9 @@ public class UserCacheConfigurationFactory extends CacheConfigurationFactory {
 
     protected static String getUserNameCacheName() {
         return USERNAME_CACHE_NAME;
+    }
+
+    protected static String getUserExternalIdCacheName() {
+        return EXTERNALID_CACHE_NAME;
     }
 }
