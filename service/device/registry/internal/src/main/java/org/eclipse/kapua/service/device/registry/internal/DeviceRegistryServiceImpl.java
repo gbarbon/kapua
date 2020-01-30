@@ -25,6 +25,7 @@ import org.eclipse.kapua.locator.KapuaProvider;
 import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
+import org.eclipse.kapua.service.account.Account;
 import org.eclipse.kapua.service.device.registry.Device;
 import org.eclipse.kapua.service.device.registry.DeviceAttributes;
 import org.eclipse.kapua.service.device.registry.DeviceCreator;
@@ -109,6 +110,11 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             // Update
             return DeviceDAO.update(entityManager, device);
         }).onBeforeVoidHandler(() -> {
+            // search also for the name of the cached object, since the name might have been changed
+            Device cachedDevice = (Device) deviceIdCache.get(concatenateCacheKey(device.getScopeId(), device.getId()));
+            if (cachedDevice != null) {
+                deviceClientIdCache.remove(concatenateCacheKey(device.getScopeId(), cachedDevice.getClientId()));
+            }
             deviceIdCache.remove(concatenateCacheKey(device.getScopeId(), device.getId()));
             deviceClientIdCache.remove(concatenateCacheKey(device.getScopeId(), device.getClientId()));
         }));
@@ -166,8 +172,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         DeviceValidation.validateFindByClientIdPreconditions(scopeId, clientId);
         Device device = (Device) deviceClientIdCache.get(concatenateCacheKey(scopeId, clientId));
 
-        if (device==null) {  // FIXME!!!
-
+        if (device==null) {
             DeviceQueryImpl query = new DeviceQueryImpl(scopeId);
             query.setPredicate(query.attributePredicate(DeviceAttributes.CLIENT_ID, clientId));
             query.setFetchAttributes(Lists.newArrayList(DeviceAttributes.CONNECTION, DeviceAttributes.LAST_EVENT));
@@ -228,33 +233,6 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         for (Device d : devicesToDelete.getItems()) {
             delete(d.getScopeId(), d.getId());
         }
-    }
-
-    private String concatenateCacheKey(Serializable firstKey, Serializable secondKey) throws KapuaException {
-        String firstKeyString;
-        String secondKeyString;
-
-        if (firstKey instanceof String) {
-            firstKeyString = (String) firstKey;
-        } else if (firstKey instanceof KapuaId) {
-            firstKeyString = ((KapuaId) firstKey).toStringId();
-        } else {
-            throw new KapuaIllegalArgumentException("firstKey", "Unexpected type");
-        }
-
-        if (secondKey instanceof String) {
-            secondKeyString = (String) secondKey;
-        } else if (secondKey instanceof KapuaId) {
-            secondKeyString = ((KapuaId) secondKey).toStringId();
-        } else {
-            throw new KapuaIllegalArgumentException("secondKey", "Unexpected type");
-        }
-
-        StringBuilder newKey = new StringBuilder();
-        newKey.append(firstKeyString);
-        newKey.append(secondKeyString);
-
-        return newKey.toString();
     }
 
 }
