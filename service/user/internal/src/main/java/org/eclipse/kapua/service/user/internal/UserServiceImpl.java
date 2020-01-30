@@ -27,6 +27,7 @@ import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.commons.util.CommonsValidationRegex;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaProvider;
+import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
@@ -45,7 +46,9 @@ import org.eclipse.kapua.service.user.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.cache.Cache;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -61,6 +64,13 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
     @Inject
     private PermissionFactory permissionFactory;
+
+    private Cache<Serializable, KapuaUpdatableEntity> userIdCache =
+            serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserIdCacheName());
+    private Cache<Serializable, KapuaUpdatableEntity>
+            userNameCache = serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserNameCacheName());
+    private Cache<Serializable, KapuaUpdatableEntity> externalIdCache =
+            serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserExternalIdCacheName());
 
     /**
      * Constructor
@@ -164,6 +174,26 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
             }
 
             return UserDAO.update(em, user);
+        }).onBeforeVoidHandler(() -> {
+            if (!Objects.equals(currentUser.getUserType(), user.getUserType())) {
+                throw new KapuaIllegalArgumentException("userType", user.getUserType().toString());
+            }
+            if (!Objects.equals(currentUser.getExternalId(), user.getExternalId())) {
+                throw new KapuaIllegalArgumentException("externalId", user.getExternalId());
+            }
+            // search also for the name of the cached object, since the name might have been changed
+            User cachedUser = (User) userIdCache.get(user.getId());
+            if (cachedUser != null) {
+                userNameCache.remove(cachedUser.getName());
+                if (cachedUser.getExternalId() != null && cachedUser.getExternalId().trim().length() > 0) {
+                    externalIdCache.remove(cachedUser.getExternalId());
+                }
+            }
+            userIdCache.remove(user.getId());
+            userNameCache.remove(user.getName());
+            if (user.getExternalId() != null && user.getExternalId().trim().length() > 0) {
+                externalIdCache.remove(user.getExternalId());
+            }
         }));
     }
 
@@ -197,7 +227,14 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do  delete
         entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onVoidResultHandler(em -> UserDAO.delete(em,
-                scopeId, userId)));
+                scopeId, userId))
+                .onAfterVoidHandler(() -> {
+                    userNameCache.remove(user.getName());
+                    userIdCache.remove(userId);
+                    if (user.getExternalId() != null && user.getExternalId().trim().length() > 0) {
+                        externalIdCache.remove(user.getExternalId());
+                    }
+                }));
     }
 
     @Override
@@ -219,7 +256,16 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         // Do the find
         return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.find(em
-                , scopeId, userId)));
+                , scopeId, userId))
+                .onBeforeResultHandler(() -> (User) userIdCache.get(userId))
+                .onAfterResultHandler((entity) -> {
+                    userIdCache.put(userId, entity);
+                    userNameCache.put(entity.getName(), entity);
+                    if (entity.getExternalId() != null && entity.getExternalId().trim().length() > 0) {
+                        externalIdCache.put(entity.getExternalId(), entity);
+                    }
+                })
+        );
     }
 
     @Override
@@ -230,7 +276,15 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByName(em, name))));
+        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByName(em, name)))
+                .onBeforeResultHandler(() -> checkReadAccess((User) userNameCache.get(name)))
+                .onAfterResultHandler((entity) -> {
+                    userNameCache.put(name, entity);
+                    userIdCache.put(entity.getId(), entity);
+                    if (entity.getExternalId() != null && entity.getExternalId().trim().length() > 0) {
+                        externalIdCache.put(entity.getExternalId(), entity);
+                    }
+                }));
     }
 
     @Override
@@ -241,7 +295,13 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByExternalId(em, externalId))));
+        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByExternalId(em, externalId)))
+                .onBeforeResultHandler(() -> checkReadAccess((User) externalIdCache.get(externalId)))
+                .onAfterResultHandler((entity) -> {
+                    userNameCache.put(entity.getName(), entity);
+                    userIdCache.put(entity.getId(), entity);
+                    externalIdCache.put(externalId, entity);
+                }));
     }
 
     @Override
