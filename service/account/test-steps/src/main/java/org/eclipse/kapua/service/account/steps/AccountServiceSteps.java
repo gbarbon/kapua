@@ -967,14 +967,14 @@ public class AccountServiceSteps extends TestBase {
 
         LOGGER.info("Mean: {}", d.getSnapshot().getMean());
         LOGGER.info("98Percentile: {}", d.getSnapshot().get98thPercentile());
-        LOGGER.info("Average time currentTimeMillis: {}", averageTime);
+        LOGGER.info("Average time in millisecs: {}", averageTime/1000000d);
     }
 
     private long translateMessages(Account account, String clientId) throws KapuaException {
         final int nMessages = 5000;
         long averageTime = 0;
         for (int i = 0; i < nMessages; i++) {
-            long initialTime = System.currentTimeMillis();
+            long initialTime = System.nanoTime(); //.currentTimeMillis();
             TranslatorDataKuraKapua translatorDataKuraKapua = new TranslatorDataKuraKapua();
             translatorDataKuraKapua.translate(messageProducer(account, clientId));
             averageTime += System.currentTimeMillis() - initialTime;
