@@ -12,6 +12,7 @@
 package org.eclipse.kapua.commons.configuration;
 
 import org.eclipse.kapua.KapuaException;
+import org.eclipse.kapua.KapuaIllegalArgumentException;
 import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
@@ -33,6 +34,7 @@ import org.eclipse.kapua.service.account.AccountListResult;
 import org.eclipse.kapua.service.account.AccountQuery;
 import org.eclipse.kapua.service.account.AccountService;
 
+import java.io.Serializable;
 import java.util.Map;
 
 public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends KapuaEntity, C extends KapuaEntityCreator<E>, S extends KapuaEntityService<E, C>, L extends KapuaListResult<E>, Q extends KapuaQuery<E>, F extends KapuaEntityFactory<E, C, Q, L>>
@@ -159,6 +161,41 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
      */
     protected Map<String, Object> getConfigValues(Account account) throws KapuaException {
         return getConfigValues(account.getId());
+    }
+
+    /**
+     * Obtain a String cache key from two Serializable objects.
+     *
+     * @param firstKey The first half of the key.
+     * @param secondKey The second half of the key.
+     * @return A String which is the result of the concatenation of the two keys.
+     * @throws KapuaException if one of the parameters is not an instance of String nor KapuaId.
+     */
+    protected String concatenateCacheKey(Serializable firstKey, Serializable secondKey) throws KapuaException {
+        String firstKeyString;
+        String secondKeyString;
+
+        if (firstKey instanceof String) {
+            firstKeyString = (String) firstKey;
+        } else if (firstKey instanceof KapuaId) {
+            firstKeyString = ((KapuaId) firstKey).toStringId();
+        } else {
+            throw new KapuaIllegalArgumentException("firstKey", "Unexpected type");
+        }
+
+        if (secondKey instanceof String) {
+            secondKeyString = (String) secondKey;
+        } else if (secondKey instanceof KapuaId) {
+            secondKeyString = ((KapuaId) secondKey).toStringId();
+        } else {
+            throw new KapuaIllegalArgumentException("secondKey", "Unexpected type");
+        }
+
+        StringBuilder newKey = new StringBuilder();
+        newKey.append(firstKeyString);
+        newKey.append(secondKeyString);
+
+        return newKey.toString();
     }
 
 }

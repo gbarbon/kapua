@@ -240,9 +240,14 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             if (!oldAccount.getName().equals(account.getName())) {
                 throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.name");
             }
-            accountNameCache.remove( account.getName());
+            // search also for the name of the cached object, since the name might have been changed
+            Account cachedAccount = (Account) accountIdCache.get(account.getId());
+            if (cachedAccount != null) {
+                accountNameCache.remove(cachedAccount.getName());
+            }
+            accountNameCache.remove(account.getName());
             accountIdCache.remove(account.getId());
-        })); // TODO: do we need also to update the caches with the onAfterResult ?
+        }));
     }
 
     @Override
