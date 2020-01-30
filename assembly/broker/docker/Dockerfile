@@ -30,6 +30,12 @@ RUN useradd -u 1002 -g 0 -d '/var/opt/activemq' -s '/sbin/nologin' activemq && \
     chown -R activemq:root /var/opt/activemq /opt/activemq && \
     chmod -R g=u /var/opt/activemq /opt/activemq
 
+RUN yum -y install unzip
+
+RUN curl -L https://www.yourkit.com/download/docker/YourKit-JavaProfiler-2019.8-docker.zip -o /tmp/YourKit-JavaProfiler-2019.8-docker.zip && \
+  unzip /tmp/YourKit-JavaProfiler-2019.8-docker.zip -d /usr/local && \
+  rm /tmp/YourKit-JavaProfiler-2019.8-docker.zip
+
 ENV ACTIVEMQ_OPTS "-Dcommons.db.schema.update=true \
                    -Dcommons.db.connection.host=\${SQL_DB_ADDR} \
                    -Dcommons.db.connection.port=\${SQL_DB_PORT} \
@@ -41,7 +47,7 @@ ENV ACTIVEMQ_OPTS "-Dcommons.db.schema.update=true \
                    -Dcertificate.jwt.certificate=file:///var/opt/activemq/cert.pem \
                    -Dbroker.ip=broker"
 
-EXPOSE 1883 8883 61614 61615 8161
+EXPOSE 1883 8883 61614 61615 8161 10001
 
 VOLUME /opt/activemq/data
 
