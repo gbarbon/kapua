@@ -115,6 +115,11 @@
             <outputDirectory>opt/activemq/conf/</outputDirectory>
             <fileMode>0644</fileMode>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/script</directory>
+            <outputDirectory>opt/activemq/bin/</outputDirectory>
+            <fileMode>0777</fileMode>
+        </fileSet>
 
         <fileSet>
             <directory>${project.build.directory}/dependencies/activemq/apache-activemq-${activemq.version}/bin/</directory>
