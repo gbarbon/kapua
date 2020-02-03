@@ -12,8 +12,23 @@
 package org.eclipse.kapua.commons.jpa;
 
 import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.SecondIdCache;
 
-public interface CacheFactory {
+public abstract class AbstractSecondIdEntityCacheFactory extends AbstractEntityCacheFactory {
 
-    EntityCache createCache();
+    private String secondIdCacheName;
+
+    public AbstractSecondIdEntityCacheFactory(String idCacheName, String secondIdCacheName) {
+        super(idCacheName);
+        this.secondIdCacheName = secondIdCacheName;
+    }
+
+    public String getSecondIdCacheName() {
+        return secondIdCacheName;
+    }
+
+    @Override
+    public EntityCache createCache() {
+        return new SecondIdCache(getEntityIdCacheName(), getSecondIdCacheName());
+    }
 }

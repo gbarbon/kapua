@@ -13,15 +13,11 @@ package org.eclipse.kapua.commons.service.internal;
 
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
-import org.eclipse.kapua.model.KapuaUpdatableEntity;
 
 import javax.cache.Cache;
-import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
-import javax.cache.spi.CachingProvider;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,30 +29,19 @@ public class KapuaCacheManager {
     private static final String CACHING_PROVIDER_CLASS_NAME = SYSTEM_SETTING.getString(SystemSettingKey.CACHING_PROVIDER,
             DUMMY_CACHING_PROVIDER);  // use the dummy cache if no provider exists
 
-    private static Map<String, Cache<Serializable, KapuaUpdatableEntity>> cacheMap = new HashMap<>();
+    private static Map<String, Cache<Serializable, Serializable>> cacheMap = new HashMap<>();
 
     private KapuaCacheManager() {
     }
 
-    private static CacheManager getCacheManager(boolean isEnabled) {
-        CachingProvider cachingProvider;
-        if (isEnabled) {
-            cachingProvider = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME);
-        } else {
-            // cache not enabled for the given service, using the dummy one
-            cachingProvider = Caching.getCachingProvider(DUMMY_CACHING_PROVIDER);
-        }
-        return cachingProvider.getCacheManager();
-    }
-
-    public static Cache<Serializable, KapuaUpdatableEntity> getCache(String cacheName, boolean isEnabled) {
-        Cache<Serializable, KapuaUpdatableEntity> cache = cacheMap.get(cacheName);
+    public static Cache<Serializable, Serializable> getCache(String cacheName) {
+        Cache<Serializable, Serializable> cache = cacheMap.get(cacheName);
         if (cache == null) {
             synchronized (cacheMap) {
                 cache = cacheMap.get(cacheName);
                 if (cache == null) {
-                    MutableConfiguration<Serializable, KapuaUpdatableEntity> config = new MutableConfiguration<>();
-                    cache = getCacheManager(isEnabled).createCache(cacheName, config);
+                    MutableConfiguration<Serializable, Serializable> config = new MutableConfiguration<>();
+                    cache = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME).getCacheManager().createCache(cacheName, config);
                     cacheMap.put(cacheName, cache);
                 }
             }
@@ -64,20 +49,11 @@ public class KapuaCacheManager {
         return cache;
     }
 
-    /**
-     * Get the cache manager for a given service.
-     *
-     * @param cachesNames collection of caches names for the given service.
-     * @return the ServiceCacheManager fro the given service.
-     */
-    public static ServiceCacheManager<Serializable, KapuaUpdatableEntity> getServiceCacheManager(Collection<String> cachesNames, boolean isEnabled) {
-        Map<String, Cache<Serializable, KapuaUpdatableEntity>> serviceCacheMap = new HashMap<>();
-        cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName, isEnabled)));
-        return new ServiceCacheManager<>(serviceCacheMap);
-    }
-
+    // TODO: only used by tests?
     public static void invalidateAll() {
         cacheMap.forEach((cacheKey, cache) -> cache.clear());
     }
+
+    // TODO: create an invalidateByAccount?
 
 }

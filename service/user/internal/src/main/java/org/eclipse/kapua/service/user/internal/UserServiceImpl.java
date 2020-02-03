@@ -21,13 +21,13 @@ import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
+import org.eclipse.kapua.commons.service.internal.NamedEntityCache;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.commons.util.CommonsValidationRegex;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaProvider;
-import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
@@ -46,9 +46,7 @@ import org.eclipse.kapua.service.user.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
 import javax.inject.Inject;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -64,13 +62,6 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
     @Inject
     private PermissionFactory permissionFactory;
-
-    private Cache<Serializable, KapuaUpdatableEntity> userIdCache =
-            serviceCacheManager.getCache(UserCacheFactory.getUserIdCacheName());
-    private Cache<Serializable, KapuaUpdatableEntity>
-            userNameCache = serviceCacheManager.getCache(UserCacheFactory.getUserNameCacheName());
-    private Cache<Serializable, KapuaUpdatableEntity> externalIdCache =
-            serviceCacheManager.getCache(UserCacheFactory.getUserExternalIdCacheName());
 
     /**
      * Constructor
@@ -175,27 +166,14 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
             return UserDAO.update(em, user);
         }).onBeforeVoidHandler(() -> {
+            // TODO: move all this checks before the entityManagerSession?
             if (!Objects.equals(currentUser.getUserType(), user.getUserType())) {
                 throw new KapuaIllegalArgumentException("userType", user.getUserType().toString());
             }
             if (!Objects.equals(currentUser.getExternalId(), user.getExternalId())) {
                 throw new KapuaIllegalArgumentException("externalId", user.getExternalId());
             }
-            // search also for the name of the cached object, since the name might have been changed
-            User cachedUser = (User) userIdCache.get(user.getId());
-            if (cachedUser != null) {
-                userNameCache.remove(cachedUser.getName());
-                if (cachedUser.getExternalId() != null && cachedUser.getExternalId().trim().length() > 0) {
-                    externalIdCache.remove(cachedUser.getExternalId());
-                }
-            }
-            // TODO: non need to remove the user with new name, since it does not exist in cache yet (see also other
-            //  services)
-            userIdCache.remove(user.getId());
-            userNameCache.remove(user.getName());
-            if (user.getExternalId() != null && user.getExternalId().trim().length() > 0) {
-                externalIdCache.remove(user.getExternalId());
-            }
+            entityCache.remove(null, user);
         }));
     }
 
@@ -228,15 +206,8 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do  delete
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onVoidResultHandler(em -> UserDAO.delete(em,
-                scopeId, userId))
-                .onAfterVoidHandler(() -> {
-                    userNameCache.remove(user.getName());
-                    userIdCache.remove(userId);
-                    if (user.getExternalId() != null && user.getExternalId().trim().length() > 0) {
-                        externalIdCache.remove(user.getExternalId());
-                    }
-                }));
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onVoidResultHandler(em -> UserDAO.delete(em, scopeId, userId))
+                .onAfterVoidHandler(() -> entityCache.remove(scopeId, userId)));
     }
 
     @Override
@@ -257,16 +228,9 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         authorizationService.checkPermission(permissionFactory.newPermission(UserDomains.USER_DOMAIN, Actions.read, scopeId));
 
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.find(em
-                , scopeId, userId))
-                .onBeforeResultHandler(() -> (User) userIdCache.get(userId))
-                .onAfterResultHandler((entity) -> {
-                    userIdCache.put(userId, entity);
-                    userNameCache.put(entity.getName(), entity);
-                    if (entity.getExternalId() != null && entity.getExternalId().trim().length() > 0) {
-                        externalIdCache.put(entity.getExternalId(), entity);
-                    }
-                })
+        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.find(em, scopeId, userId))
+                .onBeforeResultHandler(() -> (User) entityCache.get(scopeId, userId))
+                .onAfterResultHandler((entity) -> entityCache.put(entity))
         );
     }
 
@@ -279,14 +243,8 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do the find
         return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByName(em, name)))
-                .onBeforeResultHandler(() -> checkReadAccess((User) userNameCache.get(name)))
-                .onAfterResultHandler((entity) -> {
-                    userNameCache.put(name, entity);
-                    userIdCache.put(entity.getId(), entity);
-                    if (entity.getExternalId() != null && entity.getExternalId().trim().length() > 0) {
-                        externalIdCache.put(entity.getExternalId(), entity);
-                    }
-                }));
+                .onBeforeResultHandler(() -> checkReadAccess((User) ((NamedEntityCache) entityCache).get(null, name)))
+                .onAfterResultHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -298,12 +256,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do the find
         return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByExternalId(em, externalId)))
-                .onBeforeResultHandler(() -> checkReadAccess((User) externalIdCache.get(externalId)))
-                .onAfterResultHandler((entity) -> {
-                    userNameCache.put(entity.getName(), entity);
-                    userIdCache.put(entity.getId(), entity);
-                    externalIdCache.put(externalId, entity);
-                }));
+                .onAfterResultHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -383,6 +336,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         for (User u : usersToDelete.getItems()) {
             delete(u.getScopeId(), u.getId());
         }
+        // cache removal not implemented since the onKapuaEvent method is never called
     }
 
 }

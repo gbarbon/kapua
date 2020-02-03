@@ -11,33 +11,15 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.account.internal;
 
-import org.eclipse.kapua.commons.jpa.CacheFactory;
-import org.eclipse.kapua.commons.setting.system.SystemSetting;
-import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
+import org.eclipse.kapua.commons.jpa.AbstractNamedEntityCacheFactory;
 
-import java.util.Arrays;
-
-public class AccountCacheFactory extends CacheFactory {
-
-    private static final SystemSetting SYSTEM_SETTING = SystemSetting.getInstance();
-    private static final boolean IS_ENABLED = SYSTEM_SETTING.getBoolean(SystemSettingKey.ACCOUNT_CACHE, false);
-
-    private static final String ACCOUNTID_CACHE_NAME = "AccountId";
-    private static final String ACCOUNTNAME_CACHE_NAME = "AccountName";
+public class AccountCacheFactory extends AbstractNamedEntityCacheFactory {
 
     private AccountCacheFactory() {
-        super(Arrays.asList(ACCOUNTID_CACHE_NAME, ACCOUNTNAME_CACHE_NAME), IS_ENABLED);
+        super("AccountId", "AccountName");
     }
 
     protected static AccountCacheFactory getInstance() {
         return new AccountCacheFactory();
-    }
-
-    protected static String getAccountIdCacheName() {
-        return ACCOUNTID_CACHE_NAME;
-    }
-
-    protected static String getAccountNameCacheName() {
-        return ACCOUNTNAME_CACHE_NAME;
     }
 }

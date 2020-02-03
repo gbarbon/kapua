@@ -9,21 +9,17 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.service.authorization.access.shiro;
 
-import javax.cache.Cache;
-import java.util.Map;
+import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 
-public class ServiceCacheManager<K, V> {
+public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
 
-    private Map<String, Cache<K, V>> caches;
-
-    public ServiceCacheManager(Map<String, Cache<K, V>> caches) {
-        this.caches = caches;
+    private AccessInfoCacheFactory() {
+        super("AccessInfoId");
     }
 
-    public Cache<K, V> getCache(String cacheName) {
-        return caches.get(cacheName);
+    protected static AccessInfoCacheFactory getInstance() {
+        return new AccessInfoCacheFactory();
     }
-
 }

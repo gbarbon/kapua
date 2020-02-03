@@ -9,17 +9,24 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.service.device.registry.internal;
+package org.eclipse.kapua.commons.jpa;
 
-import org.eclipse.kapua.commons.jpa.AbstractSecondIdEntityCacheFactory;
+import org.eclipse.kapua.commons.service.internal.EntityCache;
 
-public class DeviceRegistryCacheFactory extends AbstractSecondIdEntityCacheFactory {
+public abstract class AbstractEntityCacheFactory implements CacheFactory {
 
-    private DeviceRegistryCacheFactory() {
-        super("DeviceId", "DeviceClientId");
+    private String idCacheName;
+
+    public AbstractEntityCacheFactory(String idCacheName) {
+        this.idCacheName = idCacheName;
     }
 
-    protected static DeviceRegistryCacheFactory getInstance() {
-        return new DeviceRegistryCacheFactory();
+    public String getEntityIdCacheName() {
+        return idCacheName;
+    }
+
+    @Override
+    public EntityCache createCache() {
+        return new EntityCache(getEntityIdCacheName());
     }
 }

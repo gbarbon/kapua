@@ -23,12 +23,12 @@ import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
+import org.eclipse.kapua.commons.service.internal.NamedEntityCache;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.commons.util.CommonsValidationRegex;
 import org.eclipse.kapua.locator.KapuaProvider;
-import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.domain.Domain;
 import org.eclipse.kapua.model.id.KapuaId;
@@ -46,10 +46,8 @@ import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
 import javax.inject.Inject;
 import javax.persistence.TypedQuery;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
@@ -67,11 +65,6 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
     @Inject
     private PermissionFactory permissionFactory;
-
-    private Cache<Serializable, KapuaUpdatableEntity> accountIdCache =
-            serviceCacheManager.getCache(AccountCacheFactory.getAccountIdCacheName());
-    private Cache<Serializable, KapuaUpdatableEntity>
-            accountNameCache = serviceCacheManager.getCache(AccountCacheFactory.getAccountNameCacheName());
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountServiceImpl.class);
 
@@ -233,6 +226,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             return AccountDAO.update(em, account);
         }).onBeforeVoidHandler(() -> {
 
+            // TODO: duplicated checks, move them before the call to the entityManagerSession?
             //
             // Verify unchanged parent account ID and parent account path
             if (!Objects.equals(oldAccount.getScopeId(), account.getScopeId())) {
@@ -244,13 +238,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             if (!oldAccount.getName().equals(account.getName())) {
                 throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.name");
             }
-            // search also for the name of the cached object, since the name might have been changed
-            Account cachedAccount = (Account) accountIdCache.get(account.getId());
-            if (cachedAccount != null) {
-                accountNameCache.remove(cachedAccount.getName());
-            }
-            accountNameCache.remove(account.getName());
-            accountIdCache.remove(account.getId());
+            entityCache.remove(null, account);
         }));
     }
 
@@ -293,13 +281,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             }
 
             AccountDAO.delete(em, scopeId, accountId);
-        }).onAfterVoidHandler(() -> {
-            Account account = (Account) accountIdCache.get(accountId);
-            if (account != null) {
-                accountNameCache.remove(account.getName());
-            }
-            accountIdCache.remove(accountId);
-        }));
+        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accountId)));
     }
 
     @Override
@@ -352,17 +334,12 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                     return account;
                 }
         ).onBeforeResultHandler(() -> {
-            Account account = (Account) accountNameCache.get(name);
-            if (account != null) {
+            Account account = (Account) ((NamedEntityCache) entityCache).get(null, name);
+            if (account != null) {  // TODO: can this be put in the onAfterResultHandler ?
                 checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
-                LOGGER.info("##### Entity found in cache.");
             }
-
             return account;
-        }).onAfterResultHandler((entity) -> {
-            accountNameCache.put(name, entity);
-            accountIdCache.put(entity.getId(), entity);
-        }));
+        }).onAfterResultHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -444,13 +421,8 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Do find
         return entityManagerSession.onResult(
                 EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
-                       .onBeforeResultHandler(() ->
-                           (Account) accountIdCache.get(accountId)
-                       )
-                        .onAfterResultHandler((entity) -> {
-                            accountIdCache.put(accountId, entity);
-                            accountNameCache.put(entity.getName(), entity);
-                        })
+                        .onBeforeResultHandler(() -> (Account) entityCache.get(null, accountId))
+                        .onAfterResultHandler((entity) -> entityCache.put(entity))
         );
     }
 
