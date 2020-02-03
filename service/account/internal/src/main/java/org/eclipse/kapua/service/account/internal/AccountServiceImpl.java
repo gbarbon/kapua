@@ -43,6 +43,8 @@ import org.eclipse.kapua.service.account.AccountQuery;
 import org.eclipse.kapua.service.account.AccountService;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
 import javax.inject.Inject;
@@ -67,9 +69,11 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
     private PermissionFactory permissionFactory;
 
     private Cache<Serializable, KapuaUpdatableEntity> accountIdCache =
-            serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountIdCacheName());
+            serviceCacheManager.getCache(AccountCacheFactory.getAccountIdCacheName());
     private Cache<Serializable, KapuaUpdatableEntity>
-            accountNameCache = serviceCacheManager.getCache(AccountCacheConfigurationFactory.getAccountNameCacheName());
+            accountNameCache = serviceCacheManager.getCache(AccountCacheFactory.getAccountNameCacheName());
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountServiceImpl.class);
 
     /**
      * Constructor.
@@ -77,7 +81,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
      * @since 1.0.0
      */
     public AccountServiceImpl() {
-        super(AccountService.class.getName(), AccountDomains.ACCOUNT_DOMAIN, AccountEntityManagerFactory.getInstance(), AccountCacheConfigurationFactory.getInstance(), AccountService.class, AccountFactory.class);
+        super(AccountService.class.getName(), AccountDomains.ACCOUNT_DOMAIN, AccountEntityManagerFactory.getInstance(), AccountCacheFactory.getInstance(), AccountService.class, AccountFactory.class);
     }
 
     @Override
@@ -351,6 +355,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             Account account = (Account) accountNameCache.get(name);
             if (account != null) {
                 checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
+                LOGGER.info("##### Entity found in cache.");
             }
 
             return account;

@@ -52,9 +52,9 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryServiceImpl.class);
 
     private Cache<Serializable, KapuaUpdatableEntity> deviceIdCache =
-            serviceCacheManager.getCache(DeviceRegistryCacheConfigurationFactory.getDeviceIdCacheName());
+            serviceCacheManager.getCache(DeviceRegistryCacheFactory.getDeviceIdCacheName());
     private Cache<Serializable, KapuaUpdatableEntity> deviceClientIdCache =
-            serviceCacheManager.getCache(DeviceRegistryCacheConfigurationFactory.getDeviceClientIdCacheName());
+            serviceCacheManager.getCache(DeviceRegistryCacheFactory.getDeviceClientIdCacheName());
 
     /**
      * Constructor
@@ -63,7 +63,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
      */
     public DeviceRegistryServiceImpl(DeviceEntityManagerFactory deviceEntityManagerFactory) {
         super(DeviceRegistryService.class.getName(), DeviceDomains.DEVICE_DOMAIN, deviceEntityManagerFactory,
-                DeviceRegistryCacheConfigurationFactory.getInstance(), DeviceRegistryService.class,
+                DeviceRegistryCacheFactory.getInstance(), DeviceRegistryService.class,
                 DeviceFactory.class);
     }
 

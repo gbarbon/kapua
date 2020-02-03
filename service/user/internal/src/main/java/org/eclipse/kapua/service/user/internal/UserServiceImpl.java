@@ -66,18 +66,18 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
     private PermissionFactory permissionFactory;
 
     private Cache<Serializable, KapuaUpdatableEntity> userIdCache =
-            serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserIdCacheName());
+            serviceCacheManager.getCache(UserCacheFactory.getUserIdCacheName());
     private Cache<Serializable, KapuaUpdatableEntity>
-            userNameCache = serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserNameCacheName());
+            userNameCache = serviceCacheManager.getCache(UserCacheFactory.getUserNameCacheName());
     private Cache<Serializable, KapuaUpdatableEntity> externalIdCache =
-            serviceCacheManager.getCache(UserCacheConfigurationFactory.getUserExternalIdCacheName());
+            serviceCacheManager.getCache(UserCacheFactory.getUserExternalIdCacheName());
 
     /**
      * Constructor
      */
     public UserServiceImpl() {
         super(UserService.class.getName(), UserDomains.USER_DOMAIN, UserEntityManagerFactory.getInstance(),
-                UserCacheConfigurationFactory.getInstance(), UserService.class, UserFactory.class);
+                UserCacheFactory.getInstance(), UserService.class, UserFactory.class);
     }
 
     @Override
@@ -189,6 +189,8 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
                     externalIdCache.remove(cachedUser.getExternalId());
                 }
             }
+            // TODO: non need to remove the user with new name, since it does not exist in cache yet (see also other
+            //  services)
             userIdCache.remove(user.getId());
             userNameCache.remove(user.getName());
             if (user.getExternalId() != null && user.getExternalId().trim().length() > 0) {

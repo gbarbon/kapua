@@ -13,7 +13,7 @@ package org.eclipse.kapua.commons.configuration;
 
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaIllegalArgumentException;
-import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
+import org.eclipse.kapua.commons.jpa.CacheFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -68,10 +68,10 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
             String pid,
             Domain domain,
             EntityManagerFactory entityManagerFactory,
-            CacheConfigurationFactory cacheConfigurationFactory,
+            CacheFactory cacheFactory,
             Class<S> serviceClass,
             Class<F> factoryClass) {
-        super(pid, domain, entityManagerFactory, cacheConfigurationFactory);
+        super(pid, domain, entityManagerFactory, cacheFactory);
         this.serviceClass = serviceClass;
         this.factoryClass = factoryClass;
     }

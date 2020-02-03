@@ -11,13 +11,13 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.user.internal;
 
-import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
+import org.eclipse.kapua.commons.jpa.CacheFactory;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 
 import java.util.Arrays;
 
-public class UserCacheConfigurationFactory extends CacheConfigurationFactory {
+public class UserCacheFactory extends CacheFactory {
 
     private static final SystemSetting SYSTEM_SETTING = SystemSetting.getInstance();
     private static final boolean IS_ENABLED = SYSTEM_SETTING.getBoolean(SystemSettingKey.USER_CACHE, false);
@@ -26,12 +26,12 @@ public class UserCacheConfigurationFactory extends CacheConfigurationFactory {
     private static final String USERNAME_CACHE_NAME = "UserName";
     private static final String EXTERNALID_CACHE_NAME = "ExternalId";
 
-    private UserCacheConfigurationFactory() {
+    private UserCacheFactory() {
         super(Arrays.asList(USERID_CACHE_NAME, USERNAME_CACHE_NAME, EXTERNALID_CACHE_NAME), IS_ENABLED);
     }
 
-    protected static UserCacheConfigurationFactory getInstance() {
-        return new UserCacheConfigurationFactory();
+    protected static UserCacheFactory getInstance() {
+        return new UserCacheFactory();
     }
 
     protected static String getUserIdCacheName() {

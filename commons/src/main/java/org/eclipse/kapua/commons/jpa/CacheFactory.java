@@ -13,12 +13,12 @@ package org.eclipse.kapua.commons.jpa;
 
 import java.util.Collection;
 
-public class CacheConfigurationFactory {
+public class CacheFactory {
 
     private Collection<String> cacheNames;
     private boolean isEnabled;
 
-    public CacheConfigurationFactory(Collection<String> cacheNames, boolean isEnabled) {
+    public CacheFactory(Collection<String> cacheNames, boolean isEnabled) {
         this.cacheNames = cacheNames;
         this.isEnabled = isEnabled;
     }
