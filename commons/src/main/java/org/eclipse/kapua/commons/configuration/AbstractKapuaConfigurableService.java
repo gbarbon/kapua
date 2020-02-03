@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
-import org.eclipse.kapua.commons.jpa.CacheConfigurationFactory;
+import org.eclipse.kapua.commons.jpa.CacheFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.service.internal.AbstractKapuaService;
@@ -85,8 +85,8 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
      * @param domain
      * @param entityManagerFactory
      */
-    protected AbstractKapuaConfigurableService(String pid, Domain domain, EntityManagerFactory entityManagerFactory, CacheConfigurationFactory cacheConfigurationFactory) {
-        super(entityManagerFactory, cacheConfigurationFactory);
+    protected AbstractKapuaConfigurableService(String pid, Domain domain, EntityManagerFactory entityManagerFactory, CacheFactory cacheFactory) {
+        super(entityManagerFactory, cacheFactory);
         this.pid = pid;
         this.domain = domain;
     }
