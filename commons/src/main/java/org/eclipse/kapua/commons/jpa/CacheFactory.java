@@ -16,19 +16,13 @@ import java.util.Collection;
 public class CacheFactory {
 
     private Collection<String> cacheNames;
-    private boolean isEnabled;
 
-    public CacheFactory(Collection<String> cacheNames, boolean isEnabled) {
+    public CacheFactory(Collection<String> cacheNames) {
         this.cacheNames = cacheNames;
-        this.isEnabled = isEnabled;
     }
 
     public Collection<String> getCacheNames() {
         return cacheNames;
-    }
-
-    public boolean isEnabled() {
-        return isEnabled;
     }
 
 }

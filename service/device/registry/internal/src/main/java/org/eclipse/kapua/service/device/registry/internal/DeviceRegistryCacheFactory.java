@@ -12,21 +12,16 @@
 package org.eclipse.kapua.service.device.registry.internal;
 
 import org.eclipse.kapua.commons.jpa.CacheFactory;
-import org.eclipse.kapua.commons.setting.system.SystemSetting;
-import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 
 import java.util.Arrays;
 
 public class DeviceRegistryCacheFactory extends CacheFactory {
 
-    private static final SystemSetting SYSTEM_SETTING = SystemSetting.getInstance();
-    private static final boolean IS_ENABLED = SYSTEM_SETTING.getBoolean(SystemSettingKey.DEVICE_REGISTRY_CACHE, false);
-
     private static final String DEVICEID_CACHE_NAME = "DeviceId";
     private static final String DEVICE_CLIENTID_CACHE_NAME = "DeviceClientId";
 
     private DeviceRegistryCacheFactory() {
-        super(Arrays.asList(DEVICEID_CACHE_NAME, DEVICE_CLIENTID_CACHE_NAME), IS_ENABLED);
+        super(Arrays.asList(DEVICEID_CACHE_NAME, DEVICE_CLIENTID_CACHE_NAME));
     }
 
     protected static DeviceRegistryCacheFactory getInstance() {

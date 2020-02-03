@@ -9,30 +9,30 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.service.account.internal;
+package org.eclipse.kapua.service.authorization.access.shiro;
 
 import org.eclipse.kapua.commons.jpa.CacheFactory;
 
 import java.util.Arrays;
 
-public class AccountCacheFactory extends CacheFactory {
+public class AccessInfoCacheFactory extends CacheFactory {
 
-    private static final String ACCOUNTID_CACHE_NAME = "AccountId";
-    private static final String ACCOUNTNAME_CACHE_NAME = "AccountName";
+    private static final String ACCESSINFO_ID_CACHE_NAME = "AccessInfoId";
+    private static final String ACCESSINFO_NAME_CACHE_NAME = "AccessInfoName";
 
-    private AccountCacheFactory() {
-        super(Arrays.asList(ACCOUNTID_CACHE_NAME, ACCOUNTNAME_CACHE_NAME));
+    private AccessInfoCacheFactory() {
+        super(Arrays.asList(ACCESSINFO_ID_CACHE_NAME, ACCESSINFO_NAME_CACHE_NAME));
     }
 
-    protected static AccountCacheFactory getInstance() {
-        return new AccountCacheFactory();
+    protected static AccessInfoCacheFactory getInstance() {
+        return new AccessInfoCacheFactory();
     }
 
     protected static String getAccountIdCacheName() {
-        return ACCOUNTID_CACHE_NAME;
+        return ACCESSINFO_ID_CACHE_NAME;
     }
 
     protected static String getAccountNameCacheName() {
-        return ACCOUNTNAME_CACHE_NAME;
+        return ACCESSINFO_NAME_CACHE_NAME;
     }
 }
