@@ -24,10 +24,10 @@ import javax.cache.processor.EntryProcessorException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Dummy implementation of JCache using an hashmap, to be used only for tests!
@@ -35,10 +35,10 @@ import java.util.Set;
 public class JCacheHashMapCache<K, V> implements Cache<K, V> {
 
     private static final Logger logger = LoggerFactory.getLogger(JCacheCacheManager.class);
-    private HashMap<K, V> hashMap;
+    private ConcurrentHashMap<K, V> hashMap;
 
     JCacheHashMapCache() {
-        hashMap = new HashMap<>();
+        hashMap = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -202,8 +202,8 @@ public class JCacheHashMapCache<K, V> implements Cache<K, V> {
                 Object newObject = objectConstructor.newInstance();
 
                 Method[] methods = object.getClass().getMethods();
-                Map<String, Method> getterMethods = new HashMap<>();
-                Map<String, Method> setterMethods = new HashMap<>();
+                Map<String, Method> getterMethods = new ConcurrentHashMap<>();
+                Map<String, Method> setterMethods = new ConcurrentHashMap<>();
 
                 for (Method method : methods) {
                     if (isGetter(method)) {
