@@ -25,7 +25,6 @@ import org.eclipse.kapua.model.query.KapuaQuery;
 import org.eclipse.kapua.service.authorization.AuthorizationDomains;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.access.AccessInfo;
-import org.eclipse.kapua.service.authorization.access.AccessPermission;
 import org.eclipse.kapua.service.authorization.access.AccessRole;
 import org.eclipse.kapua.service.authorization.access.AccessRoleAttributes;
 import org.eclipse.kapua.service.authorization.access.AccessRoleCreator;

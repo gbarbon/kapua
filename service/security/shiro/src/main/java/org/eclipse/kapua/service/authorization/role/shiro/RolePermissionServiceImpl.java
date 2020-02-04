@@ -29,7 +29,6 @@ import org.eclipse.kapua.service.authorization.permission.Permission;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.eclipse.kapua.service.authorization.permission.shiro.PermissionValidator;
 import org.eclipse.kapua.service.authorization.role.Role;
-import org.eclipse.kapua.service.authorization.role.RoleListResult;
 import org.eclipse.kapua.service.authorization.role.RolePermission;
 import org.eclipse.kapua.service.authorization.role.RolePermissionAttributes;
 import org.eclipse.kapua.service.authorization.role.RolePermissionCreator;
