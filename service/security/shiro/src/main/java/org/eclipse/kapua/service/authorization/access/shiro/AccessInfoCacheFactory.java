@@ -11,28 +11,15 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authorization.access.shiro;
 
-import org.eclipse.kapua.commons.jpa.CacheFactory;
+import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 
-import java.util.Arrays;
-
-public class AccessInfoCacheFactory extends CacheFactory {
-
-    private static final String ACCESSINFO_ID_CACHE_NAME = "AccessInfoId";
-    private static final String ACCESSINFO_NAME_CACHE_NAME = "AccessInfoName";
+public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
 
     private AccessInfoCacheFactory() {
-        super(Arrays.asList(ACCESSINFO_ID_CACHE_NAME, ACCESSINFO_NAME_CACHE_NAME));
+        super("AccessInfoId");
     }
 
     protected static AccessInfoCacheFactory getInstance() {
         return new AccessInfoCacheFactory();
-    }
-
-    protected static String getAccountIdCacheName() {
-        return ACCESSINFO_ID_CACHE_NAME;
-    }
-
-    protected static String getAccountNameCacheName() {
-        return ACCESSINFO_NAME_CACHE_NAME;
     }
 }

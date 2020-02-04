@@ -11,16 +11,13 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
-import org.eclipse.kapua.commons.jpa.CacheFactory;
+import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.event.ServiceEventBusManager;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerSession;
 import org.eclipse.kapua.event.ServiceEventBusException;
 import org.eclipse.kapua.event.ServiceEventBusListener;
-import org.eclipse.kapua.model.KapuaUpdatableEntity;
 import org.eclipse.kapua.service.KapuaService;
-
-import java.io.Serializable;
 
 /**
  * Abstract Kapua service.<br>
@@ -33,7 +30,7 @@ public class AbstractKapuaService {
 
     protected EntityManagerFactory entityManagerFactory;
     protected EntityManagerSession entityManagerSession;
-    protected ServiceCacheManager<Serializable, KapuaUpdatableEntity> serviceCacheManager;
+    protected EntityCache entityCache;
 
     //============================================================================
     //
@@ -55,10 +52,10 @@ public class AbstractKapuaService {
      * 
      * @param entityManagerFactory
      */
-    protected AbstractKapuaService(EntityManagerFactory entityManagerFactory, CacheFactory cacheFactory) {
+    protected AbstractKapuaService(EntityManagerFactory entityManagerFactory, AbstractEntityCacheFactory abstractCacheFactory) {
         this.entityManagerFactory = entityManagerFactory;
         this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
-        this.serviceCacheManager = KapuaCacheManager.getServiceCacheManager(cacheFactory.getCacheNames());
+        this.entityCache = abstractCacheFactory.createCache();
     }
 
     public EntityManagerSession getEntityManagerSession() {

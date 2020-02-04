@@ -12,8 +12,23 @@
 package org.eclipse.kapua.commons.jpa;
 
 import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.NamedEntityCache;
 
-public interface CacheFactory {
+public abstract class AbstractNamedEntityCacheFactory extends AbstractEntityCacheFactory {
 
-    EntityCache createCache();
+    private String nameCacheName;
+
+    public AbstractNamedEntityCacheFactory(String idCacheName, String nameCacheName) {
+        super(idCacheName);
+        this.nameCacheName = nameCacheName;
+    }
+
+    public String getEntityNameCacheName() {
+        return nameCacheName;
+    }
+
+    @Override
+    public EntityCache createCache() {
+        return new NamedEntityCache(getEntityIdCacheName(), getEntityNameCacheName());
+    }
 }

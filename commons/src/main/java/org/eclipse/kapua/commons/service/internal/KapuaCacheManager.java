@@ -13,13 +13,11 @@ package org.eclipse.kapua.commons.service.internal;
 
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
-import org.eclipse.kapua.model.KapuaUpdatableEntity;
 
 import javax.cache.Cache;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,38 +29,24 @@ public class KapuaCacheManager {
     private static final String CACHING_PROVIDER_CLASS_NAME = SYSTEM_SETTING.getString(SystemSettingKey.CACHING_PROVIDER,
             DUMMY_CACHING_PROVIDER);  // use the dummy cache if no provider exists
 
-    private static Map<String, Cache<Serializable, KapuaUpdatableEntity>> cacheMap = new HashMap<>();
+    private static Map<String, Cache<Serializable, Serializable>> cacheMap = new HashMap<>();
 
     private KapuaCacheManager() {
     }
 
-    private static Cache<Serializable, KapuaUpdatableEntity> getCache(String cacheName) {
-        Cache<Serializable, KapuaUpdatableEntity> cache = cacheMap.get(cacheName);
+    public static Cache<Serializable, Serializable> getCache(String cacheName) {
+        Cache<Serializable, Serializable> cache = cacheMap.get(cacheName);
         if (cache == null) {
             synchronized (cacheMap) {
                 cache = cacheMap.get(cacheName);
                 if (cache == null) {
-                    MutableConfiguration<Serializable, KapuaUpdatableEntity> config = new MutableConfiguration<>();
+                    MutableConfiguration<Serializable, Serializable> config = new MutableConfiguration<>();
                     cache = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME).getCacheManager().createCache(cacheName, config);
                     cacheMap.put(cacheName, cache);
                 }
             }
         }
         return cache;
-    }
-
-    /**
-     * Get the cache manager for a given service.
-     *
-     * @param cachesNames collection of caches names for the given service.
-     * @return the ServiceCacheManager fro the given service.
-     * @deprecated bla
-     */
-    @Deprecated
-    public static ServiceCacheManager<Serializable, KapuaUpdatableEntity> getServiceCacheManager(Collection<String> cachesNames) {
-        Map<String, Cache<Serializable, KapuaUpdatableEntity>> serviceCacheMap = new HashMap<>();
-        cachesNames.forEach((cacheName) -> serviceCacheMap.put(cacheName, getCache(cacheName)));
-        return new ServiceCacheManager<>(serviceCacheMap);
     }
 
     // TODO: only used by tests?

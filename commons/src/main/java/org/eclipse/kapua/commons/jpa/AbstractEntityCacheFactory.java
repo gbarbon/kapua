@@ -9,21 +9,24 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.jpa;
 
-import javax.cache.Cache;
-import java.util.Map;
+import org.eclipse.kapua.commons.service.internal.EntityCache;
 
-public class ServiceCacheManager<K, V> {
+public abstract class AbstractEntityCacheFactory implements CacheFactory {
 
-    private Map<String, Cache<K, V>> caches;
+    private String idCacheName;
 
-    public ServiceCacheManager(Map<String, Cache<K, V>> caches) {
-        this.caches = caches;
+    public AbstractEntityCacheFactory(String idCacheName) {
+        this.idCacheName = idCacheName;
     }
 
-    public Cache<K, V> getCache(String cacheName) {
-        return caches.get(cacheName);
+    public String getEntityIdCacheName() {
+        return idCacheName;
     }
 
+    @Override
+    public EntityCache createCache() {
+        return new EntityCache(getEntityIdCacheName());
+    }
 }

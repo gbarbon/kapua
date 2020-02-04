@@ -11,33 +11,16 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.user.internal;
 
-import org.eclipse.kapua.commons.jpa.CacheFactory;
+import org.eclipse.kapua.commons.jpa.AbstractNamedEntityCacheFactory;
 
-import java.util.Arrays;
-
-public class UserCacheFactory extends CacheFactory {
-
-    private static final String USERID_CACHE_NAME = "UserId";
-    private static final String USERNAME_CACHE_NAME = "UserName";
-    private static final String EXTERNALID_CACHE_NAME = "ExternalId";
+public class UserCacheFactory extends AbstractNamedEntityCacheFactory {
 
     private UserCacheFactory() {
-        super(Arrays.asList(USERID_CACHE_NAME, USERNAME_CACHE_NAME, EXTERNALID_CACHE_NAME));
+        super("UserId", "UserName");
     }
 
     protected static UserCacheFactory getInstance() {
         return new UserCacheFactory();
     }
 
-    protected static String getUserIdCacheName() {
-        return USERID_CACHE_NAME;
-    }
-
-    protected static String getUserNameCacheName() {
-        return USERNAME_CACHE_NAME;
-    }
-
-    protected static String getUserExternalIdCacheName() {
-        return EXTERNALID_CACHE_NAME;
-    }
 }
