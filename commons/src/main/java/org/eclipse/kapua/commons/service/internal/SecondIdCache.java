@@ -26,9 +26,12 @@ public class SecondIdCache extends EntityCache {
         secondIdCache = KapuaCacheManager.getCache(nameCacheName);
     }
 
-    public Serializable get(KapuaId scopeId, String name) {
-        KapuaId entityId = (KapuaId) secondIdCache.get(name);
-        return get(scopeId, entityId);
+    public Serializable get(KapuaId scopeId, String secondId) {
+        if (secondId != null && secondId.trim().length() > 0) {
+            KapuaId entityId = (KapuaId) secondIdCache.get(secondId);
+            return get(scopeId, entityId);
+        }
+        return null;
     }
 
     @Override
@@ -37,8 +40,10 @@ public class SecondIdCache extends EntityCache {
     }
 
     public void put(KapuaEntity entity, String secondId) {
-        idCache.put(entity.getId(), entity);
-        secondIdCache.put(secondId, entity.getId());
+        if (secondId != null) {
+            idCache.put(entity.getId(), entity);
+            secondIdCache.put(secondId, entity.getId());
+        }
     }
 
     @Override
@@ -56,11 +61,13 @@ public class SecondIdCache extends EntityCache {
     }
 
     public void remove(KapuaId scopeId, KapuaId kapuaId, String secondId) {
-        // First get the entity in order to perform a check of the scope id
-        KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
-        if (entity != null) {
-            idCache.remove(kapuaId);
-            secondIdCache.remove(secondId);
+        if (kapuaId != null && secondId != null && secondId.trim().length() > 0) {
+            // First get the entity in order to perform a check of the scope id
+            KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
+            if (entity != null) {
+                idCache.remove(kapuaId);
+                secondIdCache.remove(secondId);
+            }
         }
     }
 }

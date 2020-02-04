@@ -26,12 +26,17 @@ public class EntityCache {
     }
 
     public Serializable get(KapuaId scopeId, KapuaId kapuaId) {
-        KapuaEntity entity = (KapuaEntity) idCache.get(kapuaId);
-        return checkResult(scopeId, entity);
+        if (kapuaId != null) {
+            KapuaEntity entity = (KapuaEntity) idCache.get(kapuaId);
+            return checkResult(scopeId, entity);
+        }
+        return null;
     }
 
     public void put(KapuaEntity entity) {
-        idCache.put(entity.getId(), entity);
+        if (entity != null) {
+            idCache.put(entity.getId(), entity);
+        }
     }
 
     public void remove(KapuaId scopeId, KapuaEntity entity) {
@@ -40,9 +45,11 @@ public class EntityCache {
 
     public void remove(KapuaId scopeId, KapuaId kapuaId) {
         // First get the entity in order to perform a check of the scope id
-        KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
-        if (entity != null) {
-            idCache.remove(kapuaId);
+        if (kapuaId != null) {
+            KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
+            if (entity != null) {
+                idCache.remove(kapuaId);
+            }
         }
     }
 
