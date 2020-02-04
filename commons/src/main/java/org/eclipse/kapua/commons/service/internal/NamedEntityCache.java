@@ -28,8 +28,8 @@ public class NamedEntityCache extends EntityCache {
     }
 
     public Serializable get(KapuaId scopeId, String name) {
-        KapuaNamedEntity entity = (KapuaNamedEntity) nameCache.get(name);
-        return checkResult(scopeId, entity);
+        KapuaId entityId = (KapuaId) nameCache.get(name);
+        return get(scopeId, entityId);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class NamedEntityCache extends EntityCache {
 
     public void put(KapuaNamedEntity entity) {
         idCache.put(entity.getId(), entity);
-        nameCache.put(entity.getName(), entity);
+        nameCache.put(entity.getName(), entity.getId());
     }
 
     @Override

@@ -27,8 +27,8 @@ public class SecondIdCache extends EntityCache {
     }
 
     public Serializable get(KapuaId scopeId, String name) {
-        KapuaEntity entity = (KapuaEntity) secondIdCache.get(name);
-        return checkResult(scopeId, entity);
+        KapuaId entityId = (KapuaId) secondIdCache.get(name);
+        return get(scopeId, entityId);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class SecondIdCache extends EntityCache {
 
     public void put(KapuaEntity entity, String secondId) {
         idCache.put(entity.getId(), entity);
-        secondIdCache.put(secondId, entity);
+        secondIdCache.put(secondId, entity.getId());
     }
 
     @Override
