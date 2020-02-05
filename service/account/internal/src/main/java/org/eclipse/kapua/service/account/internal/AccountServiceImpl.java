@@ -342,6 +342,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         }).onAfterResultHandler((entity) -> entityCache.put(entity)));
     }
 
+    // TODO: implement list cache here
     @Override
     public AccountListResult findChildrenRecursively(KapuaId scopeId) throws KapuaException {
         //
@@ -426,6 +427,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         );
     }
 
+    // TODO: implement list cache here
     private AccountListResult findChildAccountsTrusted(KapuaId accountId)
             throws KapuaException {
         //

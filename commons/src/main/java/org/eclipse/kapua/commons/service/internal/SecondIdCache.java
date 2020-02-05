@@ -26,7 +26,7 @@ public class SecondIdCache extends EntityCache {
         secondIdCache = KapuaCacheManager.getCache(nameCacheName);
     }
 
-    public Serializable get(KapuaId scopeId, String secondId) {
+    public KapuaEntity get(KapuaId scopeId, String secondId) {
         if (secondId != null && secondId.trim().length() > 0) {
             KapuaId entityId = (KapuaId) secondIdCache.get(secondId);
             return get(scopeId, entityId);

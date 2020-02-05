@@ -11,12 +11,12 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authorization.access.shiro;
 
-import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
+import org.eclipse.kapua.commons.jpa.AbstractSecondIdEntityCacheFactory;
 
-public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
+public class AccessInfoCacheFactory extends AbstractSecondIdEntityCacheFactory {
 
     private AccessInfoCacheFactory() {
-        super("AccessInfoId");
+        super("AccessInfoId", "AccessInfoUserIdId");
     }
 
     protected static AccessInfoCacheFactory getInstance() {

@@ -165,12 +165,20 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(roleId, "roleId");
 
-        //
-        // Build query
-        RolePermissionQuery query = new RolePermissionQueryImpl(scopeId);
-        query.setPredicate(query.attributePredicate(RolePermissionAttributes.ROLE_ID, roleId));
+        RolePermissionListResult listResult = (RolePermissionListResult) entityCache.getList(scopeId, roleId);
+        if (listResult==null) {
 
-        return query(query);
+            //
+            // Build query
+            RolePermissionQuery query = new RolePermissionQueryImpl(scopeId);
+            query.setPredicate(query.attributePredicate(RolePermissionAttributes.ROLE_ID, roleId));
+
+            listResult = query(query);
+            if (listResult!=null) {
+                entityCache.putList(roleId, listResult);
+            }
+        }
+        return listResult;
     }
 
     @Override
