@@ -150,12 +150,20 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(accessInfoId, "accessInfoId");
 
-        //
-        // Build query
-        AccessRoleQuery query = new AccessRoleQueryImpl(scopeId);
-        query.setPredicate(query.attributePredicate(AccessRoleAttributes.ACCESS_INFO_ID, accessInfoId));
+        AccessRoleListResult listResult = (AccessRoleListResult) entityCache.getList(scopeId, accessInfoId);
+        if (listResult==null) {
 
-        return query(query);
+            //
+            // Build query
+            AccessRoleQuery query = new AccessRoleQueryImpl(scopeId);
+            query.setPredicate(query.attributePredicate(AccessRoleAttributes.ACCESS_INFO_ID, accessInfoId));
+
+            listResult = query(query);
+            if (listResult!=null) {
+                entityCache.putList(scopeId, accessInfoId, listResult);
+            }
+        }
+        return listResult;
     }
 
     @Override

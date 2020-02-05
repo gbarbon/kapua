@@ -185,7 +185,6 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             d.setGroupId(null);
             update(d);
         }
-        // cache removal not implemented since the onKapuaEvent is never called
     }
 
     private void deleteDeviceByAccountId(KapuaId scopeId, KapuaId accountId) throws KapuaException {
@@ -199,7 +198,6 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         for (Device d : devicesToDelete.getItems()) {
             delete(d.getScopeId(), d.getId());
         }
-        // cache removal not implemented since the onKapuaEvent is never called
     }
 
 }

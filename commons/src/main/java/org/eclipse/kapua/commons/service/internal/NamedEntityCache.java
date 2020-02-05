@@ -27,7 +27,7 @@ public class NamedEntityCache extends EntityCache {
         nameCache = KapuaCacheManager.getCache(nameCacheName);
     }
 
-    public Serializable get(KapuaId scopeId, String name) {
+    public KapuaEntity get(KapuaId scopeId, String name) {
         if (name != null && name.trim().length() > 0) {
             KapuaId entityId = (KapuaId) nameCache.get(name);
             return get(scopeId, entityId);

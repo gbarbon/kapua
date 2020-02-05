@@ -165,12 +165,21 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(accessInfoId, "accessInfoId");
 
-        //
-        // Build query
-        AccessPermissionQuery query = new AccessPermissionQueryImpl(scopeId);
-        query.setPredicate(query.attributePredicate(AccessPermissionAttributes.ACCESS_INFO_ID, accessInfoId));
+        AccessPermissionListResult listResult = (AccessPermissionListResult) entityCache.getList(scopeId,
+                accessInfoId);
+        if (listResult==null) {
 
-        return query(query);
+            //
+            // Build query
+            AccessPermissionQuery query = new AccessPermissionQueryImpl(scopeId);
+            query.setPredicate(query.attributePredicate(AccessPermissionAttributes.ACCESS_INFO_ID, accessInfoId));
+
+            listResult = query(query);
+            if (listResult!=null) {
+                entityCache.putList(scopeId, accessInfoId, listResult);
+            }
+        }
+        return listResult;
     }
 
     @Override

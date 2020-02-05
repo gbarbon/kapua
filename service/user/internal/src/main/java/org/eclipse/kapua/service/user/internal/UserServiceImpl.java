@@ -336,7 +336,6 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         for (User u : usersToDelete.getItems()) {
             delete(u.getScopeId(), u.getId());
         }
-        // cache removal not implemented since the onKapuaEvent method is never called
     }
 
 }
