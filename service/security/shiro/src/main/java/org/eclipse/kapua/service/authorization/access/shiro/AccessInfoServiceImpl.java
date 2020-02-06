@@ -226,7 +226,9 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
             AccessInfoDAO.delete(em, scopeId, accessInfoId);
         }).onAfterVoidHandler(() -> {
             AccessInfo accessInfo = (AccessInfo) entityCache.get(scopeId, accessInfoId);
-            ((SecondIdCache) entityCache).remove(scopeId, accessInfoId, accessInfo.getUserId().toStringId());
+            if (accessInfo!=null) {
+                ((SecondIdCache) entityCache).remove(scopeId, accessInfoId, accessInfo.getUserId().toStringId());
+            }
         }));
     }
 

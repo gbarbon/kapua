@@ -132,7 +132,9 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         entityManagerSession.doTransactedAction(EntityManagerContainer.create().onVoidResultHandler(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId))
                 .onAfterVoidHandler(() -> {
                     Device device = (Device) entityCache.get(scopeId, deviceId);
-                    ((SecondIdCache) entityCache).remove(scopeId, deviceId, device.getClientId());
+                    if (device!=null) {
+                        ((SecondIdCache) entityCache).remove(scopeId, deviceId, device.getClientId());
+                    }
                 }));
     }
 
