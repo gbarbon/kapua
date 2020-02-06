@@ -165,6 +165,14 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(accessInfoId, "accessInfoId");
 
+        //
+        // Check Access
+        KapuaLocator locator = KapuaLocator.getInstance();
+        AuthorizationService authorizationService = locator.getService(AuthorizationService.class);
+        PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
+        authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN,
+                Actions.read, scopeId));
+
         AccessPermissionListResult listResult = (AccessPermissionListResult) entityCache.getList(scopeId,
                 accessInfoId);
         if (listResult==null) {

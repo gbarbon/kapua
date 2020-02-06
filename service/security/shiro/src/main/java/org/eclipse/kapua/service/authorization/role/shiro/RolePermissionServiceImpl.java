@@ -165,6 +165,13 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(roleId, "roleId");
 
+        //
+        // Check Access
+        KapuaLocator locator = KapuaLocator.getInstance();
+        AuthorizationService authorizationService = locator.getService(AuthorizationService.class);
+        PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
+        authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ROLE_DOMAIN, Actions.read, scopeId));
+
         RolePermissionListResult listResult = (RolePermissionListResult) entityCache.getList(scopeId, roleId);
         if (listResult==null) {
 
