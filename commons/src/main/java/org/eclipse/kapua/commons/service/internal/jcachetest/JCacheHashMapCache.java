@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal.jcachetest;
 
+import org.eclipse.kapua.model.KapuaEntity;
+import org.eclipse.kapua.model.query.KapuaListResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,13 @@ public class JCacheHashMapCache<K, V> implements Cache<K, V> {
     @Override
     public Object get(Object key) {
         try {
-            return clone(hashMap.get(key));
+            Object returnedValue = clone(hashMap.get(key));
+            if (returnedValue instanceof KapuaListResult) {
+                for (Object element: ((KapuaListResult) hashMap.get(key)).getItems()) {
+                    ((KapuaListResult) returnedValue).addItem((KapuaEntity) clone(element));
+                }
+            }
+            return returnedValue;
         } catch (Exception e) {
             logger.error("Error while getting value from cache", e);
         }
@@ -71,6 +79,11 @@ public class JCacheHashMapCache<K, V> implements Cache<K, V> {
     public void put(Object key, Object value) {
         try {
             V newValue = (V) clone(value);
+            if (value instanceof KapuaListResult) {
+                for (Object element: ((KapuaListResult) value).getItems()) {
+                    ((KapuaListResult) newValue).addItem((KapuaEntity) clone(element));
+                }
+            }
             hashMap.put((K) key, newValue);
         } catch (Exception e) {
             logger.error("Error while putting value in cache", e);

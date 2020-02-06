@@ -175,7 +175,7 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
 
             listResult = query(query);
             if (listResult!=null) {
-                entityCache.putList(roleId, listResult);
+                entityCache.putList(scopeId, roleId, listResult);
             }
         }
         return listResult;

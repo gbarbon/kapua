@@ -176,7 +176,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
 
             listResult = query(query);
             if (listResult!=null) {
-                entityCache.putList(accessInfoId, listResult);
+                entityCache.putList(scopeId, accessInfoId, listResult);
             }
         }
         return listResult;

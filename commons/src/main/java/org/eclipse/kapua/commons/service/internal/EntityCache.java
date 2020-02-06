@@ -17,6 +17,7 @@ import org.eclipse.kapua.model.query.KapuaListResult;
 
 import javax.cache.Cache;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class EntityCache {
 
@@ -38,8 +39,9 @@ public class EntityCache {
 
     public KapuaListResult getList(KapuaId scopeId, KapuaId kapuaId) {
         if (kapuaId != null) {
-            KapuaListResult list = (KapuaListResult) listsCache.get(kapuaId);
-            return checkResult(scopeId, list);
+            //KapuaListResult list = (KapuaListResult) listsCache.get(kapuaId);
+            //return checkResult(scopeId, list);
+            return (KapuaListResult) listsCache.get(new CacheKey(scopeId, kapuaId));
         }
         return null;
     }
@@ -50,9 +52,9 @@ public class EntityCache {
         }
     }
 
-    public void putList(KapuaId kapuaId, KapuaListResult list) {
+    public void putList(KapuaId scopeId, KapuaId kapuaId, KapuaListResult list) {
         if (list != null) {
-            listsCache.put(kapuaId, list);
+            listsCache.put(new CacheKey(scopeId, kapuaId), list);
         }
     }
 
@@ -68,7 +70,10 @@ public class EntityCache {
                 idCache.remove(kapuaId);
             }
         }
+        // TODO: invalidate the corresponding id also on the listsCache
     }
+
+    // TODO: need to implement a removeList method too?
 
     protected KapuaEntity checkResult(KapuaId scopeId, KapuaEntity entity) {
         if (entity != null) {
@@ -101,6 +106,54 @@ public class EntityCache {
             }
         } else {
             return null;
+        }
+    }
+
+    public class CacheKey implements Serializable {
+
+        private Serializable firstKey;
+        private Serializable secondKey;
+
+        public CacheKey(Serializable firstKey, Serializable secondKey) {
+            this.firstKey = firstKey;
+            this.secondKey = secondKey;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(firstKey, secondKey);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            CacheKey otherCacheKey = (CacheKey) obj;
+            return Objects.equals(firstKey, otherCacheKey.getFirstKey()) && Objects.equals(secondKey,
+                    otherCacheKey.getSecondKey());
+        }
+
+        public Serializable getFirstKey() {
+            return firstKey;
+        }
+
+        public void setFirstKey(Serializable firstKey) {
+            this.firstKey = firstKey;
+        }
+
+        public Serializable getSecondKey() {
+            return secondKey;
+        }
+
+        public void setSecondKey(Serializable secondKey) {
+            this.secondKey = secondKey;
         }
     }
 

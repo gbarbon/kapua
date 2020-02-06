@@ -160,7 +160,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
 
             listResult = query(query);
             if (listResult!=null) {
-                entityCache.putList(accessInfoId, listResult);
+                entityCache.putList(scopeId, accessInfoId, listResult);
             }
         }
         return listResult;
