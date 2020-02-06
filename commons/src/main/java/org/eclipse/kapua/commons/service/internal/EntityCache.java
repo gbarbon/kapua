@@ -39,9 +39,14 @@ public class EntityCache {
 
     public KapuaListResult getList(KapuaId scopeId, KapuaId kapuaId) {
         if (kapuaId != null) {
-            //KapuaListResult list = (KapuaListResult) listsCache.get(kapuaId);
-            //return checkResult(scopeId, list);
             return (KapuaListResult) listsCache.get(new CacheKey(scopeId, kapuaId));
+        }
+        return null;
+    }
+
+    public KapuaListResult getList(KapuaId scopeId, String secondKey) {
+        if (secondKey != null && secondKey.trim().length()>0) {
+            return (KapuaListResult) listsCache.get(new CacheKey(scopeId, secondKey));
         }
         return null;
     }
@@ -55,6 +60,12 @@ public class EntityCache {
     public void putList(KapuaId scopeId, KapuaId kapuaId, KapuaListResult list) {
         if (list != null) {
             listsCache.put(new CacheKey(scopeId, kapuaId), list);
+        }
+    }
+
+    public void putList(KapuaId scopeId, String secondKey, KapuaListResult list) {
+        if (list != null) {
+            listsCache.put(new CacheKey(scopeId, secondKey), list);
         }
     }
 
