@@ -263,20 +263,9 @@ public enum SystemSettingKey implements SettingKey {
      */
     CACHING_PROVIDER("commons.cache.provider.classname"),
     /**
-     * Enable the cache for the account service.
-     * TODO: remove from here
+     * Size of the local cache for the KapuaTmetadata
      */
-    ACCOUNT_CACHE("commons.cache.account.enabled"),
-    /**
-     * Enable the cache for the device registry service.
-     * TODO: remove from here
-     */
-    DEVICE_REGISTRY_CACHE("commons.cache.device.registry.enabled"),
-    /**
-     * Enable the cache for the device registry service.
-     * TODO: remove from here
-     */
-    USER_CACHE("commons.cache.user.enabled");
+    TMETADATA_LOCAL_CACHE_SIZE_MAXIMUM("commons.cache.local.tmetadata.maxsize");
 
     private String key;
 

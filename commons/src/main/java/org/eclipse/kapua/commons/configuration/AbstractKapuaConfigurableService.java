@@ -16,11 +16,15 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
+import org.eclipse.kapua.commons.cache.LocalCache;
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.service.internal.AbstractKapuaService;
+import org.eclipse.kapua.commons.service.internal.EntityCache;
 import org.eclipse.kapua.commons.service.internal.ServiceDAO;
+import org.eclipse.kapua.commons.setting.system.SystemSetting;
+import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.ResourceUtils;
 import org.eclipse.kapua.commons.util.StringUtil;
 import org.eclipse.kapua.commons.util.xml.XmlUtil;
@@ -54,6 +58,12 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
     private Domain domain;
     private String pid;
+    private static final int SIZEMAX =
+            SystemSetting.getInstance().getInt(SystemSettingKey.TMETADATA_LOCAL_CACHE_SIZE_MAXIMUM, 100);
+    private static final EntityCache PRIVATE_ENTITY_CACHE =
+            AbstractKapuaConfigurableServiceCache.getInstance().createCache();
+    private static final LocalCache<String, KapuaTmetadata> KAPUA_TMETADATA_LOCAL_CACHE =
+            new LocalCache<>(SIZEMAX, null);
 
     //============================================================================
     //
@@ -265,7 +275,11 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
         authorizationService.checkPermission(permissionFactory.newPermission(domain, Actions.read, scopeId));
 
         try {
-            KapuaTmetadata metadata = readMetadata(pid);
+            KapuaTmetadata metadata = KAPUA_TMETADATA_LOCAL_CACHE.get(pid);
+            if (metadata==null) {
+                metadata = readMetadata(pid);
+                KAPUA_TMETADATA_LOCAL_CACHE.put(pid, metadata);
+            }
             if (metadata != null && metadata.getOCD() != null && !metadata.getOCD().isEmpty()) {
                 for (KapuaTocd ocd : metadata.getOCD()) {
                     if (ocd.getId() != null && ocd.getId().equals(pid)) {
@@ -296,7 +310,9 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
         query.setPredicate(predicate);
 
-        ServiceConfigListResult result = entityManagerSession.onResult(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query)));
+        ServiceConfigListResult result = entityManagerSession.onResult(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query))
+                            .onBeforeResultHandler(() -> (ServiceConfigListResult) PRIVATE_ENTITY_CACHE.getList(scopeId, pid))
+                            .onAfterResultHandler((entity) -> PRIVATE_ENTITY_CACHE.putList(scopeId, pid, entity)));
 
         Properties properties = null;
         if (result != null && !result.isEmpty()) {
