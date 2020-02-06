@@ -150,6 +150,14 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
         ArgumentValidator.notNull(scopeId, "scopeId");
         ArgumentValidator.notNull(accessInfoId, "accessInfoId");
 
+        //
+        // Check Access
+        KapuaLocator locator = KapuaLocator.getInstance();
+        AuthorizationService authorizationService = locator.getService(AuthorizationService.class);
+        PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
+        authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN,
+                Actions.read, scopeId));
+
         AccessRoleListResult listResult = (AccessRoleListResult) entityCache.getList(scopeId, accessInfoId);
         if (listResult==null) {
 
