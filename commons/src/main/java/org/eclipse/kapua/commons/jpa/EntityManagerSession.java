@@ -421,8 +421,14 @@ public class EntityManagerSession {
     private <T> T internalOnInsert(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
         boolean succeeded = false;
         int retry = 0;
-        EntityManager manager = entityManagerFactory.createEntityManager();
         T instance = null;
+        if (container.onBeforeVoid != null) {
+            container.onBeforeVoid.onBefore();
+        }
+        if (container.onBeforeResult != null) {
+            instance = container.onBeforeResult.onBefore();
+        }
+        EntityManager manager = entityManagerFactory.createEntityManager();
         try {
             do {
                 try {
@@ -433,6 +439,12 @@ public class EntityManagerSession {
 
                     transactionManager.commit(manager);
                     succeeded = true;
+                    if (container.onAfterVoid!=null ) {
+                        container.onAfterVoid.onAfter();
+                    }
+                    if (container.onAfterResult!=null && instance != null) {
+                        container.onAfterResult.onAfter(instance);
+                    }
                 } catch (KapuaEntityExistsException e) {
                     if (manager != null) {
                         manager.rollback();

@@ -48,14 +48,17 @@ public class NamedEntityCache extends EntityCache {
     }
 
     @Override
-    public void remove(KapuaId scopeId, KapuaId kapuaId) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId) {
         if (kapuaId != null) {
             // First get the entity in order to perform a check of the scope id
             KapuaNamedEntity entity = (KapuaNamedEntity) get(scopeId, kapuaId);
             if (entity != null) {
                 idCache.remove(kapuaId);
                 nameCache.remove(entity.getName());
+                cacheRemoval.inc();
+                return entity;
             }
         }
+        return null;
     }
 }

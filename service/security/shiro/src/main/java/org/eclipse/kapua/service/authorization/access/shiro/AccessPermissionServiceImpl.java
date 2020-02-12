@@ -118,7 +118,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
             }
 
             return AccessPermissionDAO.create(em, accessPermissionCreator);
-        }));
+        }).onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
     }
 
     @Override
@@ -132,13 +132,18 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessPermission>create().onVoidResultHandler(em -> {
-            if (AccessPermissionDAO.find(em, scopeId, accessPermissionId) == null) {
+        entityManagerSession.onTransactedResult(EntityManagerContainer.<AccessPermission>create().onResultHandler(em -> {
+            AccessPermission accessPermission = AccessPermissionDAO.find(em, scopeId, accessPermissionId);
+            if (accessPermission == null) {
                 throw new KapuaEntityNotFoundException(AccessPermission.TYPE, accessPermissionId);
             }
 
             AccessPermissionDAO.delete(em, scopeId, accessPermissionId);
-        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accessPermissionId)));
+            return accessPermission;
+        }).onAfterResultHandler((entity) -> {
+            entityCache.remove(scopeId, accessPermissionId);
+            entityCache.removeList(scopeId, entity.getAccessInfoId());
+        }));
     }
 
     @Override
@@ -175,7 +180,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
 
         AccessPermissionListResult listResult = (AccessPermissionListResult) entityCache.getList(scopeId,
                 accessInfoId);
-        if (listResult==null) {
+        if (listResult == null) {
 
             //
             // Build query
@@ -183,7 +188,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
             query.setPredicate(query.attributePredicate(AccessPermissionAttributes.ACCESS_INFO_ID, accessInfoId));
 
             listResult = query(query);
-            if (listResult!=null) {
+            if (listResult != null) {
                 entityCache.putList(scopeId, accessInfoId, listResult);
             }
         }

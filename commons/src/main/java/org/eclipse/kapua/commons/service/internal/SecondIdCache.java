@@ -47,27 +47,30 @@ public class SecondIdCache extends EntityCache {
     }
 
     @Override
-    public void remove(KapuaId scopeId, KapuaId kapuaId) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void remove(KapuaId scopeId, KapuaEntity entity) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity) {
         throw new UnsupportedOperationException();
     }
 
-    public void remove(KapuaId scopeId, KapuaEntity entity, String secondId) {
-        remove(scopeId, entity.getId(), secondId);
+    public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity, String secondId) {
+        return remove(scopeId, entity.getId(), secondId);
     }
 
-    public void remove(KapuaId scopeId, KapuaId kapuaId, String secondId) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId, String secondId) {
         if (kapuaId != null && secondId != null && secondId.trim().length() > 0) {
             // First get the entity in order to perform a check of the scope id
             KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
             if (entity != null) {
                 idCache.remove(kapuaId);
                 secondIdCache.remove(secondId);
+                cacheRemoval.inc();
+                return entity;
             }
         }
+        return null;
     }
 }

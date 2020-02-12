@@ -103,7 +103,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
             }
 
             return AccessRoleDAO.create(em, accessRoleCreator);
-        }));
+        }).onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
     }
 
     @Override
@@ -117,13 +117,18 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessRole>create().onVoidResultHandler(em -> {
-            if (AccessRoleDAO.find(em, scopeId, accessRoleId) == null) {
+        entityManagerSession.onTransactedResult(EntityManagerContainer.<AccessRole>create().onResultHandler(em -> {
+            AccessRole accessRole = AccessRoleDAO.find(em, scopeId, accessRoleId);
+            if (accessRole == null) {
                 throw new KapuaEntityNotFoundException(AccessRole.TYPE, accessRoleId);
             }
 
             AccessRoleDAO.delete(em, scopeId, accessRoleId);
-        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accessRoleId)));
+            return accessRole;
+        }).onAfterResultHandler((entity) -> {
+            entityCache.remove(scopeId, accessRoleId);
+            entityCache.removeList(scopeId, entity.getAccessInfoId());
+        }));
     }
 
     @Override
@@ -159,7 +164,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
                 Actions.read, scopeId));
 
         AccessRoleListResult listResult = (AccessRoleListResult) entityCache.getList(scopeId, accessInfoId);
-        if (listResult==null) {
+        if (listResult == null) {
 
             //
             // Build query
@@ -167,7 +172,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
             query.setPredicate(query.attributePredicate(AccessRoleAttributes.ACCESS_INFO_ID, accessInfoId));
 
             listResult = query(query);
-            if (listResult!=null) {
+            if (listResult != null) {
                 entityCache.putList(scopeId, accessInfoId, listResult);
             }
         }

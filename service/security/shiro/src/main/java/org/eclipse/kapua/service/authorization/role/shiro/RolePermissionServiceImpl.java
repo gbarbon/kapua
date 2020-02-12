@@ -116,7 +116,8 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
             throw new KapuaEntityUniquenessException(RolePermission.TYPE, uniquesFieldValues);
         }
 
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> RolePermissionDAO.create(em, rolePermissionCreator)));
+        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> RolePermissionDAO.create(em, rolePermissionCreator))
+                .onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getRoleId())));
     }
 
     @Override
@@ -130,15 +131,20 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ROLE_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<RolePermission>create().onVoidResultHandler(em -> {
-            if (RolePermissionDAO.find(em, scopeId, rolePermissionId) == null) {
+        entityManagerSession.onTransactedResult(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> {
+            RolePermission rolePermission = RolePermissionDAO.find(em, scopeId, rolePermissionId);
+            if (rolePermission == null) {
                 throw new KapuaEntityNotFoundException(RolePermission.TYPE, rolePermissionId);
             } else if (KapuaId.ONE.equals(rolePermissionId)) {
                 throw new KapuaException(KapuaErrorCodes.PERMISSION_DELETE_NOT_ALLOWED);
             }
 
             RolePermissionDAO.delete(em, scopeId, rolePermissionId);
-        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, rolePermissionId)));
+            return rolePermission;
+        }).onAfterResultHandler((entity) -> {
+            entityCache.remove(scopeId, rolePermissionId);
+            entityCache.removeList(scopeId, entity.getRoleId());
+        }));
     }
 
     @Override
@@ -173,7 +179,7 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ROLE_DOMAIN, Actions.read, scopeId));
 
         RolePermissionListResult listResult = (RolePermissionListResult) entityCache.getList(scopeId, roleId);
-        if (listResult==null) {
+        if (listResult == null) {
 
             //
             // Build query
@@ -181,7 +187,7 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
             query.setPredicate(query.attributePredicate(RolePermissionAttributes.ROLE_ID, roleId));
 
             listResult = query(query);
-            if (listResult!=null) {
+            if (listResult != null) {
                 entityCache.putList(scopeId, roleId, listResult);
             }
         }
