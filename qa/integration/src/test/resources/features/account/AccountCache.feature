@@ -25,5 +25,6 @@ Feature: Account cache feature
       | boolean | infiniteChildEntities  | true  |
       | integer | maxNumberChildEntities |  1000   |
     And The device "client-id-1"
-    Then I am able to use the cache for the account "test_account" and clientId "client-id-1"
+    #Then I am able to use the cache for the account "test_account" and clientId "client-id-1"
+    Then I am able to use the cache with threads for the account "test_account" and clientId "client-id-1"
     And I logout

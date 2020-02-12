@@ -131,6 +131,8 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
         DefaultSecurityManager defaultSecurityManager = new DefaultSecurityManager();
         defaultSecurityManager.setAuthenticator(new KapuaAuthenticator());
         defaultSecurityManager.setRealms(realms);
+        //defaultSecurityManager.setCacheManager(new MemoryConstrainedCacheManager());
+        //defaultSecurityManager.setCacheManager(new EhCacheManager());
 
         SecurityUtils.setSecurityManager(defaultSecurityManager);
 

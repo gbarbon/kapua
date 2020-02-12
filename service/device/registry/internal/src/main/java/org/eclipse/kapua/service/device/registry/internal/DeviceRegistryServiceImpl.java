@@ -107,7 +107,19 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         DeviceValidation.validateFindPreconditions(scopeId, entityId);
 
         return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
-                .onBeforeResultHandler(() -> (Device) entityCache.get(scopeId, entityId))
+                .onBeforeResultHandler(() -> {
+                    Device device = (Device) entityCache.get(scopeId, entityId);
+                    if (device==null) {
+                        LOGGER.info("Cache miss for entity {}", entityId);
+                    } else {
+                        //LOGGER.info("Cache hit for entity {} clientId {}", entityId, device.getClientId());
+                        StringBuilder str = new StringBuilder();
+                        str.append("Cache hit for entity ").append(entityId).append(" and clientId ").append(device.getClientId()).append("\n");
+                        str.append(entityCache.printCacheContent(entityId));
+                        LOGGER.info("{}", str);
+                    }
+                    return device;
+                })
                 .onAfterResultHandler((entity) -> ((SecondIdCache) entityCache).put(entity, entity.getClientId())));
     }
 
@@ -142,6 +154,16 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
     public Device findByClientId(KapuaId scopeId, String clientId) throws KapuaException {
         DeviceValidation.validateFindByClientIdPreconditions(scopeId, clientId);
         Device device = (Device) ((SecondIdCache) entityCache).get(scopeId, clientId);
+
+/*        if (device==null) {
+            LOGGER.info("Cache miss for clientId {}", clientId);
+        } else {
+            StringBuilder str = new StringBuilder();
+            str.append("Cache hit for clientId ").append(clientId).append("\n");
+            //str.append(((SecondIdCache) entityCache).printSecondIdCacheContent(clientId));
+            LOGGER.info("{}", str);
+        }*/
+
         if (device==null) {
             DeviceQueryImpl query = new DeviceQueryImpl(scopeId);
             query.setPredicate(query.attributePredicate(DeviceAttributes.CLIENT_ID, clientId));

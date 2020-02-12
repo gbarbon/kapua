@@ -52,6 +52,9 @@ import org.eclipse.kapua.service.account.AccountListResult;
 import org.eclipse.kapua.service.account.AccountQuery;
 import org.eclipse.kapua.service.account.AccountService;
 import org.eclipse.kapua.service.account.Organization;
+import org.eclipse.kapua.service.authentication.AuthenticationService;
+import org.eclipse.kapua.service.authentication.CredentialsFactory;
+import org.eclipse.kapua.service.authentication.LoginCredentials;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataChannel;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataMessage;
 import org.eclipse.kapua.service.device.call.message.kura.data.KuraDataPayload;
@@ -69,6 +72,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Implementation of Gherkin steps used in AccountService.feature scenarios.
@@ -955,6 +963,7 @@ public class AccountServiceSteps extends TestBase {
         }
     }
 
+
     @Then("^I am able to use the cache for the account \"(.*)\" and clientId \"(.*)\"$")
     public void useCache(String accountName, String clientId) throws Exception {
         Account account = accountService.findByName(accountName);
@@ -970,7 +979,55 @@ public class AccountServiceSteps extends TestBase {
         LOGGER.info("Average time in millisecs: {}", averageTime/1000000d);
     }
 
+    @Then("^I am able to use the cache with threads for the account \"(.*)\" and clientId \"(.*)\"$")
+    public void useCacheWThreads(String accountName, String clientId) throws Exception {
+        Account account = accountService.findByName(accountName);
+        Timer d = MetricServiceFactory.getInstance().getTimer("datastore", "datastore", "cache");
+        Timer.Context context = d.time();
+
+        int numOfThreads = 10;
+        ExecutorService threadExecutor = Executors.newFixedThreadPool(numOfThreads);
+        List<Callable<Long>> callables = new ArrayList<>();
+        for (int i = 0; i < numOfThreads; i++) {
+            callables.add(() -> translateMessages(account, clientId));
+        }
+
+        // extracting results
+        for (Future<Long> future : threadExecutor.invokeAll(callables)) {
+            try {
+                long averageTime = future.get();
+                LOGGER.info("Average time in millisecs: {}", averageTime/1000000d);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Thread was interrupted", e);
+                throw e;
+            } catch (ExecutionException e) {
+                LOGGER.warn("Execution exception: {}", e.getCause().getMessage());
+                throw e;
+            }
+        }
+        context.stop();
+
+        LOGGER.info("Mean: {}", d.getSnapshot().getMean());
+        LOGGER.info("98Percentile: {}", d.getSnapshot().get98thPercentile());
+    }
+
     private long translateMessages(Account account, String clientId) throws KapuaException {
+        //KapuaSession currentSession = new KapuaSession(null, KapuaId.ONE, KapuaId.ONE);
+        //KapuaSecurityUtils.setSession(currentSession);
+
+        CredentialsFactory credentialsFactory = locator.getFactory(CredentialsFactory.class);
+        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials( "kapua-sys", "kapua" +
+                "-password");
+        AuthenticationService authenticationService = locator.getService(AuthenticationService.class);
+        authenticationService.logout();
+        primeException();
+        try {
+            authenticationService.login(credentials);
+        } catch (KapuaException e) {
+            LOGGER.warn("Exception", e);
+            throw e;
+        }
+
         final int nMessages = 5000;
         long averageTime = 0;
         for (int i = 0; i < nMessages; i++) {
@@ -1003,6 +1060,8 @@ public class AccountServiceSteps extends TestBase {
 
         return message;
     }
+
+
 
     // *****************
     // * Inner Classes *

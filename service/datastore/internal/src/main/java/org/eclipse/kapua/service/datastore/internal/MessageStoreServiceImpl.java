@@ -16,7 +16,7 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import org.eclipse.kapua.KapuaErrorCodes;
 import org.eclipse.kapua.KapuaException;
-import org.eclipse.kapua.KapuaIllegalArgumentException;
+//import org.eclipse.kapua.KapuaIllegalArgumentException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableService;
 import org.eclipse.kapua.commons.metric.MetricServiceFactory;
 import org.eclipse.kapua.commons.metric.MetricsService;
@@ -32,10 +32,10 @@ import org.eclipse.kapua.service.authorization.permission.Permission;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.eclipse.kapua.service.datastore.DatastoreDomains;
 import org.eclipse.kapua.service.datastore.MessageStoreService;
-import org.eclipse.kapua.service.datastore.client.ClientCommunicationException;
+//import org.eclipse.kapua.service.datastore.client.ClientCommunicationException;
 import org.eclipse.kapua.service.datastore.client.ClientUnavailableException;
-import org.eclipse.kapua.service.datastore.internal.mediator.ConfigurationException;
-import org.eclipse.kapua.service.datastore.internal.mediator.DatastoreCommunicationException;
+//import org.eclipse.kapua.service.datastore.internal.mediator.ConfigurationException;
+//import org.eclipse.kapua.service.datastore.internal.mediator.DatastoreCommunicationException;
 import org.eclipse.kapua.service.datastore.internal.mediator.DatastoreException;
 import org.eclipse.kapua.service.datastore.internal.mediator.DatastoreMediator;
 import org.eclipse.kapua.service.datastore.internal.setting.DatastoreSettingKey;
@@ -110,7 +110,7 @@ public class MessageStoreServiceImpl extends AbstractKapuaConfigurableService im
         String datastoreId = UUID.randomUUID().toString();
         Context metricDataSaveTimeContext = metricDataSaveTime.time();
         try {
-            checkDataAccess(message.getScopeId(), Actions.write);
+            /*checkDataAccess(message.getScopeId(), Actions.write);
             metricMessageCount.inc();
             return messageStoreFacade.store(message, datastoreId, true);
         } catch (ConfigurationException e) {
@@ -128,7 +128,8 @@ public class MessageStoreServiceImpl extends AbstractKapuaConfigurableService im
         } catch (Exception e) {
             metricGenericErrorCount.inc();
             metricQueueGenericErrorCount.inc();
-            throw new DatastoreException(KapuaErrorCodes.INTERNAL_ERROR, e);
+            throw new DatastoreException(KapuaErrorCodes.INTERNAL_ERROR, e);*/
+            return null;
         } finally {
             metricDataSaveTimeContext.stop();
         }
@@ -140,7 +141,7 @@ public class MessageStoreServiceImpl extends AbstractKapuaConfigurableService im
         ArgumentValidator.notEmptyOrNull(datastoreId, "datastoreId");
         Context metricDataSaveTimeContext = metricDataSaveTime.time();
         try {
-            checkDataAccess(message.getScopeId(), Actions.write);
+            /*checkDataAccess(message.getScopeId(), Actions.write);
             metricMessageCount.inc();
             return messageStoreFacade.store(message, datastoreId, false);
         } catch (ConfigurationException e) {
@@ -159,6 +160,8 @@ public class MessageStoreServiceImpl extends AbstractKapuaConfigurableService im
             metricGenericErrorCount.inc();
             metricQueueGenericErrorCount.inc();
             throw new DatastoreException(KapuaErrorCodes.INTERNAL_ERROR, e);
+             */
+            return null;
         } finally {
             metricDataSaveTimeContext.stop();
         }

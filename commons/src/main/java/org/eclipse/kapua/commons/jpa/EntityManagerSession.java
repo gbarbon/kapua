@@ -362,6 +362,17 @@ public class EntityManagerSession {
                     // TODO: check behaviour without the detach (when all caches are implemented)
                 }
 
+/*                // logging cache miss
+                logger.info("Cache miss. Class is {}", result.getClass());
+                if (result instanceof KapuaListResult) {
+                    logger.info("Element is instance of KapuaListResult.");
+                } else if (result instanceof KapuaNamedEntity) {
+                    logger.info("Element is instance of KapuaNamedEntity, its name is {}",
+                            ((KapuaNamedEntity) result).getName());
+                } else if (result instanceof KapuaEntity) {
+                    logger.info("Element is instance of KapuaEntity, its type is {}", ((KapuaEntity) result).getType());
+                }*/
+
                 if (container.onAfterResult!=null && result != null) {
                     container.onAfterResult.onAfter(result);
                 }

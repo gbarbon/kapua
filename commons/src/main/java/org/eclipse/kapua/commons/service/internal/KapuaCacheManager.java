@@ -39,11 +39,16 @@ public class KapuaCacheManager {
         if (cache == null) {
             synchronized (cacheMap) {
                 cache = cacheMap.get(cacheName);
+                if (cacheMap.isEmpty()) {
+                    Thread t = new Thread(new CacheMetricReader());
+                    t.start();
+                }
                 if (cache == null) {
                     MutableConfiguration<Serializable, Serializable> config = new MutableConfiguration<>();
                     cache = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME).getCacheManager().createCache(cacheName, config);
                     cacheMap.put(cacheName, cache);
                 }
+
             }
         }
         return cache;

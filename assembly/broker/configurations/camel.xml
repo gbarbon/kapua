@@ -109,7 +109,7 @@
         transacted=false
         -->
         <route errorHandlerRef="mainRouteMessageErrorHandler" id="mainKapuaRoute">
-            <from uri="activemq:queue:Consumer.eurotech:mainRoutelisteners:EXACTLY_ONCE.VirtualTopic.>?asyncConsumer=false&amp;acknowledgementModeName=CLIENT_ACKNOWLEDGE&amp;transacted=false&amp;concurrentConsumers=20&amp;maxConcurrentConsumers=50"/>
+            <from uri="activemq:queue:Consumer.eurotech:mainRoutelisteners:EXACTLY_ONCE.VirtualTopic.>?asyncConsumer=false&amp;acknowledgementModeName=CLIENT_ACKNOWLEDGE&amp;transacted=false&amp;concurrentConsumers=5&amp;maxConcurrentConsumers=8"/>
             <!--  handling timeout and communication exceptions in a retry queue -->
             <onException>
                 <exception>org.eclipse.kapua.service.datastore.internal.mediator.DatastoreCommunicationException</exception>

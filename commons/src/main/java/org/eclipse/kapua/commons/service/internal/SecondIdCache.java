@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
+import org.eclipse.kapua.commons.service.internal.jcachetest.JCacheHashMapCache;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 
@@ -65,9 +66,38 @@ public class SecondIdCache extends EntityCache {
             // First get the entity in order to perform a check of the scope id
             KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
             if (entity != null) {
+                int idSizeBefore = ((JCacheHashMapCache) idCache).size();
+                int secondSizeBefore = ((JCacheHashMapCache) secondIdCache).size();
                 idCache.remove(kapuaId);
                 secondIdCache.remove(secondId);
+                int idSizeAfter = ((JCacheHashMapCache) idCache).size();
+                int secondSizeAfter = ((JCacheHashMapCache) secondIdCache).size();
+                cacheRemoval.inc();
+                //LOGGER.info("Cache removal for entity with scopeId {} and kapuaId {}", scopeId, kapuaId);
+                //LOGGER.info("Removing {} from idCache. Size before: {} and after: {} ", kapuaId, idSizeBefore,
+                // idSizeAfter);
+                //LOGGER.info("Removing {} from secondIdCache. Size before: {} and after: {} ", secondId,
+                // secondSizeBefore, secondSizeAfter);
+                //printStackTrace("Removal (SecondIdCache)", idCache, secondIdCache, kapuaId);
+                StringBuilder str = new StringBuilder();
+                str.append(printCacheContent("Removal (SecondIdCache)", kapuaId, idCache, "idCache"));
+                str.append(printCacheContent("Removal (SecondIdCache)", secondId, secondIdCache,
+                        "secondIdCache"));
+                LOGGER.info("{}", str);
             }
         }
+    }
+
+    public StringBuilder printCacheContent(Serializable id1, Serializable id2) {
+        StringBuilder str = new StringBuilder();
+        str.append(printCacheContent("get", id1, idCache, "idCache"));
+        str.append(printCacheContent("get", id2, secondIdCache, "secondIdCache"));
+        return str;
+    }
+
+    public StringBuilder printSecondIdCacheContent(Serializable id2) {
+        StringBuilder str = new StringBuilder();
+        str.append(printCacheContent("get", id2, secondIdCache, "secondIdCache"));
+        return str;
     }
 }
