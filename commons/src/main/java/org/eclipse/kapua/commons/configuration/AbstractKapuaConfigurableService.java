@@ -235,7 +235,8 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
     private ServiceConfig createConfig(ServiceConfig serviceConfig)
             throws KapuaException {
 
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig)));
+        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig))
+                .onBeforeVoidHandler(() -> PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid)));
     }
 
     /**
@@ -262,7 +263,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
             // Update
             return ServiceConfigDAO.update(em, serviceConfig);
-        }));
+        }).onBeforeVoidHandler(() -> PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid)));
     }
 
     @Override
@@ -276,9 +277,11 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
         try {
             KapuaTmetadata metadata = KAPUA_TMETADATA_LOCAL_CACHE.get(pid);
-            if (metadata==null) {
+            if (metadata == null) {
                 metadata = readMetadata(pid);
-                KAPUA_TMETADATA_LOCAL_CACHE.put(pid, metadata);
+                if (metadata != null) {
+                    KAPUA_TMETADATA_LOCAL_CACHE.put(pid, metadata);
+                }
             }
             if (metadata != null && metadata.getOCD() != null && !metadata.getOCD().isEmpty()) {
                 for (KapuaTocd ocd : metadata.getOCD()) {

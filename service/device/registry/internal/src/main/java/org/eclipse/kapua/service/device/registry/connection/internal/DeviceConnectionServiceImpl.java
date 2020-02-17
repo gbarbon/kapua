@@ -119,11 +119,10 @@ public class DeviceConnectionServiceImpl extends
             }
             return DeviceConnectionDAO.update(entityManager, deviceConnection);
         }).onAfterResultHandler(entity -> {
-            Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null,
-                    deviceConnection.getId().toStringId());
+            Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null, deviceConnection.getId());
             if (device!=null) {
                 ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
-                        deviceConnection.getId().toStringId());
+                        deviceConnection.getId());
             }
         }));
     }
@@ -222,11 +221,10 @@ public class DeviceConnectionServiceImpl extends
             DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
         }).onAfterVoidHandler(
                 () -> {
-                    Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null,
-                            deviceConnectionId.toStringId());
+                    Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null, deviceConnectionId);
                     if (device!=null) {
                         ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
-                                deviceConnectionId.toStringId());
+                                deviceConnectionId);
                     }
                 }));
     }

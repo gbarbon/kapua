@@ -99,8 +99,9 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             }
             // Update
             return DeviceDAO.update(entityManager, device);
-        }).onBeforeVoidHandler(() -> ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
-                device.getConnectionId().toStringId())));
+        }).onBeforeVoidHandler(() ->
+            ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(), device.getConnectionId())
+        ));
     }
 
     @Override
@@ -110,7 +111,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
                 .onBeforeResultHandler(() -> (Device) entityCache.get(scopeId, entityId))
                 .onAfterResultHandler((entity) -> ((ThirdIdCache) entityCache).put(entity, entity.getClientId(),
-                        entity.getConnectionId().toStringId())));
+                        entity.getConnectionId())));
     }
 
     @Override
@@ -136,7 +137,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
                     Device device = (Device) entityCache.get(scopeId, deviceId);
                     if (device!=null) {
                         ((ThirdIdCache) entityCache).remove(scopeId, deviceId, device.getClientId(),
-                                device.getConnectionId().toStringId());
+                                device.getConnectionId());
                     }
                 }));
     }
@@ -156,11 +157,8 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             if (!result.isEmpty()) {
                 device = result.getFirstItem();
             }
-/*            if (device!=null && !device.getConnection().getStatus().equals(device2.getConnection().getStatus())) {
-                LOGGER.info("\n####\n connection status are different!  #####\n");
-            }*/
             if (device!=null) {
-                ((ThirdIdCache) entityCache).put(device, clientId, device.getConnectionId().toStringId());
+                ((ThirdIdCache) entityCache).put(device, clientId, device.getConnectionId());
             }
         }
         return device;

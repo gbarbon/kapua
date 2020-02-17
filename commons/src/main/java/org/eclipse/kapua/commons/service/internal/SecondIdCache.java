@@ -40,7 +40,7 @@ public class SecondIdCache extends EntityCache {
     }
 
     public void put(KapuaEntity entity, String secondId) {
-        if (secondId != null) {
+        if (secondId != null && secondId.trim().length() > 0) {
             idCache.put(entity.getId(), entity);
             secondIdCache.put(secondId, entity.getId());
         }

@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.service.internal;
 
-import org.eclipse.kapua.commons.jpa.EntityManagerSession;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 
@@ -27,8 +26,8 @@ public class ThirdIdCache extends SecondIdCache {
         thirdIdCache = KapuaCacheManager.getCache(thirdIdCacheName);
     }
 
-    public KapuaEntity getFromThirdId(KapuaId scopeId, String thirdId) {
-        if (thirdId != null && thirdId.trim().length() > 0) {
+    public KapuaEntity getFromThirdId(KapuaId scopeId, KapuaId thirdId) {
+        if (thirdId != null) {
             KapuaId entityId = (KapuaId) thirdIdCache.get(thirdId);
             return get(scopeId, entityId);
         }
@@ -45,11 +44,13 @@ public class ThirdIdCache extends SecondIdCache {
         throw new UnsupportedOperationException();
     }
 
-    public void put(KapuaEntity entity, String secondId, String thirdId) {
-        if (secondId != null) {
+    public void put(KapuaEntity entity, String secondId, KapuaId thirdId) {
+        if (secondId != null && secondId.trim().length() > 0) {
             idCache.put(entity.getId(), entity);
             secondIdCache.put(secondId, entity.getId());
-            thirdIdCache.put(thirdId, entity.getId());
+            if (thirdId!=null) {
+                thirdIdCache.put(thirdId, entity.getId());
+            }
         }
     }
 
@@ -73,18 +74,20 @@ public class ThirdIdCache extends SecondIdCache {
         throw new UnsupportedOperationException();
     }
 
-    public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity, String secondId, String thirdId) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity, String secondId, KapuaId thirdId) {
         return remove(scopeId, entity.getId(), secondId, thirdId);
     }
 
-    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId, String secondId, String thirdId) {
-        if (kapuaId != null && secondId != null && secondId.trim().length() > 0 && thirdId != null && thirdId.trim().length() > 0) {
+    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId, String secondId, KapuaId thirdId) {
+        if (kapuaId != null && secondId != null && secondId.trim().length() > 0) {
             // First get the entity in order to perform a check of the scope id
             KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
             if (entity != null) {
                 idCache.remove(kapuaId);
                 secondIdCache.remove(secondId);
-                thirdIdCache.remove(thirdId);
+                if (thirdId != null) {
+                    thirdIdCache.remove(thirdId);
+                }
                 cacheRemoval.inc();
                 return entity;
             }
