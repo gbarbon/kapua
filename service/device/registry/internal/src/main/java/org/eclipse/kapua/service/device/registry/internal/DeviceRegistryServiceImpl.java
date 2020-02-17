@@ -18,7 +18,7 @@ import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
-import org.eclipse.kapua.commons.service.internal.SecondIdCache;
+import org.eclipse.kapua.commons.service.internal.ThirdIdCache;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.locator.KapuaProvider;
@@ -99,7 +99,8 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             }
             // Update
             return DeviceDAO.update(entityManager, device);
-        }).onBeforeVoidHandler(() -> ((SecondIdCache) entityCache).remove(null, device, device.getClientId())));
+        }).onBeforeVoidHandler(() -> ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
+                device.getConnectionId().toStringId())));
     }
 
     @Override
@@ -108,7 +109,8 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
 
         return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
                 .onBeforeResultHandler(() -> (Device) entityCache.get(scopeId, entityId))
-                .onAfterResultHandler((entity) -> ((SecondIdCache) entityCache).put(entity, entity.getClientId())));
+                .onAfterResultHandler((entity) -> ((ThirdIdCache) entityCache).put(entity, entity.getClientId(),
+                        entity.getConnectionId().toStringId())));
     }
 
     @Override
@@ -133,7 +135,8 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
                 .onAfterVoidHandler(() -> {
                     Device device = (Device) entityCache.get(scopeId, deviceId);
                     if (device!=null) {
-                        ((SecondIdCache) entityCache).remove(scopeId, deviceId, device.getClientId());
+                        ((ThirdIdCache) entityCache).remove(scopeId, deviceId, device.getClientId(),
+                                device.getConnectionId().toStringId());
                     }
                 }));
     }
@@ -141,7 +144,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
     @Override
     public Device findByClientId(KapuaId scopeId, String clientId) throws KapuaException {
         DeviceValidation.validateFindByClientIdPreconditions(scopeId, clientId);
-        Device device = (Device) ((SecondIdCache) entityCache).get(scopeId, clientId);
+        Device device = (Device) ((ThirdIdCache) entityCache).get(scopeId, clientId);
         if (device==null) {
             DeviceQueryImpl query = new DeviceQueryImpl(scopeId);
             query.setPredicate(query.attributePredicate(DeviceAttributes.CLIENT_ID, clientId));
@@ -153,8 +156,11 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             if (!result.isEmpty()) {
                 device = result.getFirstItem();
             }
+/*            if (device!=null && !device.getConnection().getStatus().equals(device2.getConnection().getStatus())) {
+                LOGGER.info("\n####\n connection status are different!  #####\n");
+            }*/
             if (device!=null) {
-                ((SecondIdCache) entityCache).put(device, clientId);
+                ((ThirdIdCache) entityCache).put(device, clientId, device.getConnectionId().toStringId());
             }
         }
         return device;
