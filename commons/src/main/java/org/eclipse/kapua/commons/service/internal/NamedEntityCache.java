@@ -28,7 +28,7 @@ public class NamedEntityCache extends EntityCache {
     }
 
     public KapuaEntity get(KapuaId scopeId, String name) {
-        if (name != null && name.trim().length() > 0) {
+        if (name != null) {
             KapuaId entityId = (KapuaId) nameCache.get(name);
             return get(scopeId, entityId);
         }
@@ -37,28 +37,18 @@ public class NamedEntityCache extends EntityCache {
 
     @Override
     public void put(KapuaEntity entity) {
-        put((KapuaNamedEntity) entity);
-    }
-
-    public void put(KapuaNamedEntity entity) {
         if (entity != null) {
             idCache.put(entity.getId(), entity);
-            nameCache.put(entity.getName(), entity.getId());
+            nameCache.put(((KapuaNamedEntity) entity).getName(), entity.getId());
         }
     }
 
     @Override
     public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId) {
-        if (kapuaId != null) {
-            // First get the entity in order to perform a check of the scope id
-            KapuaNamedEntity entity = (KapuaNamedEntity) get(scopeId, kapuaId);
-            if (entity != null) {
-                idCache.remove(kapuaId);
-                nameCache.remove(entity.getName());
-                cacheRemoval.inc();
-                return entity;
-            }
+        KapuaEntity kapuaEntity = super.remove(scopeId, kapuaId);
+        if (kapuaEntity != null) {
+            nameCache.remove(((KapuaNamedEntity) kapuaEntity).getName());
         }
-        return null;
+        return kapuaEntity;
     }
 }
