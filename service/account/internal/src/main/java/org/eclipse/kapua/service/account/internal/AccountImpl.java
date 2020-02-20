@@ -177,18 +177,5 @@ public class AccountImpl extends AbstractKapuaNamedEntity implements Account {
         this.expirationDate = expirationDate;
     }
 
-    public Account clone() {
-        Account tmp = new AccountImpl();
-        tmp.setParentAccountPath(getParentAccountPath());
-        tmp.setExpirationDate(getExpirationDate());
-        tmp.setOrganization(getOrganization());
-        tmp.setDescription(getDescription());
-        tmp.setEntityAttributes(getEntityAttributes());
-        tmp.setEntityProperties(getEntityProperties());
-        tmp.setId(getId());
-        tmp.setName(getName());
-        tmp.setOptlock(getOptlock());
-        tmp.setScopeId(getScopeId());
-        return tmp;
-    }
+
 }

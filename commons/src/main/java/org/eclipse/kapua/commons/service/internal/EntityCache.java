@@ -21,11 +21,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
 import java.io.Serializable;
-import java.util.Objects;
 
 public class EntityCache {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(EntityCache.class);
+
+    private static final String MODULE = "commons";
+    private static final String COMPONENT = "cache";
+    private static final String ENTITY = "entity";
+    private static final String COUNT = "count";
+
     protected Cache<Serializable, Serializable> idCache;
     protected Cache<Serializable, Serializable> listsCache;  // listsCache does not use the same keys as idCache
     protected Counter cacheMiss;
@@ -34,10 +39,10 @@ public class EntityCache {
 
     public EntityCache(String idCacheName) {
         idCache = KapuaCacheManager.getCache(idCacheName);
-        listsCache = KapuaCacheManager.getCache(idCacheName + "list");
-        cacheMiss = MetricServiceFactory.getInstance().getCounter("cache", "cache", "cache_miss_count");
-        cacheHit = MetricServiceFactory.getInstance().getCounter("cache", "cache", "cache_hit_count");
-        cacheRemoval = MetricServiceFactory.getInstance().getCounter("cache", "cache", "cache_removal_count");
+        listsCache = KapuaCacheManager.getCache(idCacheName + "_list");
+        cacheMiss = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "miss", COUNT);
+        cacheHit = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "hit", COUNT);
+        cacheRemoval = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "removal", COUNT);
     }
 
     public KapuaEntity get(KapuaId scopeId, KapuaId kapuaId) {
@@ -54,17 +59,12 @@ public class EntityCache {
         return null;
     }
 
-    public KapuaListResult getList(KapuaId scopeId, Serializable secondId) {
-        if (secondId != null) {
-            if (secondId instanceof String && ((String) secondId).trim().length() == 0) {
-                return null;
-            }
-            KapuaListResult entity = (KapuaListResult) listsCache.get(new CacheKey(scopeId, secondId));
-            if (entity == null) {
-                cacheMiss.inc();
-            } else {
-                cacheHit.inc();
-            }
+    public KapuaListResult getList(KapuaId scopeId, Serializable id) {
+        if (id != null) {
+//            if (id instanceof String && ((String) id).trim().length() == 0) {
+//                return null;
+//            }
+            KapuaListResult entity = (KapuaListResult) listsCache.get(new ComposedKey(scopeId, id));
             return entity;
         }
         return null;
@@ -76,10 +76,8 @@ public class EntityCache {
         }
     }
 
-    public void putList(KapuaId scopeId, Serializable secondKey, KapuaListResult list) {
-        if (list != null) {
-            listsCache.put(new CacheKey(scopeId, secondKey), list);
-        }
+    public void putList(KapuaId scopeId, Serializable id, KapuaListResult list) {
+        listsCache.put(new ComposedKey(scopeId, id), list);
     }
 
     public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity) {
@@ -89,7 +87,7 @@ public class EntityCache {
     public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId) {
         // First get the entity in order to perform a check of the scope id
         if (kapuaId != null) {
-            KapuaEntity entity = (KapuaEntity) get(scopeId, kapuaId);
+            KapuaEntity entity = get(scopeId, kapuaId);
             if (entity != null) {
                 idCache.remove(kapuaId);
                 cacheRemoval.inc();
@@ -99,13 +97,12 @@ public class EntityCache {
         return null;
     }
 
-    public KapuaListResult removeList(KapuaId scopeId, Serializable secondId) {
+    public KapuaListResult removeList(KapuaId scopeId, Serializable id) {
         // First get the entity in order to perform a check of the scope id
-        if (secondId != null) {
-            KapuaListResult entity = (KapuaListResult) getList(scopeId, secondId);
+        if (id != null) {
+            KapuaListResult entity = (KapuaListResult) getList(scopeId, id);
             if (entity != null) {
-                listsCache.remove(new CacheKey(scopeId, secondId));
-                //cacheRemoval.inc();  // commented because usually a 'remove' is already performed before 'removeList'
+                listsCache.remove(new ComposedKey(scopeId, id));
                 return entity;
             }
         }
@@ -145,53 +142,4 @@ public class EntityCache {
             return null;
         }
     }
-
-    public class CacheKey implements Serializable {
-
-        private Serializable firstKey;
-        private Serializable secondKey;
-
-        public CacheKey(Serializable firstKey, Serializable secondKey) {
-            this.firstKey = firstKey;
-            this.secondKey = secondKey;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(firstKey, secondKey);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            CacheKey otherCacheKey = (CacheKey) obj;
-            return Objects.equals(firstKey, otherCacheKey.getFirstKey()) && Objects.equals(secondKey,
-                    otherCacheKey.getSecondKey());
-        }
-
-        public Serializable getFirstKey() {
-            return firstKey;
-        }
-
-        public void setFirstKey(Serializable firstKey) {
-            this.firstKey = firstKey;
-        }
-
-        public Serializable getSecondKey() {
-            return secondKey;
-        }
-
-        public void setSecondKey(Serializable secondKey) {
-            this.secondKey = secondKey;
-        }
-    }
-
 }
