@@ -16,20 +16,13 @@ import org.eclipse.kapua.commons.service.internal.EntityCache;
 
 public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
 
-    private String secondIdCacheName;
-
     public AccessInfoCacheFactory() {
         super("AccessInfoId");
-        this.secondIdCacheName = "AccessInfoUserIdId";
-    }
-
-    public String getSecondIdCacheName() {
-        return secondIdCacheName;
     }
 
     @Override
     public EntityCache createCache() {
-        return new AccessInfoCache(getEntityIdCacheName(), getSecondIdCacheName());
+        return new AccessInfoCache(getEntityIdCacheName(), "AccessInfoUserIdId");
     }
 
     protected static AccessInfoCacheFactory getInstance() {
