@@ -236,7 +236,10 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
             throws KapuaException {
 
         return entityManagerSession.onTransactedInsert(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig))
-                .onBeforeVoidHandler(() -> PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid)));
+                .onBeforeHandler(() -> {
+                    PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid);
+                    return null;
+                }));
     }
 
     /**
@@ -263,7 +266,10 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
             // Update
             return ServiceConfigDAO.update(em, serviceConfig);
-        }).onBeforeVoidHandler(() -> PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid)));
+        }).onBeforeHandler(() -> {
+            PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid);
+            return null;
+        }));
     }
 
     @Override
@@ -314,8 +320,8 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
         query.setPredicate(predicate);
 
         ServiceConfigListResult result = entityManagerSession.onResult(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query))
-                            .onBeforeResultHandler(() -> (ServiceConfigListResult) PRIVATE_ENTITY_CACHE.getList(scopeId, pid))
-                            .onAfterResultHandler((entity) -> PRIVATE_ENTITY_CACHE.putList(scopeId, pid, entity)));
+                            .onBeforeHandler(() -> (ServiceConfigListResult) PRIVATE_ENTITY_CACHE.getList(scopeId, pid))
+                            .onAfterHandler((entity) -> PRIVATE_ENTITY_CACHE.putList(scopeId, pid, entity)));
 
         Properties properties = null;
         if (result != null && !result.isEmpty()) {

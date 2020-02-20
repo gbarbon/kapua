@@ -118,7 +118,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
             }
 
             return AccessPermissionDAO.create(em, accessPermissionCreator);
-        }).onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
+        }).onAfterHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
     }
 
     @Override
@@ -140,7 +140,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
 
             AccessPermissionDAO.delete(em, scopeId, accessPermissionId);
             return accessPermission;
-        }).onAfterResultHandler((entity) -> {
+        }).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, accessPermissionId);
             entityCache.removeList(scopeId, entity.getAccessInfoId());
         }));
@@ -160,8 +160,8 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.read, scopeId));
 
         return entityManagerSession.onResult(EntityManagerContainer.<AccessPermission>create().onResultHandler(em -> AccessPermissionDAO.find(em, scopeId, accessPermissionId))
-                .onBeforeResultHandler(() -> (AccessPermission) entityCache.get(scopeId, accessPermissionId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+                .onBeforeHandler(() -> (AccessPermission) entityCache.get(scopeId, accessPermissionId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override

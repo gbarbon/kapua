@@ -103,7 +103,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
             }
 
             return AccessRoleDAO.create(em, accessRoleCreator);
-        }).onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
+        }).onAfterHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getAccessInfoId())));
     }
 
     @Override
@@ -125,7 +125,7 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
 
             AccessRoleDAO.delete(em, scopeId, accessRoleId);
             return accessRole;
-        }).onAfterResultHandler((entity) -> {
+        }).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, accessRoleId);
             entityCache.removeList(scopeId, entity.getAccessInfoId());
         }));
@@ -145,8 +145,8 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.read, scopeId));
 
         return entityManagerSession.onResult(EntityManagerContainer.<AccessRole>create().onResultHandler(em -> AccessRoleDAO.find(em, scopeId, accessRoleId))
-                .onBeforeResultHandler(() -> (AccessRole) entityCache.get(scopeId, accessRoleId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+                .onBeforeHandler(() -> (AccessRole) entityCache.get(scopeId, accessRoleId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override

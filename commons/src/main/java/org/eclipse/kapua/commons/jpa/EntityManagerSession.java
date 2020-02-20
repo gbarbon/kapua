@@ -291,8 +291,8 @@ public class EntityManagerSession {
 
             transactionManager.commit(manager);
 
-            if (container.onAfterVoid!=null ) {
-                container.onAfterVoid.onAfter();
+            if (container.onAfter!=null ) {
+                container.onAfter.onAfter(null);
             }
         } catch (Exception e) {
             if (manager != null) {
@@ -338,11 +338,8 @@ public class EntityManagerSession {
     private <T> T internalOnResult(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
         EntityManager manager = null;
         T result = null;
-        if (container.onBeforeVoid != null) {
-            container.onBeforeVoid.onBefore();
-        }
-        if (container.onBeforeResult != null) {
-            result = container.onBeforeResult.onBefore();
+        if (container.onBefore != null) {
+            result = container.onBefore.onBefore();
         }
         if (result == null) {
             try {
@@ -362,8 +359,8 @@ public class EntityManagerSession {
                     // TODO: check behaviour without the detach (when all caches are implemented)
                 }
 
-                if (container.onAfterResult!=null && result != null) {
-                    container.onAfterResult.onAfter(result);
+                if (container.onAfter !=null && result != null) {
+                    container.onAfter.onAfter(result);
                 }
                 return result;
             } catch (Exception e) {
@@ -422,11 +419,8 @@ public class EntityManagerSession {
         boolean succeeded = false;
         int retry = 0;
         T instance = null;
-        if (container.onBeforeVoid != null) {
-            container.onBeforeVoid.onBefore();
-        }
-        if (container.onBeforeResult != null) {
-            instance = container.onBeforeResult.onBefore();
+        if (container.onBefore != null) {
+            instance = container.onBefore.onBefore();
         }
         EntityManager manager = entityManagerFactory.createEntityManager();
         try {
@@ -439,11 +433,8 @@ public class EntityManagerSession {
 
                     transactionManager.commit(manager);
                     succeeded = true;
-                    if (container.onAfterVoid!=null ) {
-                        container.onAfterVoid.onAfter();
-                    }
-                    if (container.onAfterResult!=null && instance != null) {
-                        container.onAfterResult.onAfter(instance);
+                    if (container.onAfter !=null) {
+                        container.onAfter.onAfter(instance);
                     }
                 } catch (KapuaEntityExistsException e) {
                     if (manager != null) {

@@ -19,8 +19,7 @@ import org.eclipse.kapua.KapuaException;
  * @param <T> Execution result return type
  * @since 1.0
  */
-public interface OnBeforeResult<T> {
+public interface OnAfter<T> {
 
-    T onBefore() throws KapuaException;
-
+    void onAfter(T result) throws KapuaException;
 }

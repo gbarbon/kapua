@@ -149,8 +149,8 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.read, scopeId));
 
         return entityManagerSession.onResult(EntityManagerContainer.<AccessInfo>create().onResultHandler(em -> AccessInfoDAO.find(em, scopeId, accessInfoId))
-                .onBeforeResultHandler(() -> (AccessInfo) entityCache.get(scopeId, accessInfoId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity))
+                .onBeforeHandler(() -> (AccessInfo) entityCache.get(scopeId, accessInfoId))
+                .onAfterHandler((entity) -> entityCache.put(entity))
         );
     }
 
@@ -175,8 +175,8 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
                 return result.getFirstItem();
             }
             return null;
-        }).onBeforeResultHandler(() -> (AccessInfo) ((AccessInfoCache) entityCache).getByUserId(scopeId, userId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+        }).onBeforeHandler(() -> (AccessInfo) ((AccessInfoCache) entityCache).getByUserId(scopeId, userId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -223,7 +223,7 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
             }
 
             AccessInfoDAO.delete(em, scopeId, accessInfoId);
-        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accessInfoId)));
+        }).onAfterHandler((emptyParam) -> entityCache.remove(scopeId, accessInfoId)));
     }
 
     //@ListenServiceEvent(fromAddress="account")

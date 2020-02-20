@@ -98,7 +98,11 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             }
             // Update
             return DeviceDAO.update(entityManager, device);
-        }).onBeforeVoidHandler(() -> entityCache.remove(device.getScopeId(), device)));
+        }).onBeforeHandler(() -> {
+                    entityCache.remove(device.getScopeId(), device);
+                    return null;
+                }
+            ));
     }
 
     @Override
@@ -106,8 +110,8 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         DeviceValidation.validateFindPreconditions(scopeId, entityId);
 
         return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
-                .onBeforeResultHandler(() -> (Device) entityCache.get(scopeId, entityId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+                .onBeforeHandler(() -> (Device) entityCache.get(scopeId, entityId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -129,7 +133,7 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
         DeviceValidation.validateDeletePreconditions(scopeId, deviceId);
 
         entityManagerSession.doTransactedAction(EntityManagerContainer.create().onVoidResultHandler(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId))
-                .onAfterVoidHandler(() -> entityCache.remove(scopeId, deviceId)));
+                .onAfterHandler((emptyParam) -> entityCache.remove(scopeId, deviceId)));
     }
 
     @Override

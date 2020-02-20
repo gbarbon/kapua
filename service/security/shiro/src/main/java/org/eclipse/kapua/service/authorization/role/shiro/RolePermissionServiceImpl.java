@@ -117,7 +117,7 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         }
 
         return entityManagerSession.onTransactedInsert(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> RolePermissionDAO.create(em, rolePermissionCreator))
-                .onAfterResultHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getRoleId())));
+                .onAfterHandler((entity) -> entityCache.removeList(entity.getScopeId(), entity.getRoleId())));
     }
 
     @Override
@@ -141,7 +141,7 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
 
             RolePermissionDAO.delete(em, scopeId, rolePermissionId);
             return rolePermission;
-        }).onAfterResultHandler((entity) -> {
+        }).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, rolePermissionId);
             entityCache.removeList(scopeId, entity.getRoleId());
         }));
@@ -161,8 +161,8 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ROLE_DOMAIN, Actions.read, scopeId));
 
         return entityManagerSession.onResult(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> RolePermissionDAO.find(em, scopeId, rolePermissionId))
-                .onBeforeResultHandler(() -> (RolePermission) entityCache.get(scopeId, rolePermissionId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+                .onBeforeHandler(() -> (RolePermission) entityCache.get(scopeId, rolePermissionId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override

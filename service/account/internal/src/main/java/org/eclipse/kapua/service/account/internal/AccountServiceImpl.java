@@ -220,7 +220,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
             // Update
             return AccountDAO.update(em, account);
-        }).onBeforeVoidHandler(() -> {
+        }).onBeforeHandler(() -> {
 
             // TODO: duplicated checks, move them before the call to the entityManagerSession?
             //
@@ -235,6 +235,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                 throw new KapuaAccountException(KapuaAccountErrorCodes.ILLEGAL_ARGUMENT, null, "account.name");
             }
             entityCache.remove(null, account);
+            return null;
         }));
     }
 
@@ -277,7 +278,7 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
             }
 
             AccountDAO.delete(em, scopeId, accountId);
-        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accountId)));
+        }).onAfterHandler((emptyParam) -> entityCache.remove(scopeId, accountId)));
     }
 
     @Override
@@ -329,13 +330,13 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
                     }
                     return account;
                 }
-        ).onBeforeResultHandler(() -> {
+        ).onBeforeHandler(() -> {
             Account account = (Account) ((NamedEntityCache) entityCache).get(null, name);
             if (account != null) {  // TODO: can this be put in the onAfterResultHandler ?
                 checkAccountPermission(account.getScopeId(), account.getId(), AccountDomains.ACCOUNT_DOMAIN, Actions.read);
             }
             return account;
-        }).onAfterResultHandler((entity) -> entityCache.put(entity)));
+        }).onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     // TODO: implement list cache here
@@ -418,8 +419,8 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Do find
         return entityManagerSession.onResult(
                 EntityManagerContainer.<Account>create().onResultHandler(em -> AccountDAO.find(em, null, accountId))
-                        .onBeforeResultHandler(() -> (Account) entityCache.get(null, accountId))
-                        .onAfterResultHandler((entity) -> entityCache.put(entity))
+                        .onBeforeHandler(() -> (Account) entityCache.get(null, accountId))
+                        .onAfterHandler((entity) -> entityCache.put(entity))
         );
     }
 

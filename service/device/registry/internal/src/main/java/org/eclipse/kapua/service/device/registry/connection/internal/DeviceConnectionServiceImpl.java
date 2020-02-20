@@ -117,7 +117,11 @@ public class DeviceConnectionServiceImpl extends
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnection.getId());
             }
             return DeviceConnectionDAO.update(entityManager, deviceConnection);
-        }).onBeforeVoidHandler(() -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(deviceConnection.getScopeId(), deviceConnection.getId())));
+        }).onBeforeHandler(() -> {
+            ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(deviceConnection.getScopeId(),
+                    deviceConnection.getId());
+            return null;
+        }));
     }
 
     @Override
@@ -212,7 +216,8 @@ public class DeviceConnectionServiceImpl extends
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnectionId);
             }
             DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
-        }).onAfterVoidHandler(() -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId, deviceConnectionId)));
+        }).onAfterHandler((emptyParam) -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId,
+                deviceConnectionId)));
     }
 
     @Override

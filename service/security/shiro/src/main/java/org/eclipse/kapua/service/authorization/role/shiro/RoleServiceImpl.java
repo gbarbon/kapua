@@ -169,7 +169,10 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do update
         return entityManagerSession.onTransactedResult(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.update(em, role))
-                .onBeforeVoidHandler(() -> entityCache.remove(null, role)));
+                .onBeforeHandler(() -> {
+                    entityCache.remove(null, role);
+                    return null;
+                }));
     }
 
     @Override
@@ -195,7 +198,7 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do delete
         entityManagerSession.doTransactedAction(EntityManagerContainer.<Role>create().onVoidResultHandler(em -> RoleDAO.delete(em, scopeId, roleId))
-                .onAfterVoidHandler(() -> entityCache.remove(scopeId, roleId)));
+                .onAfterHandler((emptyParam) -> entityCache.remove(scopeId, roleId)));
     }
 
     @Override
@@ -212,8 +215,8 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         //
         // Do find
         return entityManagerSession.onResult(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.find(em, scopeId, roleId))
-                .onBeforeResultHandler(() -> (Role) entityCache.get(scopeId, roleId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+                .onBeforeHandler(() -> (Role) entityCache.get(scopeId, roleId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
