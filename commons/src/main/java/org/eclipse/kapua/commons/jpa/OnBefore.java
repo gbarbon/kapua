@@ -16,8 +16,11 @@ import org.eclipse.kapua.KapuaException;
 /**
  * Entity manager callback result service definition.
  *
+ * @param <T> Execution result return type
+ * @since 1.0
  */
-public interface OnAfterVoid {
+public interface OnBefore<T> {
 
-    void onAfter() throws KapuaException;
+    T onBefore() throws KapuaException;
+
 }

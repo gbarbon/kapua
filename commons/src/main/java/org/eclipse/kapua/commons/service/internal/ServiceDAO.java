@@ -243,10 +243,12 @@ public class ServiceDAO {
      * @param clazz    The {@link KapuaEntity} class. This must be the implementing {@code class}.
      * @param scopeId  The {@link KapuaEntity} scopeId of the entity to be deleted.
      * @param entityId The {@link KapuaEntity} {@link KapuaId} of the entity to be deleted.
+     * @return The deleted {@link KapuaEntity}.
      * @throws KapuaEntityNotFoundException If the {@link KapuaEntity} does not exists.
      * @since 1.0.0
      */
-    public static <E extends KapuaEntity> void delete(@NotNull EntityManager em, @NotNull Class<E> clazz, @NotNull KapuaId scopeId, @NotNull KapuaId entityId)
+    public static <E extends KapuaEntity> E delete(@NotNull EntityManager em, @NotNull Class<E> clazz,
+                                                   @NotNull KapuaId scopeId, @NotNull KapuaId entityId)
             throws KapuaEntityNotFoundException {
         //
         // Checking existence
@@ -260,6 +262,7 @@ public class ServiceDAO {
         } else {
             throw new KapuaEntityNotFoundException(clazz.getSimpleName(), entityId);
         }
+        return entityToDelete;
     }
 
     /**

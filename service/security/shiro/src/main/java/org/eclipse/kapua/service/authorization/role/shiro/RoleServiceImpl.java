@@ -114,7 +114,7 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<Role>create().onResultHandler(em -> {
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<Role>create().onResultHandler(em -> {
             Role role = RoleDAO.create(em, roleCreator);
 
             if (!roleCreator.getPermissions().isEmpty()) {
@@ -168,8 +168,11 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do update
-        return entityManagerSession.onTransactedResult(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.update(em, role))
-                .onBeforeVoidHandler(() -> entityCache.remove(null, role)));
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.update(em, role))
+                .onBeforeHandler(() -> {
+                    entityCache.remove(null, role);
+                    return null;
+                }));
     }
 
     @Override
@@ -194,8 +197,8 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do delete
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<Role>create().onVoidResultHandler(em -> RoleDAO.delete(em, scopeId, roleId))
-                .onAfterVoidHandler(() -> entityCache.remove(scopeId, roleId)));
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.delete(em, scopeId, roleId))
+                .onAfterHandler((emptyParam) -> entityCache.remove(scopeId, roleId)));
     }
 
     @Override
@@ -211,9 +214,9 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do find
-        return entityManagerSession.onResult(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.find(em, scopeId, roleId))
-                .onBeforeResultHandler(() -> (Role) entityCache.get(scopeId, roleId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Role>create().onResultHandler(em -> RoleDAO.find(em, scopeId, roleId))
+                .onBeforeHandler(() -> (Role) entityCache.get(scopeId, roleId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -228,7 +231,7 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do query
-        return entityManagerSession.onResult(EntityManagerContainer.<RoleListResult>create().onResultHandler(em -> RoleDAO.query(em, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<RoleListResult>create().onResultHandler(em -> RoleDAO.query(em, query)));
     }
 
     @Override
@@ -243,7 +246,7 @@ public class RoleServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do count
-        return entityManagerSession.onResult(EntityManagerContainer.<Long>create().onResultHandler(em -> RoleDAO.count(em, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Long>create().onResultHandler(em -> RoleDAO.count(em, query)));
     }
 
     //@ListenServiceEvent(fromAddress="account")

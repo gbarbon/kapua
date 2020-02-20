@@ -84,52 +84,56 @@ public class DeviceRegistryServiceImpl extends AbstractKapuaConfigurableResource
             throw new KapuaDuplicateNameException(deviceCreator.getClientId());
         }
 
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.create(entityManager, deviceCreator)));
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.create(entityManager, deviceCreator)));
     }
 
     @Override
     public Device update(Device device) throws KapuaException {
         DeviceValidation.validateUpdatePreconditions(device);
 
-        return entityManagerSession.onTransactedResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> {
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> {
             Device currentDevice = DeviceDAO.find(entityManager, device.getScopeId(), device.getId());
             if (currentDevice == null) {
                 throw new KapuaEntityNotFoundException(Device.TYPE, device.getId());
             }
             // Update
             return DeviceDAO.update(entityManager, device);
-        }).onBeforeVoidHandler(() -> entityCache.remove(device.getScopeId(), device)));
+        }).onBeforeHandler(() -> {
+                    entityCache.remove(device.getScopeId(), device);
+                    return null;
+                }
+            ));
     }
 
     @Override
     public Device find(KapuaId scopeId, KapuaId entityId) throws KapuaException {
         DeviceValidation.validateFindPreconditions(scopeId, entityId);
 
-        return entityManagerSession.onResult(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
-                .onBeforeResultHandler(() -> (Device) entityCache.get(scopeId, entityId))
-                .onAfterResultHandler((entity) -> entityCache.put(entity)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Device>create().onResultHandler(entityManager -> DeviceDAO.find(entityManager, scopeId, entityId))
+                .onBeforeHandler(() -> (Device) entityCache.get(scopeId, entityId))
+                .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
     public DeviceListResult query(KapuaQuery<Device> query) throws KapuaException {
         DeviceValidation.validateQueryPreconditions(query);
 
-        return entityManagerSession.onResult(EntityManagerContainer.<DeviceListResult>create().onResultHandler(entityManager -> DeviceDAO.query(entityManager, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<DeviceListResult>create().onResultHandler(entityManager -> DeviceDAO.query(entityManager, query)));
     }
 
     @Override
     public long count(KapuaQuery<Device> query) throws KapuaException {
         DeviceValidation.validateCountPreconditions(query);
 
-        return entityManagerSession.onResult(EntityManagerContainer.<Long>create().onResultHandler(entityManager -> DeviceDAO.count(entityManager, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Long>create().onResultHandler(entityManager -> DeviceDAO.count(entityManager, query)));
     }
 
     @Override
     public void delete(KapuaId scopeId, KapuaId deviceId) throws KapuaException {
         DeviceValidation.validateDeletePreconditions(scopeId, deviceId);
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onVoidResultHandler(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId))
-                .onAfterVoidHandler(() -> entityCache.remove(scopeId, deviceId)));
+        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onResultHandler(entityManager -> DeviceDAO.delete(entityManager, scopeId, deviceId))
+                .onAfterHandler((emptyParam) -> entityCache.remove(scopeId, deviceId)));
     }
 
     @Override

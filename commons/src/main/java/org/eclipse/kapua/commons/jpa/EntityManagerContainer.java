@@ -15,10 +15,8 @@ import org.eclipse.kapua.KapuaException;
 
 public class EntityManagerContainer<T> {
 
-    OnAfterResult<T> onAfterResult;
-    OnAfterVoid onAfterVoid;
-    OnBeforeResult<T> onBeforeResult;
-    OnBeforeVoid onBeforeVoid;
+    OnAfter<T> onAfter;
+    OnBefore<T> onBefore;
     EntityManagerCallback<T> resultCallback;
     EntityManagerVoidCallback resultVoidCallback;
 
@@ -29,23 +27,13 @@ public class EntityManagerContainer<T> {
     private EntityManagerContainer() {
     }
 
-    public EntityManagerContainer<T> onAfterResultHandler(OnAfterResult<T> onAfterResult) {
-        this.onAfterResult = onAfterResult;
+    public EntityManagerContainer<T> onAfterHandler(OnAfter<T> onAfter) {
+        this.onAfter = onAfter;
         return this;
     }
 
-    public EntityManagerContainer<T> onAfterVoidHandler(OnAfterVoid onAfterVoid) {
-        this.onAfterVoid = onAfterVoid;
-        return this;
-    }
-
-    public EntityManagerContainer<T> onBeforeResultHandler(OnBeforeResult<T> onBeforeResult) {
-        this.onBeforeResult = onBeforeResult;
-        return this;
-    }
-
-    public EntityManagerContainer<T> onBeforeVoidHandler(OnBeforeVoid onBeforeVoid) {
-        this.onBeforeVoid = onBeforeVoid;
+    public EntityManagerContainer<T> onBeforeHandler(OnBefore<T> onBefore) {
+        this.onBefore = onBefore;
         return this;
     }
 
@@ -54,16 +42,16 @@ public class EntityManagerContainer<T> {
         return this;
     }
 
-    public EntityManagerContainer<T> onVoidResultHandler(EntityManagerVoidCallback resultVoidCallback) {
+/*    public EntityManagerContainer<T> onVoidResultHandler(EntityManagerVoidCallback resultVoidCallback) {
         this.resultVoidCallback = resultVoidCallback;
         return this;
-    }
+    }*/
 
     public T onResult(EntityManager entityManager) throws KapuaException {
         return resultCallback.onAction(entityManager);
     }
 
-    public void onVoidResult(EntityManager entityManager) throws KapuaException {
+/*    public void onVoidResult(EntityManager entityManager) throws KapuaException {
         resultVoidCallback.onAction(entityManager);
-    }
+    }*/
 }
