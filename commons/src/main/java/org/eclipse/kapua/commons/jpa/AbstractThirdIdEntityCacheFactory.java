@@ -14,13 +14,19 @@ package org.eclipse.kapua.commons.jpa;
 import org.eclipse.kapua.commons.service.internal.EntityCache;
 import org.eclipse.kapua.commons.service.internal.ThirdIdCache;
 
-public abstract class AbstractThirdIdEntityCacheFactory extends AbstractSecondIdEntityCacheFactory {
+public abstract class AbstractThirdIdEntityCacheFactory extends AbstractEntityCacheFactory {
 
+    private String secondIdCacheName;
     private String thirdIdCacheName;
 
     public AbstractThirdIdEntityCacheFactory(String idCacheName, String secondIdCacheName, String thirdIdCacheName) {
-        super(idCacheName, secondIdCacheName);
+        super(idCacheName);
+        this.secondIdCacheName = secondIdCacheName;
         this.thirdIdCacheName = thirdIdCacheName;
+    }
+
+    public String getSecondIdCacheName() {
+        return secondIdCacheName;
     }
 
     public String getThirdIdCacheName() {

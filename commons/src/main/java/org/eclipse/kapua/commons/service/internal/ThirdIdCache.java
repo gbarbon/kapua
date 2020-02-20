@@ -17,13 +17,24 @@ import org.eclipse.kapua.model.id.KapuaId;
 import javax.cache.Cache;
 import java.io.Serializable;
 
-public class ThirdIdCache extends SecondIdCache {
+// TODO: this will become DeviceRegistry cache
+public class ThirdIdCache extends EntityCache {
 
+    protected Cache<Serializable, Serializable> secondIdCache;
     protected Cache<Serializable, Serializable> thirdIdCache;
 
     public ThirdIdCache(String idCacheName, String secondIdCacheName, String thirdIdCacheName) {
-        super(idCacheName, secondIdCacheName);
+        super(idCacheName);
+        secondIdCache = KapuaCacheManager.getCache(secondIdCacheName);
         thirdIdCache = KapuaCacheManager.getCache(thirdIdCacheName);
+    }
+
+    public KapuaEntity get(KapuaId scopeId, String secondId) {
+        if (secondId != null && secondId.trim().length() > 0) {
+            KapuaId entityId = (KapuaId) secondIdCache.get(secondId);
+            return get(scopeId, entityId);
+        }
+        return null;
     }
 
     public KapuaEntity getFromThirdId(KapuaId scopeId, KapuaId thirdId) {
@@ -36,11 +47,6 @@ public class ThirdIdCache extends SecondIdCache {
 
     @Override
     public void put(KapuaEntity entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void put(KapuaEntity entity, String secondId) {
         throw new UnsupportedOperationException();
     }
 
@@ -61,16 +67,6 @@ public class ThirdIdCache extends SecondIdCache {
 
     @Override
     public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public KapuaEntity remove(KapuaId scopeId, KapuaId kapuaId, String secondId) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public KapuaEntity remove(KapuaId scopeId, KapuaEntity entity, String secondId) {
         throw new UnsupportedOperationException();
     }
 

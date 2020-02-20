@@ -16,7 +16,6 @@ import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.jpa.AbstractEntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.service.internal.AbstractKapuaService;
-import org.eclipse.kapua.commons.service.internal.SecondIdCache;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -151,7 +150,7 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
 
         return entityManagerSession.onResult(EntityManagerContainer.<AccessInfo>create().onResultHandler(em -> AccessInfoDAO.find(em, scopeId, accessInfoId))
                 .onBeforeResultHandler(() -> (AccessInfo) entityCache.get(scopeId, accessInfoId))
-                .onAfterResultHandler((entity) -> ((SecondIdCache) entityCache).put(entity, entity.getUserId().toStringId()))
+                .onAfterResultHandler((entity) -> entityCache.put(entity))
         );
     }
 
@@ -176,8 +175,8 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
                 return result.getFirstItem();
             }
             return null;
-        }).onBeforeResultHandler(() -> (AccessInfo) ((SecondIdCache) entityCache).get(scopeId, userId.toStringId()))
-                .onAfterResultHandler((entity) -> ((SecondIdCache) entityCache).put(entity, userId.toStringId())));
+        }).onBeforeResultHandler(() -> (AccessInfo) ((AccessInfoCache) entityCache).getByUserId(scopeId, userId))
+                .onAfterResultHandler((entity) -> entityCache.put(entity)));
     }
 
     @Override
@@ -224,12 +223,7 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
             }
 
             AccessInfoDAO.delete(em, scopeId, accessInfoId);
-        }).onAfterVoidHandler(() -> {
-            AccessInfo accessInfo = (AccessInfo) entityCache.get(scopeId, accessInfoId);
-            if (accessInfo!=null) {
-                ((SecondIdCache) entityCache).remove(scopeId, accessInfoId, accessInfo.getUserId().toStringId());
-            }
-        }));
+        }).onAfterVoidHandler(() -> entityCache.remove(scopeId, accessInfoId)));
     }
 
     //@ListenServiceEvent(fromAddress="account")

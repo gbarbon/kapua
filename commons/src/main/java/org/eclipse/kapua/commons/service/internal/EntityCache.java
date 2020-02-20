@@ -64,8 +64,7 @@ public class EntityCache {
 //            if (id instanceof String && ((String) id).trim().length() == 0) {
 //                return null;
 //            }
-            KapuaListResult entity = (KapuaListResult) listsCache.get(new ComposedKey(scopeId, id));
-            return entity;
+            return checkResult(scopeId, (KapuaListResult) listsCache.get(new ComposedKey(scopeId, id)));
         }
         return null;
     }
@@ -100,7 +99,7 @@ public class EntityCache {
     public KapuaListResult removeList(KapuaId scopeId, Serializable id) {
         // First get the entity in order to perform a check of the scope id
         if (id != null) {
-            KapuaListResult entity = (KapuaListResult) getList(scopeId, id);
+            KapuaListResult entity = getList(scopeId, id);
             if (entity != null) {
                 listsCache.remove(new ComposedKey(scopeId, id));
                 return entity;
