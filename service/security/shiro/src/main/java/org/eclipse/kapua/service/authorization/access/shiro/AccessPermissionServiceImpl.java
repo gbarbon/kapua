@@ -188,9 +188,7 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
             query.setPredicate(query.attributePredicate(AccessPermissionAttributes.ACCESS_INFO_ID, accessInfoId));
 
             listResult = query(query);
-            if (listResult != null) {
-                entityCache.putList(scopeId, accessInfoId, listResult);
-            }
+            entityCache.putList(scopeId, accessInfoId, listResult);
         }
         return listResult;
     }

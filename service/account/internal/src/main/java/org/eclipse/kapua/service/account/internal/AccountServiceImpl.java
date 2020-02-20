@@ -43,8 +43,6 @@ import org.eclipse.kapua.service.account.AccountQuery;
 import org.eclipse.kapua.service.account.AccountService;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.persistence.TypedQuery;
@@ -65,8 +63,6 @@ public class AccountServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
     @Inject
     private PermissionFactory permissionFactory;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccountServiceImpl.class);
 
     /**
      * Constructor.

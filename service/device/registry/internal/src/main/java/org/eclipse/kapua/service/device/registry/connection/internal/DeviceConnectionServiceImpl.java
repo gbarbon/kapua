@@ -16,7 +16,7 @@ import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
-import org.eclipse.kapua.commons.service.internal.ThirdIdCache;
+import org.eclipse.kapua.service.device.registry.internal.DeviceRegistryCache;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -26,7 +26,6 @@ import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.model.query.KapuaQuery;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
-import org.eclipse.kapua.service.device.registry.Device;
 import org.eclipse.kapua.service.device.registry.DeviceDomains;
 import org.eclipse.kapua.service.device.registry.common.DeviceValidationRegex;
 import org.eclipse.kapua.service.device.registry.connection.DeviceConnection;
@@ -118,13 +117,7 @@ public class DeviceConnectionServiceImpl extends
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnection.getId());
             }
             return DeviceConnectionDAO.update(entityManager, deviceConnection);
-        }).onAfterResultHandler(entity -> {
-            Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null, deviceConnection.getId());
-            if (device!=null) {
-                ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
-                        deviceConnection.getId());
-            }
-        }));
+        }).onBeforeVoidHandler(() -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(deviceConnection.getScopeId(), deviceConnection.getId())));
     }
 
     @Override
@@ -219,14 +212,7 @@ public class DeviceConnectionServiceImpl extends
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnectionId);
             }
             DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
-        }).onAfterVoidHandler(
-                () -> {
-                    Device device = (Device) ((ThirdIdCache) entityCache).getFromThirdId(null, deviceConnectionId);
-                    if (device!=null) {
-                        ((ThirdIdCache) entityCache).remove(device.getScopeId(), device, device.getClientId(),
-                                deviceConnectionId);
-                    }
-                }));
+        }).onAfterVoidHandler(() -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId, deviceConnectionId)));
     }
 
     @Override

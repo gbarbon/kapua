@@ -11,12 +11,18 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.device.registry.internal;
 
-import org.eclipse.kapua.commons.jpa.AbstractThirdIdEntityCacheFactory;
+import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
+import org.eclipse.kapua.commons.service.internal.EntityCache;
 
-public class DeviceRegistryCacheFactory extends AbstractThirdIdEntityCacheFactory {
+public class DeviceRegistryCacheFactory extends AbstractEntityCacheFactory {
 
-    private DeviceRegistryCacheFactory() {
-        super("DeviceId", "DeviceClientId", "DeviceConnectionId");
+    public DeviceRegistryCacheFactory() {
+        super("DeviceId");
+    }
+
+    @Override
+    public EntityCache createCache() {
+        return new DeviceRegistryCache(getEntityIdCacheName(), "DeviceClientId", "DeviceConnectionId");
     }
 
     public static DeviceRegistryCacheFactory getInstance() {
