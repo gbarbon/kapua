@@ -58,6 +58,7 @@ public class EntityManagerSession {
     // old methods   TODO: to be deleted when caches are all implemented
     //
     //============================================================================
+
     /**
      * Execute the action on a new entity manager.<br>
      * <br>
@@ -177,7 +178,7 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
-        return internalOnInsert(entityManagerInsertCallback, notTransacted);
+        return internalOnResult(entityManagerInsertCallback, notTransacted);
     }
 
     /**
@@ -193,10 +194,10 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onTransactedInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
-        return internalOnInsert(entityManagerInsertCallback, transacted);
+        return internalOnResult(entityManagerInsertCallback, transacted);
     }
 
-    private <T> T internalOnInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback, TransactionManager transactionManager) throws KapuaException {
+    private <T> T internalOnResult(EntityManagerInsertCallback<T> entityManagerInsertCallback, TransactionManager transactionManager) throws KapuaException {
         boolean succeeded = false;
         int retry = 0;
         EntityManager manager = entityManagerFactory.createEntityManager();
@@ -278,7 +279,7 @@ public class EntityManagerSession {
         internalOnAction(container, transacted);
     }
 
-    private <T> void internalOnAction(EntityManagerContainer<T> container, TransactionManager transactionManager ) throws KapuaException {
+    private <T> void internalOnAction(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
         EntityManager manager = null;
         try {
             manager = entityManagerFactory.createEntityManager();
@@ -291,7 +292,7 @@ public class EntityManagerSession {
 
             transactionManager.commit(manager);
 
-            if (container.onAfter!=null ) {
+            if (container.onAfter != null) {
                 container.onAfter.onAfter(null);
             }
         } catch (Exception e) {
@@ -335,53 +336,6 @@ public class EntityManagerSession {
         return internalOnResult(container, transacted);
     }
 
-    private <T> T internalOnResult(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
-        EntityManager manager = null;
-        T result = null;
-        if (container.onBefore != null) {
-            result = container.onBefore.onBefore();
-        }
-        if (result == null) {
-            try {
-                manager = entityManagerFactory.createEntityManager();
-                transactionManager.beginTransaction(manager);
-                result = container.onResult(manager);
-
-                if (manager.isTransactionActive()) {
-                    appendKapuaEvent(result, manager);
-                }
-
-                transactionManager.commit(manager);
-
-                //TODO check for detach (lighter way than instanceof check?)
-                if (manager instanceof KapuaEntity) {
-                    manager.detach((KapuaEntity)result);
-                    // TODO: check behaviour without the detach (when all caches are implemented)
-                }
-
-                if (container.onAfter !=null && result != null) {
-                    container.onAfter.onAfter(result);
-                }
-                return result;
-            } catch (Exception e) {
-                if (manager != null) {
-                    manager.rollback();
-                }
-                throw KapuaExceptionUtils.convertPersistenceException(e);
-            } finally {
-                if (manager != null) {
-                    manager.close();
-                }
-            }
-        }
-        else {
-            //if the onBeforeResult return an entity we need to check if the method has annotations to throw event and, in this case, we must sent it
-            //e.g. we executed a find (so with a cache hit) annotated to throw events. We must send the event (in this case there is not too much advantage using the cache)
-            appendKapuaEvent(result);
-        }
-        return result;
-    }
-
     /**
      * Return the insert execution result invoked on a new entity manager.<br>
      * This method differs from the onEntityManagerResult because it reiterates the execution if it fails due to {@link KapuaEntityExistsException} for a maximum retry.<br>
@@ -396,7 +350,7 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onInsert(EntityManagerContainer<T> container) throws KapuaException {
-        return internalOnInsert(container, notTransacted);
+        return internalOnResult(container, notTransacted);
     }
 
     /**
@@ -412,56 +366,64 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onTransactedInsert(EntityManagerContainer<T> container) throws KapuaException {
-        return internalOnInsert(container, transacted);
+        return internalOnResult(container, transacted);
     }
 
-    private <T> T internalOnInsert(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
+    private <T> T internalOnResult(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
         boolean succeeded = false;
         int retry = 0;
         T instance = null;
         if (container.onBefore != null) {
             instance = container.onBefore.onBefore();
         }
-        EntityManager manager = entityManagerFactory.createEntityManager();
-        try {
-            do {
-                try {
-                    transactionManager.beginTransaction(manager);
-                    instance = container.onResult(manager);
+        if (instance == null) {
+            EntityManager manager = entityManagerFactory.createEntityManager();
+            try {
+                do {
+                    try {
+                        transactionManager.beginTransaction(manager);
+                        instance = container.onResult(manager);
 
-                    appendKapuaEvent(instance, manager);
+                        if (manager.isTransactionActive()) {
+                            appendKapuaEvent(instance, manager);
+                        }
 
-                    transactionManager.commit(manager);
-                    succeeded = true;
-                    if (container.onAfter !=null) {
-                        container.onAfter.onAfter(instance);
+                        transactionManager.commit(manager);
+                        succeeded = true;
+                        if (manager instanceof KapuaEntity) {
+                            manager.detach((KapuaEntity) instance);
+                            // TODO: check behaviour without the detach (when all caches are implemented)
+                        }
+                        if (container.onAfter != null) {
+                            container.onAfter.onAfter(instance);
+                        }
+                    } catch (KapuaEntityExistsException e) {
+                        if (manager != null) {
+                            manager.rollback();
+                        }
+                        if (++retry < MAX_INSERT_ALLOWED_RETRY) {
+                            logger.warn("Entity already exists. Cannot insert the entity, try again!");
+                        } else {
+                            manager.rollback();
+                            throw KapuaExceptionUtils.convertPersistenceException(e);
+                        }
                     }
-                } catch (KapuaEntityExistsException e) {
-                    if (manager != null) {
-                        manager.rollback();
-                    }
-                    if (++retry < MAX_INSERT_ALLOWED_RETRY) {
-                        logger.warn("Entity already exists. Cannot insert the entity, try again!");
-                    } else {
-                        manager.rollback();
-                        throw KapuaExceptionUtils.convertPersistenceException(e);
-                    }
-                } catch (PersistenceException e) {
-                    if (manager != null) {
-                        manager.rollback();
-                    }
-                    throw KapuaExceptionUtils.convertPersistenceException(e);
                 }
-            } while (!succeeded);
-        } catch (Exception e) {
-            if (manager != null) {
-                manager.rollback();
+                while (!succeeded);
+            } catch (Exception e) {
+                if (manager != null) {
+                    manager.rollback();
+                }
+                throw KapuaExceptionUtils.convertPersistenceException(e);
+            } finally {
+                if (manager != null) {
+                    manager.close();
+                }
             }
-            throw KapuaExceptionUtils.convertPersistenceException(e);
-        } finally {
-            if (manager != null) {
-                manager.close();
-            }
+        } else {
+            //if the onBeforeResult return an entity we need to check if the method has annotations to throw event and, in this case, we must sent it
+            //e.g. we executed a find (so with a cache hit) annotated to throw events. We must send the event (in this case there is not too much advantage using the cache)
+            appendKapuaEvent(instance);
         }
         return instance;
     }
@@ -469,8 +431,7 @@ public class EntityManagerSession {
     private org.eclipse.kapua.event.ServiceEvent getServiceEventIfPresent(Object instance) {
         if (!(instance instanceof EventStoreRecord)) {
             return ServiceEventScope.get();
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -498,7 +459,8 @@ public class EntityManagerSession {
         return persistedKapuaEvent;
     }
 
-    private void persistServiceEvent(EntityManager em, org.eclipse.kapua.event.ServiceEvent serviceEventBus, Object instance, EventStoreRecord persistedKapuaEvent) throws KapuaIllegalArgumentException, KapuaException {
+    private void persistServiceEvent(EntityManager em, org.eclipse.kapua.event.ServiceEvent serviceEventBus, Object
+            instance, EventStoreRecord persistedKapuaEvent) throws KapuaIllegalArgumentException, KapuaException {
         if (instance instanceof KapuaEntity) {
             KapuaEntity kapuaEntity = (KapuaEntity) instance;
             //make sense to override the entity id and type without checking for previous empty values?
