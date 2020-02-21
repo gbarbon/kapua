@@ -16,6 +16,7 @@ import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaMaxNumberOfItemsReachedException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.job.engine.JobEngineService;
@@ -97,7 +98,8 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(em -> JobDAO.create(em, creator));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<Job>create().onResultHandler(em -> JobDAO.create(em, creator)));
     }
 
     @Override
@@ -134,7 +136,8 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
 
         //
         // Do update
-        return entityManagerSession.onTransactedResult(em -> JobDAO.update(em, job));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<Job>create().onResultHandler(em -> JobDAO.update(em, job)));
     }
 
     @Override
@@ -150,7 +153,8 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> JobDAO.find(em, scopeId, jobId));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Job>create().onResultHandler(em -> JobDAO.find(em, scopeId, jobId)));
     }
 
     @Override
@@ -165,7 +169,8 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobDAO.query(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobListResult>create().onResultHandler(em -> JobDAO.query(em, query)));
     }
 
     @Override
@@ -180,7 +185,8 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobDAO.count(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> JobDAO.count(em, query)));
     }
 
     @Override
@@ -259,6 +265,7 @@ public class JobServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
             }
         }
 
-        entityManagerSession.onTransactedAction(em -> JobDAO.delete(em, scopeId, jobId));
+        entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<Job>create().onResultHandler(em -> JobDAO.delete(em, scopeId, jobId)));
     }
 }

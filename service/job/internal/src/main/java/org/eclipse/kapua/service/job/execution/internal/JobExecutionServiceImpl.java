@@ -11,9 +11,9 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.job.execution.internal;
 
-import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.locator.KapuaProvider;
@@ -63,7 +63,9 @@ public class JobExecutionServiceImpl
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(em -> JobExecutionDAO.create(em, creator));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> JobExecutionDAO.create(em,
+                        creator)));
     }
 
     @Override
@@ -77,7 +79,9 @@ public class JobExecutionServiceImpl
         // Check access
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(JobDomains.JOB_DOMAIN, Actions.write, jobExecution.getScopeId()));
 
-        return entityManagerSession.onTransactedResult(em -> JobExecutionDAO.update(em, jobExecution));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> JobExecutionDAO.update(em,
+                        jobExecution)));
     }
 
     @Override
@@ -93,7 +97,9 @@ public class JobExecutionServiceImpl
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> JobExecutionDAO.find(em, scopeId, jobExecutionId));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> JobExecutionDAO.find(em, scopeId,
+                        jobExecutionId)));
     }
 
     @Override
@@ -108,7 +114,8 @@ public class JobExecutionServiceImpl
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobExecutionDAO.query(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobExecutionListResult>create().onResultHandler(em -> JobExecutionDAO.query(em, query)));
     }
 
     @Override
@@ -123,7 +130,8 @@ public class JobExecutionServiceImpl
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobExecutionDAO.count(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> JobExecutionDAO.count(em, query)));
     }
 
     @Override
@@ -139,13 +147,17 @@ public class JobExecutionServiceImpl
 
         //
         // Do delete
-        entityManagerSession.onTransactedAction(em -> {
-            if (JobExecutionDAO.find(em, scopeId, jobExecutionId) == null) {
+        entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> JobExecutionDAO.delete(em, scopeId, jobExecutionId)
+
+              // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+/*            if (JobExecutionDAO.find(em, scopeId, jobExecutionId) == null) {
                 throw new KapuaEntityNotFoundException(JobExecution.TYPE, jobExecutionId);
             }
 
             JobExecutionDAO.delete(em, scopeId, jobExecutionId);
-        });
+            */
+        ));
 
     }
 }

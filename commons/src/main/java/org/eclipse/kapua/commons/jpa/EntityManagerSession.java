@@ -26,7 +26,7 @@ import org.eclipse.kapua.model.KapuaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.PersistenceException;
+//import javax.persistence.PersistenceException;
 
 /**
  * Entity manager session reference implementation.
@@ -59,7 +59,7 @@ public class EntityManagerSession {
     //
     //============================================================================
 
-    /**
+/*    *//**
      * Execute the action on a new entity manager.<br>
      * <br>
      * WARNING!<br>
@@ -68,12 +68,12 @@ public class EntityManagerSession {
      *
      * @param entityManagerActionCallback
      * @throws KapuaException
-     */
+     *//*
     public <T> void onAction(EntityManagerActionCallback entityManagerActionCallback) throws KapuaException {
         internalOnAction(entityManagerActionCallback, notTransacted);
     }
 
-    /**
+    *//**
      * Execute the action on a new entity manager.<br>
      * <br>
      * WARNING!<br>
@@ -81,7 +81,7 @@ public class EntityManagerSession {
      *
      * @param entityManagerActionCallback
      * @throws KapuaException
-     */
+     *//*
     public <T> void onTransactedAction(EntityManagerActionCallback entityManagerActionCallback) throws KapuaException {
         internalOnAction(entityManagerActionCallback, transacted);
     }
@@ -110,7 +110,7 @@ public class EntityManagerSession {
         }
     }
 
-    /**
+    *//**
      * Return the execution result invoked on a new entity manager.<br>
      * <br>
      * WARNING!<br>
@@ -120,12 +120,12 @@ public class EntityManagerSession {
      * @param entityManagerResultCallback
      * @return
      * @throws KapuaException
-     */
+     *//*
     public <T> T onResult(EntityManagerResultCallback<T> entityManagerResultCallback) throws KapuaException {
         return internalOnResult(entityManagerResultCallback, notTransacted);
     }
 
-    /**
+    *//**
      * Return the execution result invoked on a new entity manager.<br>
      * <br>
      * WARNING!<br>
@@ -134,7 +134,7 @@ public class EntityManagerSession {
      * @param entityManagerResultCallback
      * @return
      * @throws KapuaException
-     */
+     *//*
     public <T> T onTransactedResult(EntityManagerResultCallback<T> entityManagerResultCallback) throws KapuaException {
         return internalOnResult(entityManagerResultCallback, transacted);
     }
@@ -164,7 +164,7 @@ public class EntityManagerSession {
         }
     }
 
-    /**
+    *//**
      * Return the insert execution result invoked on a new entity manager.<br>
      * This method differs from the onEntityManagerResult because it reiterates the execution if it fails due to {@link KapuaEntityExistsException} for a maximum retry.<br>
      * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
@@ -176,12 +176,12 @@ public class EntityManagerSession {
      * @param entityManagerInsertCallback
      * @return
      * @throws KapuaException
-     */
+     *//*
     public <T> T onInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
         return internalOnInsert(entityManagerInsertCallback, notTransacted);
     }
 
-    /**
+    *//**
      * Return the insert execution result invoked on a new entity manager.<br>
      * This method differs from the onEntityManagerResult because it reiterates the execution if it fails due to {@link KapuaEntityExistsException} for a maximum retry.<br>
      * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
@@ -192,7 +192,7 @@ public class EntityManagerSession {
      * @param entityManagerInsertCallback
      * @return
      * @throws KapuaException
-     */
+     *//*
     public <T> T onTransactedInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
         return internalOnInsert(entityManagerInsertCallback, transacted);
     }
@@ -240,7 +240,7 @@ public class EntityManagerSession {
             }
         }
         return instance;
-    }
+    }*/
 
     //============================================================================
     //

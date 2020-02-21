@@ -11,10 +11,10 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.device.management.job.internal;
 
-import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaEntityUniquenessException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.model.query.predicate.AndPredicateImpl;
 import org.eclipse.kapua.commons.model.query.predicate.AttributePredicateImpl;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
@@ -91,7 +91,8 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(em -> JobDeviceManagementOperationDAO.create(em, jobDeviceManagementOperationCreator));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobDeviceManagementOperation>create().onResultHandler(em -> JobDeviceManagementOperationDAO.create(em, jobDeviceManagementOperationCreator)));
     }
 
 
@@ -108,7 +109,8 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> JobDeviceManagementOperationDAO.find(em, scopeId, jobDeviceManagementOperationId));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobDeviceManagementOperation>create().onResultHandler(em -> JobDeviceManagementOperationDAO.find(em, scopeId, jobDeviceManagementOperationId)));
     }
 
     @Override
@@ -123,7 +125,8 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobDeviceManagementOperationDAO.query(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobDeviceManagementOperationListResult>create().onResultHandler(em -> JobDeviceManagementOperationDAO.query(em, query)));
     }
 
     @Override
@@ -138,7 +141,9 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobDeviceManagementOperationDAO.count(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> JobDeviceManagementOperationDAO.count(em,
+                        query)));
     }
 
     @Override
@@ -152,14 +157,18 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
         // Check Access
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(JobDomains.JOB_DOMAIN, Actions.delete, scopeId));
 
+        // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+/*
         //
         // Check existence
         if (find(scopeId, jobDeviceManagementOperationId) == null) {
             throw new KapuaEntityNotFoundException(JobDeviceManagementOperation.TYPE, jobDeviceManagementOperationId);
         }
+*/
 
         //
         // Do delete
-        entityManagerSession.onTransactedAction(em -> JobDeviceManagementOperationDAO.delete(em, scopeId, jobDeviceManagementOperationId));
+        entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobDeviceManagementOperation>create().onResultHandler(em -> JobDeviceManagementOperationDAO.delete(em, scopeId, jobDeviceManagementOperationId)));
     }
 }

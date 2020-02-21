@@ -11,9 +11,9 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.job.targets.internal;
 
-import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.locator.KapuaProvider;
@@ -62,7 +62,9 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(em -> JobTargetDAO.create(em, creator));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobTarget>create().onResultHandler(em -> JobTargetDAO.create(em,
+                        creator)));
     }
 
     @Override
@@ -77,15 +79,17 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
         // Check access
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(JobDomains.JOB_DOMAIN, Actions.write, jobTarget.getScopeId()));
 
-        //
+        // TODO: check if it is correct to remove this statement (already thrown by the update method)
+/*        //
         // Check existence
         if (find(jobTarget.getScopeId(), jobTarget.getId()) == null) {
             throw new KapuaEntityNotFoundException(jobTarget.getType(), jobTarget.getId());
-        }
+        }*/
 
         //
         // Do update
-        return entityManagerSession.onTransactedResult(em -> JobTargetDAO.update(em, jobTarget));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobTarget>create().onResultHandler(em -> JobTargetDAO.update(em, jobTarget)));
     }
 
     @Override
@@ -99,15 +103,18 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
         // Check Access
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(JobDomains.JOB_DOMAIN, Actions.delete, scopeId));
 
-        //
+        // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+/*        //
         // Check existence
         if (find(scopeId, jobTargetId) == null) {
             throw new KapuaEntityNotFoundException(JobTarget.TYPE, jobTargetId);
-        }
+        }*/
 
         //
         // Do delete
-        entityManagerSession.onTransactedAction(em -> JobTargetDAO.delete(em, scopeId, jobTargetId));
+        entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<JobTarget>create().onResultHandler(em -> JobTargetDAO.delete(em, scopeId,
+                        jobTargetId)));
     }
 
     @Override
@@ -123,7 +130,9 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
 
         //
         // Do find
-        return entityManagerSession.onResult(em -> JobTargetDAO.find(em, scopeId, jobTargetId));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobTarget>create().onResultHandler(em -> JobTargetDAO.find(em, scopeId,
+                        jobTargetId)));
     }
 
     @Override
@@ -138,7 +147,8 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobTargetDAO.query(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<JobTargetListResult>create().onResultHandler(em -> JobTargetDAO.query(em, query)));
     }
 
     @Override
@@ -153,6 +163,7 @@ public class JobTargetServiceImpl extends AbstractKapuaConfigurableResourceLimit
 
         //
         // Do query
-        return entityManagerSession.onResult(em -> JobTargetDAO.count(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> JobTargetDAO.count(em, query)));
     }
 }
