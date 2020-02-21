@@ -93,7 +93,7 @@ public class DeviceConnectionServiceImpl extends
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<DeviceConnection>create().onResultHandler(entityManager -> DeviceConnectionDAO.create(entityManager, deviceConnectionCreator)));
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<DeviceConnection>create().onResultHandler(entityManager -> DeviceConnectionDAO.create(entityManager, deviceConnectionCreator)));
     }
 
     @Override
@@ -112,7 +112,7 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.write, null));
 
-        return entityManagerSession.onTransactedResult(EntityManagerContainer.<DeviceConnection>create().onResultHandler(entityManager -> {
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<DeviceConnection>create().onResultHandler(entityManager -> {
             if (DeviceConnectionDAO.find(entityManager, deviceConnection.getScopeId(), deviceConnection.getId()) == null) {
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnection.getId());
             }
@@ -139,7 +139,7 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.read, scopeId));
 
-        return entityManagerSession.onResult(EntityManagerContainer.<DeviceConnection>create()
+        return entityManagerSession.doAction(EntityManagerContainer.<DeviceConnection>create()
                 .onResultHandler(entityManager -> DeviceConnectionDAO.find(entityManager, scopeId, entityId)));
     }
 
@@ -176,7 +176,7 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.read, query.getScopeId()));
 
-        return entityManagerSession.onResult(EntityManagerContainer.<DeviceConnectionListResult>create().onResultHandler(entityManager -> DeviceConnectionDAO.query(entityManager, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<DeviceConnectionListResult>create().onResultHandler(entityManager -> DeviceConnectionDAO.query(entityManager, query)));
     }
 
     @Override
@@ -193,7 +193,7 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.read, query.getScopeId()));
 
-        return entityManagerSession.onResult(EntityManagerContainer.<Long>create().onResultHandler(entityManager -> DeviceConnectionDAO.count(entityManager, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Long>create().onResultHandler(entityManager -> DeviceConnectionDAO.count(entityManager, query)));
     }
 
     @Override
@@ -211,12 +211,18 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.write, null));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onVoidResultHandler(entityManager -> {
+        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onResultHandler(entityManager ->
+                DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId)
+                /*
+                // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
+                //  without TYPE)
+
             if (DeviceConnectionDAO.find(entityManager, scopeId, deviceConnectionId) == null) {
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnectionId);
             }
             DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
-        }).onAfterHandler((emptyParam) -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId,
+            */
+        ).onAfterHandler((emptyParam) -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId,
                 deviceConnectionId)));
     }
 

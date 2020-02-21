@@ -178,7 +178,7 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
-        return internalOnResult(entityManagerInsertCallback, notTransacted);
+        return internalOnInsert(entityManagerInsertCallback, notTransacted);
     }
 
     /**
@@ -194,10 +194,10 @@ public class EntityManagerSession {
      * @throws KapuaException
      */
     public <T> T onTransactedInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback) throws KapuaException {
-        return internalOnResult(entityManagerInsertCallback, transacted);
+        return internalOnInsert(entityManagerInsertCallback, transacted);
     }
 
-    private <T> T internalOnResult(EntityManagerInsertCallback<T> entityManagerInsertCallback, TransactionManager transactionManager) throws KapuaException {
+    private <T> T internalOnInsert(EntityManagerInsertCallback<T> entityManagerInsertCallback, TransactionManager transactionManager) throws KapuaException {
         boolean succeeded = false;
         int retry = 0;
         EntityManager manager = entityManagerFactory.createEntityManager();
@@ -253,77 +253,28 @@ public class EntityManagerSession {
     //commons/src/main/java/org/eclipse/kapua/commons/jpa/EntityManagerInsertCallback.java
 
     /**
-     * Execute the action on a new entity manager.<br>
-     * <br>
-     * WARNING!<br>
-     * The transactionality (if needed by the code) must be managed internally to the entityManagerActionCallback.<br>
-     * This method performs only a rollback (if the transaction is active and an error occurred)!<br>
-     *
-     * @param container
-     * @throws KapuaException
-     */
-    public <T> void doAction(EntityManagerContainer<T> container) throws KapuaException {
-        internalOnAction(container, notTransacted);
-    }
-
-    /**
-     * Execute the action on a new entity manager.<br>
-     * <br>
-     * WARNING!<br>
-     * The transactionality is managed by this method so the called entityManagerActionCallback must leave the transaction open<br>
-     *
-     * @param container
-     * @throws KapuaException
-     */
-    public <T> void doTransactedAction(EntityManagerContainer<T> container) throws KapuaException {
-        internalOnAction(container, transacted);
-    }
-
-    private <T> void internalOnAction(EntityManagerContainer<T> container, TransactionManager transactionManager) throws KapuaException {
-        EntityManager manager = null;
-        try {
-            manager = entityManagerFactory.createEntityManager();
-            transactionManager.beginTransaction(manager);
-            container.onVoidResult(manager);
-
-            if (manager.isTransactionActive()) {
-                appendKapuaEvent(manager);
-            }
-
-            transactionManager.commit(manager);
-
-            if (container.onAfter != null) {
-                container.onAfter.onAfter(null);
-            }
-        } catch (Exception e) {
-            if (manager != null) {
-                manager.rollback();
-            }
-            throw KapuaExceptionUtils.convertPersistenceException(e);
-        } finally {
-            if (manager != null) {
-                manager.close();
-            }
-        }
-    }
-
-    /**
      * Return the execution result invoked on a new entity manager.<br>
+     * If the requested action is an insert, it reiterates the execution if it fails due to
+     * {@link KapuaEntityExistsException} for a maximum retry.<br>
+     * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
      * <br>
      * WARNING!<br>
-     * The transactionality (if needed by the code) must be managed internally to the entityManagerResultCallback.<br>
+     * The transactionality (if needed by the code) must be managed internally to the entityManagerCallback.<br>
      * This method performs only a rollback (if the transaction is active and an error occurred)!<br>
      *
      * @param container
      * @return
      * @throws KapuaException
      */
-    public <T> T onResult(EntityManagerContainer<T> container) throws KapuaException {
+    public <T> T doAction(EntityManagerContainer<T> container) throws KapuaException {
         return internalOnResult(container, notTransacted);
     }
 
     /**
      * Return the execution result invoked on a new entity manager.<br>
+     * If the requested action is an insert, it reiterates the execution if it fails due to
+     * {@link KapuaEntityExistsException} for a maximum retry.<br>
+     * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
      * <br>
      * WARNING!<br>
      * The transactionality is managed by this method so the called entityManagerResultCallback must leave the transaction open<br>
@@ -332,40 +283,7 @@ public class EntityManagerSession {
      * @return
      * @throws KapuaException
      */
-    public <T> T onTransactedResult(EntityManagerContainer<T> container) throws KapuaException {
-        return internalOnResult(container, transacted);
-    }
-
-    /**
-     * Return the insert execution result invoked on a new entity manager.<br>
-     * This method differs from the onEntityManagerResult because it reiterates the execution if it fails due to {@link KapuaEntityExistsException} for a maximum retry.<br>
-     * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
-     * <br>
-     * WARNING!<br>
-     * The transactionality (if needed by the code) must be managed internally to the entityManagerInsertCallback.<br>
-     * This method performs only a rollback (if the transaction is active and an error occurred)!<br>
-     *
-     * @param container
-     * @return
-     * @throws KapuaException
-     */
-    public <T> T onInsert(EntityManagerContainer<T> container) throws KapuaException {
-        return internalOnResult(container, notTransacted);
-    }
-
-    /**
-     * Return the insert execution result invoked on a new entity manager.<br>
-     * This method differs from the onEntityManagerResult because it reiterates the execution if it fails due to {@link KapuaEntityExistsException} for a maximum retry.<br>
-     * The maximum allowed retry is set by {@link SystemSettingKey#KAPUA_INSERT_MAX_RETRY}.<br>
-     * <br>
-     * WARNING!<br>
-     * The transactionality is managed by this method so the called entityManagerInsertCallback must leave the transaction open<br>
-     *
-     * @param container
-     * @return
-     * @throws KapuaException
-     */
-    public <T> T onTransactedInsert(EntityManagerContainer<T> container) throws KapuaException {
+    public <T> T doTransactedAction(EntityManagerContainer<T> container) throws KapuaException {
         return internalOnResult(container, transacted);
     }
 

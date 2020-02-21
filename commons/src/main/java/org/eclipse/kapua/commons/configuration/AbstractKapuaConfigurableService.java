@@ -235,7 +235,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
     private ServiceConfig createConfig(ServiceConfig serviceConfig)
             throws KapuaException {
 
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig))
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> ServiceDAO.create(em, serviceConfig))
                 .onBeforeHandler(() -> {
                     PRIVATE_ENTITY_CACHE.removeList(serviceConfig.getScopeId(), pid);
                     return null;
@@ -251,7 +251,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
      */
     private ServiceConfig updateConfig(ServiceConfig serviceConfig)
             throws KapuaException {
-        return entityManagerSession.onTransactedResult(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> {
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<ServiceConfig>create().onResultHandler(em -> {
             ServiceConfig oldServiceConfig = ServiceConfigDAO.find(em, serviceConfig.getScopeId(), serviceConfig.getId());
             if (oldServiceConfig == null) {
                 throw new KapuaEntityNotFoundException(ServiceConfig.TYPE, serviceConfig.getId());
@@ -319,7 +319,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
 
         query.setPredicate(predicate);
 
-        ServiceConfigListResult result = entityManagerSession.onResult(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query))
+        ServiceConfigListResult result = entityManagerSession.doAction(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query))
                             .onBeforeHandler(() -> (ServiceConfigListResult) PRIVATE_ENTITY_CACHE.getList(scopeId, pid))
                             .onAfterHandler((entity) -> PRIVATE_ENTITY_CACHE.putList(scopeId, pid, entity)));
 
@@ -351,7 +351,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
                 )
         );
 
-        ServiceConfigListResult result = entityManagerSession.onResult(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query)));
+        ServiceConfigListResult result = entityManagerSession.doAction(EntityManagerContainer.<ServiceConfigListResult>create().onResultHandler(em -> ServiceDAO.query(em, ServiceConfig.class, ServiceConfigImpl.class, new ServiceConfigListResultImpl(), query)));
 
         Properties props = toProperties(values);
         if (result == null || result.isEmpty()) {

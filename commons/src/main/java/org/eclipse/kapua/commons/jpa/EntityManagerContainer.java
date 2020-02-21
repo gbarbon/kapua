@@ -42,16 +42,16 @@ public class EntityManagerContainer<T> {
         return this;
     }
 
-    public EntityManagerContainer<T> onVoidResultHandler(EntityManagerVoidCallback resultVoidCallback) {
+/*    public EntityManagerContainer<T> onVoidResultHandler(EntityManagerVoidCallback resultVoidCallback) {
         this.resultVoidCallback = resultVoidCallback;
         return this;
-    }
+    }*/
 
     public T onResult(EntityManager entityManager) throws KapuaException {
         return resultCallback.onAction(entityManager);
     }
 
-    public void onVoidResult(EntityManager entityManager) throws KapuaException {
+/*    public void onVoidResult(EntityManager entityManager) throws KapuaException {
         resultVoidCallback.onAction(entityManager);
-    }
+    }*/
 }

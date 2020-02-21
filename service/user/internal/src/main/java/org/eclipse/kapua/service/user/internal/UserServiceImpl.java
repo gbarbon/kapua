@@ -113,7 +113,8 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do create
-        return entityManagerSession.onTransactedInsert(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.create(em, userCreator)));
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.create(em,
+                userCreator)));
     }
 
     @Override
@@ -156,7 +157,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         }
         //
         // Do update
-        return entityManagerSession.onTransactedResult(EntityManagerContainer.<User>create().onResultHandler(em -> {
+        return entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onResultHandler(em -> {
             if (!Objects.equals(currentUser.getUserType(), user.getUserType())) {
                 throw new KapuaIllegalArgumentException("userType", user.getUserType().toString());
             }
@@ -207,7 +208,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do  delete
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onVoidResultHandler(em -> UserDAO.delete(em, scopeId, userId))
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.delete(em, scopeId, userId))
                 .onAfterHandler((emptyParam) -> entityCache.remove(scopeId, userId)));
     }
 
@@ -229,7 +230,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
         authorizationService.checkPermission(permissionFactory.newPermission(UserDomains.USER_DOMAIN, Actions.read, scopeId));
 
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.find(em, scopeId, userId))
+        return entityManagerSession.doAction(EntityManagerContainer.<User>create().onResultHandler(em -> UserDAO.find(em, scopeId, userId))
                 .onBeforeHandler(() -> (User) entityCache.get(scopeId, userId))
                 .onAfterHandler((entity) -> entityCache.put(entity))
         );
@@ -243,7 +244,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByName(em, name)))
+        return entityManagerSession.doAction(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByName(em, name)))
                 .onBeforeHandler(() -> checkReadAccess((User) ((NamedEntityCache) entityCache).get(null, name)))
                 .onAfterHandler((entity) -> entityCache.put(entity)));
     }
@@ -256,7 +257,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do the find
-        return entityManagerSession.onResult(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByExternalId(em, externalId)))
+        return entityManagerSession.doAction(EntityManagerContainer.<User>create().onResultHandler(em -> checkReadAccess(UserDAO.findByExternalId(em, externalId)))
                 .onAfterHandler((entity) -> entityCache.put(entity)));
     }
 
@@ -273,7 +274,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do query
-        return entityManagerSession.onResult(EntityManagerContainer.<UserListResult>create().onResultHandler(em -> UserDAO.query(em, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<UserListResult>create().onResultHandler(em -> UserDAO.query(em, query)));
     }
 
     @Override
@@ -289,7 +290,7 @@ public class UserServiceImpl extends AbstractKapuaConfigurableResourceLimitedSer
 
         //
         // Do count
-        return entityManagerSession.onResult(EntityManagerContainer.<Long>create().onResultHandler(em -> UserDAO.count(em, query)));
+        return entityManagerSession.doAction(EntityManagerContainer.<Long>create().onResultHandler(em -> UserDAO.count(em, query)));
     }
 
     // -----------------------------------------------------------------------------------------
