@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authorization.access.shiro;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.jpa.AbstractEntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
@@ -216,16 +217,16 @@ public class AccessInfoServiceImpl extends AbstractKapuaService implements Acces
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessInfo>create().onResultHandler(em ->
-                AccessInfoDAO.delete(em, scopeId, accessInfoId)
-            /*
-            // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
-            //  without TYPE)
-            if (AccessInfoDAO.find(em, scopeId, accessInfoId) == null) {
-                throw new KapuaEntityNotFoundException(AccessInfo.TYPE, accessInfoId);
-            }
-            return AccessInfoDAO.delete(em, scopeId, accessInfoId);
-            */
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessInfo>create().onResultHandler(em -> {
+                    //AccessInfoDAO.delete(em, scopeId, accessInfoId)
+
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
+                    //  without TYPE)
+                    if (AccessInfoDAO.find(em, scopeId, accessInfoId) == null) {
+                        throw new KapuaEntityNotFoundException(AccessInfo.TYPE, accessInfoId);
+                    }
+                    return AccessInfoDAO.delete(em, scopeId, accessInfoId);
+                }
         ).onAfterHandler((emptyParam) -> entityCache.remove(scopeId, accessInfoId)));
     }
 

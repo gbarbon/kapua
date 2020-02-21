@@ -132,9 +132,9 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessPermission>create().onResultHandler(em ->
-                AccessPermissionDAO.delete(em, scopeId, accessPermissionId)
-            /*
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessPermission>create().onResultHandler(em -> {
+                // AccessPermissionDAO.delete(em, scopeId, accessPermissionId)
+
             // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
             //  without TYPE)
             AccessPermission accessPermission = AccessPermissionDAO.find(em, scopeId, accessPermissionId);
@@ -142,10 +142,8 @@ public class AccessPermissionServiceImpl extends AbstractKapuaService implements
                 throw new KapuaEntityNotFoundException(AccessPermission.TYPE, accessPermissionId);
             }
 
-            AccessPermissionDAO.delete(em, scopeId, accessPermissionId);
-            return accessPermission;
-            */
-        ).onAfterHandler((entity) -> {
+            return AccessPermissionDAO.delete(em, scopeId, accessPermissionId);
+        }).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, accessPermissionId);
             entityCache.removeList(scopeId, entity.getAccessInfoId());
         }));

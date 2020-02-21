@@ -130,13 +130,13 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
         AuthorizationService authorizationService = locator.getService(AuthorizationService.class);
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ROLE_DOMAIN, Actions.delete, scopeId));
-        if (KapuaId.ONE.equals(rolePermissionId)) {
+        /*if (KapuaId.ONE.equals(rolePermissionId)) {
             throw new KapuaException(KapuaErrorCodes.PERMISSION_DELETE_NOT_ALLOWED);
-        }
+        }*/
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<RolePermission>create().onResultHandler(em ->
-                RolePermissionDAO.delete(em, scopeId, rolePermissionId)
-            /*
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<RolePermission>create().onResultHandler(em -> {
+                //RolePermissionDAO.delete(em, scopeId, rolePermissionId)
+
             // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
             //  without TYPE)
             RolePermission rolePermission = RolePermissionDAO.find(em, scopeId, rolePermissionId);
@@ -146,10 +146,8 @@ public class RolePermissionServiceImpl extends AbstractKapuaService implements R
                 throw new KapuaException(KapuaErrorCodes.PERMISSION_DELETE_NOT_ALLOWED);
             }
 
-            RolePermissionDAO.delete(em, scopeId, rolePermissionId);
-            return rolePermission;
-            */
-        ).onAfterHandler((entity) -> {
+            return RolePermissionDAO.delete(em, scopeId, rolePermissionId);
+        }).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, rolePermissionId);
             entityCache.removeList(scopeId, entity.getRoleId());
         }));

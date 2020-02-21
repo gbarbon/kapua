@@ -117,20 +117,19 @@ public class AccessRoleServiceImpl extends AbstractKapuaService implements Acces
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(AuthorizationDomains.ACCESS_INFO_DOMAIN, Actions.delete, scopeId));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessRole>create().onResultHandler(em ->
-                        AccessRoleDAO.delete(em, scopeId, accessRoleId)
-            /*
-            // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
-            //  without TYPE)
-            AccessRole accessRole = AccessRoleDAO.find(em, scopeId, accessRoleId);
-            if (accessRole == null) {
-                throw new KapuaEntityNotFoundException(AccessRole.TYPE, accessRoleId);
-            }
+        entityManagerSession.doTransactedAction(EntityManagerContainer.<AccessRole>create().onResultHandler(em -> {
+                    //AccessRoleDAO.delete(em, scopeId, accessRoleId)
 
-            AccessRoleDAO.delete(em, scopeId, accessRoleId);
-            return accessRole;
-            */
-         ).onAfterHandler((entity) -> {
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
+                    //  without TYPE)
+                    AccessRole accessRole = AccessRoleDAO.find(em, scopeId, accessRoleId);
+                    if (accessRole == null) {
+                        throw new KapuaEntityNotFoundException(AccessRole.TYPE, accessRoleId);
+                    }
+
+                    return AccessRoleDAO.delete(em, scopeId, accessRoleId);
+                }
+        ).onAfterHandler((entity) -> {
             entityCache.remove(scopeId, accessRoleId);
             entityCache.removeList(scopeId, entity.getAccessInfoId());
         }));
