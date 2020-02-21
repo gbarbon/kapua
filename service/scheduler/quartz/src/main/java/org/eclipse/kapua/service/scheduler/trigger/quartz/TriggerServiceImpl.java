@@ -17,6 +17,7 @@ import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaErrorCodes;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
+import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -185,7 +186,8 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
         //
         // Do create
         try {
-            return entityManagerSession.onTransactedInsert(em -> {
+            return entityManagerSession.doTransactedAction(
+                    EntityManagerContainer.<Trigger>create().onResultHandler(em -> {
 
                 Trigger trigger = TriggerDAO.create(em, triggerCreator);
 
@@ -197,7 +199,7 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
                 }
 
                 return trigger;
-            });
+            }));
         } catch (TriggerNeverFiresException tnfe) {
             throw new KapuaException(KapuaErrorCodes.TRIGGER_NEVER_FIRE, tnfe);
         }
@@ -239,7 +241,9 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do update
-        return entityManagerSession.onTransactedResult(em -> TriggerDAO.update(em, trigger));
+        return entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<Trigger>create().onResultHandler(em -> TriggerDAO.update(em,
+                        trigger)));
     }
 
     @Override
@@ -253,6 +257,7 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
         // Check Access
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(SchedulerDomains.SCHEDULER_DOMAIN, Actions.delete, scopeId));
 
+        // TODO: check if it is correct to remove this statement (already thrown by the delete method)
         //
         // Check existence
         if (find(scopeId, triggerId) == null) {
@@ -261,8 +266,9 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do delete
-        entityManagerSession.onTransactedAction(em -> {
-            TriggerDAO.delete(em, scopeId, triggerId);
+        entityManagerSession.doTransactedAction(
+                EntityManagerContainer.<Trigger>create().onResultHandler(em -> {
+            Trigger trigger = TriggerDAO.delete(em, scopeId, triggerId);
 
             try {
                 SchedulerFactory sf = new StdSchedulerFactory();
@@ -275,7 +281,8 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
             } catch (SchedulerException se) {
                 throw new RuntimeException(se);
             }
-        });
+            return trigger;
+        }));
     }
 
     @Override
@@ -291,7 +298,9 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do find
-        Trigger trigger = entityManagerSession.onResult(em -> TriggerDAO.find(em, scopeId, triggerId));
+        Trigger trigger = entityManagerSession.doAction(
+                EntityManagerContainer.<Trigger>create().onResultHandler(em -> TriggerDAO.find(em, scopeId,
+                        triggerId)));
         adaptTrigger(trigger);
         return trigger;
     }
@@ -308,7 +317,8 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do query
-        TriggerListResult triggers = entityManagerSession.onResult(em -> TriggerDAO.query(em, query));
+        TriggerListResult triggers = entityManagerSession.doAction(
+                EntityManagerContainer.<TriggerListResult>create().onResultHandler(em -> TriggerDAO.query(em, query)));
 
         triggers.getItems().forEach(this::adaptTrigger);
 
@@ -327,7 +337,8 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         //
         // Do count
-        return entityManagerSession.onResult(em -> TriggerDAO.count(em, query));
+        return entityManagerSession.doAction(
+                EntityManagerContainer.<Long>create().onResultHandler(em -> TriggerDAO.count(em, query)));
     }
 
     private void adaptTriggerCreator(TriggerCreator triggerCreator) {
@@ -367,7 +378,8 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
 
         if (converted) {
             try {
-                entityManagerSession.onTransactedResult(em -> TriggerDAO.update(em, trigger));
+                entityManagerSession.doTransactedAction(
+                        EntityManagerContainer.<Trigger>create().onResultHandler(em -> TriggerDAO.update(em, trigger)));
             } catch (Exception e) {
                 LOG.warn("Cannot convert Trigger to new format!", e);
             }
