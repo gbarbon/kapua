@@ -101,11 +101,11 @@ public class DeviceManagementOperationRegistryServiceImpl extends AbstractKapuaS
         }
 
         // TODO: check if it is correct to remove this statement (already thrown by the update method)
-/*        //
+        //
         // Check existence
         if (find(entity.getScopeId(), entity.getId()) == null) {
             throw new KapuaEntityNotFoundException(DeviceManagementOperation.TYPE, entity.getId());
-        }*/
+        }
 
         //
         // Do update
@@ -175,11 +175,11 @@ public class DeviceManagementOperationRegistryServiceImpl extends AbstractKapuaS
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(DeviceManagementRegistryDomains.DEVICE_MANAGEMENT_REGISTRY_DOMAIN, Actions.delete, scopeId));
 
         // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*        //
+        //
         // Check existence
         if (find(scopeId, entityId) == null) {
             throw new KapuaEntityNotFoundException(DeviceManagementOperation.TYPE, entityId);
-        }*/
+        }
 
         //
         // Do delete

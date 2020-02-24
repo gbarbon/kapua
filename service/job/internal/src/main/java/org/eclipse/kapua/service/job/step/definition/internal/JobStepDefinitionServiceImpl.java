@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.job.step.definition.internal;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
@@ -156,15 +157,15 @@ public class JobStepDefinitionServiceImpl
         //
         // Do delete
         entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<JobStepDefinition>create().onResultHandler(em ->
-                                JobStepDefinitionDAO.delete(em, scopeId, stepDefinitionId)
-            // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*            if (JobStepDefinitionDAO.find(em, scopeId, stepDefinitionId) == null) {
-                throw new KapuaEntityNotFoundException(JobStepDefinition.TYPE, stepDefinitionId);
-            }
+                EntityManagerContainer.<JobStepDefinition>create().onResultHandler(em -> {
+                    //JobStepDefinitionDAO.delete(em, scopeId, stepDefinitionId)
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+                    if (JobStepDefinitionDAO.find(em, scopeId, stepDefinitionId) == null) {
+                        throw new KapuaEntityNotFoundException(JobStepDefinition.TYPE, stepDefinitionId);
+                    }
 
-            JobStepDefinitionDAO.delete(em, scopeId, stepDefinitionId);*/
-        ));
+                    return JobStepDefinitionDAO.delete(em, scopeId, stepDefinitionId);
+                }));
 
     }
 }

@@ -140,11 +140,11 @@ public class TagServiceImpl extends AbstractKapuaConfigurableResourceLimitedServ
         authorizationService.checkPermission(permissionFactory.newPermission(TagDomains.TAG_DOMAIN, Actions.delete, scopeId));
 
         // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*        //
+        //
         // Check existence
         if (find(scopeId, tagId) == null) {
             throw new KapuaEntityNotFoundException(Tag.TYPE, tagId);
-        }*/
+        }
 
         //
         //

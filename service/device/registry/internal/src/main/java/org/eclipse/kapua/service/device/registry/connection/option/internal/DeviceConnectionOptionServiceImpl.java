@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.device.registry.connection.option.internal;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.KapuaRuntimeErrorCodes;
 import org.eclipse.kapua.KapuaRuntimeException;
@@ -89,14 +90,13 @@ public class DeviceConnectionOptionServiceImpl extends AbstractKapuaService impl
         }
 
         return entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<DeviceConnectionOption>create().onResultHandler(em ->
-            /*
-            // TODO: check if it is correct to remove this statement (already thrown by the update method)
-            if (DeviceConnectionOptionDAO.find(em, deviceConnectionOptions.getScopeId(), deviceConnectionOptions.getId()) == null) {
-                throw new KapuaEntityNotFoundException(DeviceConnectionOption.TYPE, deviceConnectionOptions.getId());
-            }
-            */
-            DeviceConnectionOptionDAO.update(em, deviceConnectionOptions)));
+                EntityManagerContainer.<DeviceConnectionOption>create().onResultHandler(em -> {
+                    // TODO: check if it is correct to remove this statement (already thrown by the update method)
+                    if (DeviceConnectionOptionDAO.find(em, deviceConnectionOptions.getScopeId(), deviceConnectionOptions.getId()) == null) {
+                        throw new KapuaEntityNotFoundException(DeviceConnectionOption.TYPE, deviceConnectionOptions.getId());
+                    }
+                    return DeviceConnectionOptionDAO.update(em, deviceConnectionOptions);
+                }));
     }
 
     @Override

@@ -16,7 +16,6 @@ import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
-import org.eclipse.kapua.service.device.registry.internal.DeviceRegistryCache;
 import org.eclipse.kapua.commons.util.ArgumentValidator;
 import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -36,6 +35,7 @@ import org.eclipse.kapua.service.device.registry.connection.DeviceConnectionList
 import org.eclipse.kapua.service.device.registry.connection.DeviceConnectionQuery;
 import org.eclipse.kapua.service.device.registry.connection.DeviceConnectionService;
 import org.eclipse.kapua.service.device.registry.internal.DeviceEntityManagerFactory;
+import org.eclipse.kapua.service.device.registry.internal.DeviceRegistryCache;
 import org.eclipse.kapua.service.device.registry.internal.DeviceRegistryCacheFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,18 +211,15 @@ public class DeviceConnectionServiceImpl extends
         PermissionFactory permissionFactory = locator.getFactory(PermissionFactory.class);
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_CONNECTION_DOMAIN, Actions.write, null));
 
-        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onResultHandler(entityManager ->
-                DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId)
-                /*
-                // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
-                //  without TYPE)
-
+        entityManagerSession.doTransactedAction(EntityManagerContainer.create().onResultHandler(entityManager -> {
+            //DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId)
+            // TODO: check if it is correct to remove this statement (already thrown by the delete method, but
+            //  without TYPE)
             if (DeviceConnectionDAO.find(entityManager, scopeId, deviceConnectionId) == null) {
                 throw new KapuaEntityNotFoundException(DeviceConnection.TYPE, deviceConnectionId);
             }
-            DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
-            */
-        ).onAfterHandler((emptyParam) -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId,
+            return DeviceConnectionDAO.delete(entityManager, scopeId, deviceConnectionId);
+        }).onAfterHandler((emptyParam) -> ((DeviceRegistryCache) entityCache).removeByDeviceConnectionId(scopeId,
                 deviceConnectionId)));
     }
 

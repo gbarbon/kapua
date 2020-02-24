@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.job.execution.internal;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
@@ -148,16 +149,16 @@ public class JobExecutionServiceImpl
         //
         // Do delete
         entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> JobExecutionDAO.delete(em, scopeId, jobExecutionId)
+                EntityManagerContainer.<JobExecution>create().onResultHandler(em -> {
+                    // JobExecutionDAO.delete(em, scopeId, jobExecutionId)
 
-              // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*            if (JobExecutionDAO.find(em, scopeId, jobExecutionId) == null) {
-                throw new KapuaEntityNotFoundException(JobExecution.TYPE, jobExecutionId);
-            }
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+                    if (JobExecutionDAO.find(em, scopeId, jobExecutionId) == null) {
+                        throw new KapuaEntityNotFoundException(JobExecution.TYPE, jobExecutionId);
+                    }
 
-            JobExecutionDAO.delete(em, scopeId, jobExecutionId);
-            */
-        ));
+                    return JobExecutionDAO.delete(em, scopeId, jobExecutionId);
+                }));
 
     }
 }

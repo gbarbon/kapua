@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.device.management.job.internal;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaEntityUniquenessException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
@@ -158,13 +159,11 @@ public class JobDeviceManagementOperationServiceImpl extends AbstractKapuaConfig
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(JobDomains.JOB_DOMAIN, Actions.delete, scopeId));
 
         // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*
         //
         // Check existence
         if (find(scopeId, jobDeviceManagementOperationId) == null) {
             throw new KapuaEntityNotFoundException(JobDeviceManagementOperation.TYPE, jobDeviceManagementOperationId);
         }
-*/
 
         //
         // Do delete

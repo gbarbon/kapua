@@ -156,14 +156,15 @@ public class DeviceEventServiceImpl extends AbstractKapuaService implements Devi
         authorizationService.checkPermission(permissionFactory.newPermission(DeviceDomains.DEVICE_EVENT_DOMAIN, Actions.delete, scopeId));
 
         entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<DeviceEvent>create().onResultHandler(em ->
-            /*
-            // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-            if (DeviceEventDAO.find(em, scopeId, deviceEventId) == null) {
-                throw new KapuaEntityNotFoundException(DeviceEvent.TYPE, deviceEventId);
-            }
-            */
-            DeviceEventDAO.delete(em, scopeId, deviceEventId)));
+                EntityManagerContainer.<DeviceEvent>create().onResultHandler(em -> {
+
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+                    if (DeviceEventDAO.find(em, scopeId, deviceEventId) == null) {
+                        throw new KapuaEntityNotFoundException(DeviceEvent.TYPE, deviceEventId);
+                    }
+
+                    return DeviceEventDAO.delete(em, scopeId, deviceEventId);
+                }));
     }
 
 

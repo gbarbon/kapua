@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.job.engine.queue.jbatch;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.configuration.AbstractKapuaConfigurableResourceLimitedService;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
@@ -30,6 +31,7 @@ import org.eclipse.kapua.model.query.KapuaQuery;
 import org.eclipse.kapua.service.authorization.AuthorizationService;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.eclipse.kapua.service.job.JobDomains;
+import org.eclipse.kapua.service.job.execution.JobExecution;
 import org.eclipse.kapua.service.job.execution.JobExecutionService;
 
 /**
@@ -146,17 +148,15 @@ public class QueuedJobExecutionServiceImpl
         //
         // Do delete
         entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<QueuedJobExecution>create().onResultHandler(em ->
-                                QueuedJobExecutionDAO.delete(em, scopeId, queuedJobExecutionId)
-                // TODO: check if it is correct to remove this statement (already thrown by the update method)
-                /*
-                if (QueuedJobExecutionDAO.find(em, scopeId, queuedJobExecutionId) == null) {
-                    throw new KapuaEntityNotFoundException(JobExecution.TYPE, queuedJobExecutionId);
-                }
+                EntityManagerContainer.<QueuedJobExecution>create().onResultHandler(em -> {
+                    // QueuedJobExecutionDAO.delete(em, scopeId, queuedJobExecutionId)
+                    // TODO: check if it is correct to remove this statement (already thrown by the update method)
+                    if (QueuedJobExecutionDAO.find(em, scopeId, queuedJobExecutionId) == null) {
+                        throw new KapuaEntityNotFoundException(JobExecution.TYPE, queuedJobExecutionId);
+                    }
 
-                QueuedJobExecutionDAO.delete(em, scopeId, queuedJobExecutionId);
-            */
-        ));
+                    return QueuedJobExecutionDAO.delete(em, scopeId, queuedJobExecutionId);
+                }));
 
     }
 }

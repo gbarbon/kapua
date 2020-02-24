@@ -258,11 +258,11 @@ public class TriggerServiceImpl extends AbstractKapuaConfigurableResourceLimited
         AUTHORIZATION_SERVICE.checkPermission(PERMISSION_FACTORY.newPermission(SchedulerDomains.SCHEDULER_DOMAIN, Actions.delete, scopeId));
 
         // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*        //
+        //
         // Check existence
         if (find(scopeId, triggerId) == null) {
             throw new KapuaEntityNotFoundException(Trigger.TYPE, triggerId);
-        }*/
+        }
 
         //
         // Do delete

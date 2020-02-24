@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.scheduler.trigger.definition.quartz;
 
+import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.service.internal.AbstractKapuaService;
@@ -165,15 +166,15 @@ public class TriggerDefinitionServiceImpl extends AbstractKapuaService implement
         //
         // Do delete
         entityManagerSession.doTransactedAction(
-                EntityManagerContainer.<TriggerDefinition>create().onResultHandler(em ->
-                                TriggerDefinitionDAO.delete(em, scopeId, stepDefinitionId)
-              // TODO: check if it is correct to remove this statement (already thrown by the delete method)
-/*            if (TriggerDefinitionDAO.find(em, scopeId, stepDefinitionId) == null) {
-                throw new KapuaEntityNotFoundException(TriggerDefinition.TYPE, stepDefinitionId);
-            }
+                EntityManagerContainer.<TriggerDefinition>create().onResultHandler(em -> {
+                    // TriggerDefinitionDAO.delete(em, scopeId, stepDefinitionId)
+                    // TODO: check if it is correct to remove this statement (already thrown by the delete method)
+                    if (TriggerDefinitionDAO.find(em, scopeId, stepDefinitionId) == null) {
+                        throw new KapuaEntityNotFoundException(TriggerDefinition.TYPE, stepDefinitionId);
+                    }
 
-            TriggerDefinitionDAO.delete(em, scopeId, stepDefinitionId);*/
-        ));
+                    return TriggerDefinitionDAO.delete(em, scopeId, stepDefinitionId);
+                }));
 
     }
 }
