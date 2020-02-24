@@ -32,30 +32,27 @@ public class AbstractKapuaService {
     protected EntityManagerSession entityManagerSession;
     protected EntityCache entityCache;
 
-    //============================================================================
-    //
-    // old constructor   TODO: to be deleted when caches are all implemented
-    //
-    //============================================================================
+    /**
+     * Constructor
+     *
+     * @param entityManagerFactory
+     */
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
-        this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
+        this(entityManagerFactory, null);
     }
 
-    //============================================================================
-    //
-    // new constructor
-    //
-    //============================================================================
     /**
      * Constructor
      * 
      * @param entityManagerFactory
+     * @param abstractCacheFactory
      */
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory, AbstractEntityCacheFactory abstractCacheFactory) {
         this.entityManagerFactory = entityManagerFactory;
         this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
-        this.entityCache = abstractCacheFactory.createCache();
+        if (abstractCacheFactory != null) {
+            this.entityCache = abstractCacheFactory.createCache();
+        }
     }
 
     public EntityManagerSession getEntityManagerSession() {

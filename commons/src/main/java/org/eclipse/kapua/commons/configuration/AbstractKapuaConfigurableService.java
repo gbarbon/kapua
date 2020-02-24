@@ -65,11 +65,6 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
     private static final LocalCache<String, KapuaTmetadata> KAPUA_TMETADATA_LOCAL_CACHE =
             new LocalCache<>(SIZEMAX, null);
 
-    //============================================================================
-    //
-    // old constructor
-    //
-    //============================================================================
     /**
      * Constructor
      *
@@ -78,22 +73,16 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
      * @param entityManagerFactory
      */
     protected AbstractKapuaConfigurableService(String pid, Domain domain, EntityManagerFactory entityManagerFactory) {
-        super(entityManagerFactory);
-        this.pid = pid;
-        this.domain = domain;
+        this(pid, domain, entityManagerFactory, null);
     }
 
-    //============================================================================
-    //
-    // new constructor
-    //
-    //============================================================================
     /**
      * Constructor
      *
      * @param pid
      * @param domain
      * @param entityManagerFactory
+     * @param abstractCacheFactory
      */
     protected AbstractKapuaConfigurableService(String pid, Domain domain, EntityManagerFactory entityManagerFactory, AbstractEntityCacheFactory abstractCacheFactory) {
         super(entityManagerFactory, abstractCacheFactory);

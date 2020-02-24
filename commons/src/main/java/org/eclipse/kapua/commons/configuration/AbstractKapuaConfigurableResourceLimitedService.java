@@ -41,27 +41,15 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
     private final Class<S> serviceClass;
     private final Class<F> factoryClass;
 
-    //============================================================================
-    //
-    // old constructor  TODO: to be deleted when caches are all implemented
-    //
-    //============================================================================
     protected AbstractKapuaConfigurableResourceLimitedService(
             String pid,
             Domain domain,
             EntityManagerFactory entityManagerFactory,
             Class<S> serviceClass,
             Class<F> factoryClass) {
-        super(pid, domain, entityManagerFactory);
-        this.serviceClass = serviceClass;
-        this.factoryClass = factoryClass;
+        this(pid, domain, entityManagerFactory, null, serviceClass, factoryClass);
     }
 
-    //============================================================================
-    //
-    // new constructor
-    //
-    //============================================================================
     protected AbstractKapuaConfigurableResourceLimitedService(
             String pid,
             Domain domain,
