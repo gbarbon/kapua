@@ -11,8 +11,8 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.jpa;
 
-import org.eclipse.kapua.commons.service.internal.EntityCache;
-import org.eclipse.kapua.commons.service.internal.NamedEntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.NamedEntityCache;
 
 public abstract class AbstractNamedEntityCacheFactory extends AbstractEntityCacheFactory {
 

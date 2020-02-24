@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.qa.common.cache;
 
 import javax.cache.CacheManager;
 import javax.cache.configuration.OptionalFeature;
@@ -17,15 +17,15 @@ import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class JCacheCachingProvider implements CachingProvider {
+public class MapCachingProvider implements CachingProvider {
 
-    private static JCacheCachingProvider instance;
+    private static MapCachingProvider instance;
 
-    public static JCacheCachingProvider getInstance() {
+    public static MapCachingProvider getInstance() {
         if (instance == null) {
-            synchronized (JCacheCachingProvider.class) {
+            synchronized (MapCachingProvider.class) {
                 if (instance == null) {
-                    instance = new JCacheCachingProvider();
+                    instance = new MapCachingProvider();
                 }
             }
         }
@@ -59,7 +59,7 @@ public class JCacheCachingProvider implements CachingProvider {
 
     @Override
     public CacheManager getCacheManager() {
-        return JCacheCacheManager.getInstance();
+        return MapCacheManager.getInstance();
     }
 
     @Override

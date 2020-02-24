@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.dummycache;
+package org.eclipse.kapua.qa.common.cache;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -18,19 +18,19 @@ import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class DummyCacheManager implements CacheManager {
+public class MapCacheManager implements CacheManager {
 
-    private static DummyCacheManager instance;
+    private static MapCacheManager instance;
 
-    private DummyCacheManager() {
+    private MapCacheManager() {
 
     }
 
-    public static DummyCacheManager getInstance() {
+    public static MapCacheManager getInstance() {
         if (instance == null) {
-            synchronized (DummyCacheManager.class) {
+            synchronized (MapCacheManager.class) {
                 if (instance == null) {
-                    instance = new DummyCacheManager();
+                    instance = new MapCacheManager();
                 }
             }
         }
@@ -39,71 +39,73 @@ public class DummyCacheManager implements CacheManager {
 
     @Override
     public CachingProvider getCachingProvider() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public URI getURI() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Properties getProperties() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
-        return new DummyCache<>();
+        //Class<K> kClass = configuration.getKeyType();
+        //Class<V> vClass = configuration.getValueType();
+        return new MapCache<>();
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Iterable<String> getCacheNames() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void destroyCache(String cacheName) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void enableManagement(String cacheName, boolean enabled) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void enableStatistics(String cacheName, boolean enabled) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void close() {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isClosed() {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

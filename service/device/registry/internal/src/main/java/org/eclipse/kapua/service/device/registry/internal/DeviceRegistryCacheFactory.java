@@ -12,7 +12,7 @@
 package org.eclipse.kapua.service.device.registry.internal;
 
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
-import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
 public class DeviceRegistryCacheFactory extends AbstractEntityCacheFactory {
 

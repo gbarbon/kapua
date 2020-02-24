@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.service.internal.cache;
 
 import com.codahale.metrics.Counter;
 import org.eclipse.kapua.commons.metric.MetricServiceFactory;
@@ -61,9 +61,6 @@ public class EntityCache {
 
     public KapuaListResult getList(KapuaId scopeId, Serializable id) {
         if (id != null) {
-//            if (id instanceof String && ((String) id).trim().length() == 0) {
-//                return null;
-//            }
             return checkResult(scopeId, (KapuaListResult) listsCache.get(new ComposedKey(scopeId, id)));
         }
         return null;

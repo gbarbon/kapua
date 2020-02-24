@@ -15,6 +15,7 @@ import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.event.ServiceEventBusManager;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerSession;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 import org.eclipse.kapua.event.ServiceEventBusException;
 import org.eclipse.kapua.event.ServiceEventBusListener;
 import org.eclipse.kapua.service.KapuaService;
@@ -32,30 +33,27 @@ public class AbstractKapuaService {
     protected EntityManagerSession entityManagerSession;
     protected EntityCache entityCache;
 
-    //============================================================================
-    //
-    // old constructor   TODO: to be deleted when caches are all implemented
-    //
-    //============================================================================
+    /**
+     * Constructor
+     *
+     * @param entityManagerFactory
+     */
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
-        this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
+        this(entityManagerFactory, null);
     }
 
-    //============================================================================
-    //
-    // new constructor
-    //
-    //============================================================================
     /**
      * Constructor
      * 
      * @param entityManagerFactory
+     * @param abstractCacheFactory
      */
     protected AbstractKapuaService(EntityManagerFactory entityManagerFactory, AbstractEntityCacheFactory abstractCacheFactory) {
         this.entityManagerFactory = entityManagerFactory;
         this.entityManagerSession = new EntityManagerSession(entityManagerFactory);
-        this.entityCache = abstractCacheFactory.createCache();
+        if (abstractCacheFactory != null) {
+            this.entityCache = abstractCacheFactory.createCache();
+        }
     }
 
     public EntityManagerSession getEntityManagerSession() {

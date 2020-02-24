@@ -9,28 +9,26 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.commons.service.internal.cache.dummy;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class JCacheCacheManager implements CacheManager {
+public class CacheManager implements javax.cache.CacheManager {
 
-    private static JCacheCacheManager instance;
+    private static CacheManager instance;
 
-    private JCacheCacheManager() {
+    private CacheManager() {
 
     }
 
-    public static JCacheCacheManager getInstance() {
+    public static CacheManager getInstance() {
         if (instance == null) {
-            synchronized (JCacheCacheManager.class) {
+            synchronized (CacheManager.class) {
                 if (instance == null) {
-                    instance = new JCacheCacheManager();
+                    instance = new CacheManager();
                 }
             }
         }
@@ -39,73 +37,71 @@ public class JCacheCacheManager implements CacheManager {
 
     @Override
     public CachingProvider getCachingProvider() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public URI getURI() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Properties getProperties() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
-    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
-        //Class<K> kClass = configuration.getKeyType();
-        //Class<V> vClass = configuration.getValueType();
-        return new JCacheHashMapCache<>();
+    public <K, V, C extends Configuration<K, V>> javax.cache.Cache createCache(String cacheName, C configuration) throws IllegalArgumentException {
+        return new Cache<>();
     }
 
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        throw new UnsupportedOperationException();
+    public <K, V> javax.cache.Cache getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
+        return null;
     }
 
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName) {
-        throw new UnsupportedOperationException();
+    public <K, V> javax.cache.Cache getCache(String cacheName) {
+        return null;
     }
 
     @Override
     public Iterable<String> getCacheNames() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public void destroyCache(String cacheName) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void enableManagement(String cacheName, boolean enabled) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void enableStatistics(String cacheName, boolean enabled) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void close() {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public boolean isClosed() {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

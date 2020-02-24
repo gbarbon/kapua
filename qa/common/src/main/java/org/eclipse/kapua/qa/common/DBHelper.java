@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import org.eclipse.kapua.commons.configuration.KapuaConfigurableServiceSchemaUtilsWithResources;
-import org.eclipse.kapua.commons.service.internal.KapuaCacheManager;
+import org.eclipse.kapua.commons.service.internal.cache.KapuaCacheManager;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.liquibase.KapuaLiquibaseClient;

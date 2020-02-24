@@ -9,17 +9,15 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.dummycache;
+package org.eclipse.kapua.commons.service.internal.cache.dummy;
 
-import javax.cache.CacheManager;
 import javax.cache.configuration.OptionalFeature;
-import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class DummyCachingProvider implements CachingProvider {
+public class CachingProvider implements javax.cache.spi.CachingProvider {
     @Override
-    public CacheManager getCacheManager(URI uri, ClassLoader classLoader, Properties properties) {
+    public javax.cache.CacheManager getCacheManager(URI uri, ClassLoader classLoader, Properties properties) {
         return null;
     }
 
@@ -39,13 +37,13 @@ public class DummyCachingProvider implements CachingProvider {
     }
 
     @Override
-    public CacheManager getCacheManager(URI uri, ClassLoader classLoader) {
+    public javax.cache.CacheManager getCacheManager(URI uri, ClassLoader classLoader) {
         return null;
     }
 
     @Override
-    public CacheManager getCacheManager() {
-        return DummyCacheManager.getInstance();
+    public javax.cache.CacheManager getCacheManager() {
+        return CacheManager.getInstance();
     }
 
     @Override

@@ -9,11 +9,11 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.qa.common.cache;
 
 import javax.cache.configuration.Configuration;
 
-public class JCacheConfiguration<K, V> implements Configuration<K, V> {
+public class MapConfiguration<K, V> implements Configuration<K, V> {
 
     @Override
     public Class<K> getKeyType() {
