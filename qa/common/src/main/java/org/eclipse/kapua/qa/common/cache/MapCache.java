@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.qa.common.cache;
 
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.query.KapuaListResult;
@@ -34,12 +34,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Dummy implementation of JCache using an hashmap, to be used only for tests!
  */
-public class JCacheHashMapCache<K, V> implements Cache<K, V> {
+public class MapCache<K, V> implements Cache<K, V> {
 
-    private static final Logger logger = LoggerFactory.getLogger(JCacheCacheManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(MapCacheManager.class);
     private ConcurrentHashMap<K, V> hashMap;
 
-    JCacheHashMapCache() {
+    MapCache() {
         hashMap = new ConcurrentHashMap<>();
     }
 

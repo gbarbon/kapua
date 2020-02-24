@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.jcachetest;
+package org.eclipse.kapua.qa.common.cache;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -18,19 +18,19 @@ import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class JCacheCacheManager implements CacheManager {
+public class MapCacheManager implements CacheManager {
 
-    private static JCacheCacheManager instance;
+    private static MapCacheManager instance;
 
-    private JCacheCacheManager() {
+    private MapCacheManager() {
 
     }
 
-    public static JCacheCacheManager getInstance() {
+    public static MapCacheManager getInstance() {
         if (instance == null) {
-            synchronized (JCacheCacheManager.class) {
+            synchronized (MapCacheManager.class) {
                 if (instance == null) {
-                    instance = new JCacheCacheManager();
+                    instance = new MapCacheManager();
                 }
             }
         }
@@ -61,7 +61,7 @@ public class JCacheCacheManager implements CacheManager {
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
         //Class<K> kClass = configuration.getKeyType();
         //Class<V> vClass = configuration.getValueType();
-        return new JCacheHashMapCache<>();
+        return new MapCache<>();
     }
 
     @Override
