@@ -107,10 +107,10 @@ public class EntityManagerSession {
 
                         transactionManager.commit(manager);
                         succeeded = true;
-                        if (manager instanceof KapuaEntity) {
+/*                        if (manager instanceof KapuaEntity) {
                             manager.detach((KapuaEntity) instance);
                             // TODO: check behaviour without the detach (when all caches are implemented)
-                        }
+                        }*/
                         if (container.onAfter != null) {
                             container.onAfter.onAfter(instance);
                         }
