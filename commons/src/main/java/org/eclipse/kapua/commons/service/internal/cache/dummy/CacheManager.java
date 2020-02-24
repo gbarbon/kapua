@@ -9,28 +9,26 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal.dummycache;
+package org.eclipse.kapua.commons.service.internal.cache.dummy;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
-public class DummyCacheManager implements CacheManager {
+public class CacheManager implements javax.cache.CacheManager {
 
-    private static DummyCacheManager instance;
+    private static CacheManager instance;
 
-    private DummyCacheManager() {
+    private CacheManager() {
 
     }
 
-    public static DummyCacheManager getInstance() {
+    public static CacheManager getInstance() {
         if (instance == null) {
-            synchronized (DummyCacheManager.class) {
+            synchronized (CacheManager.class) {
                 if (instance == null) {
-                    instance = new DummyCacheManager();
+                    instance = new CacheManager();
                 }
             }
         }
@@ -58,17 +56,17 @@ public class DummyCacheManager implements CacheManager {
     }
 
     @Override
-    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
-        return new DummyCache<>();
+    public <K, V, C extends Configuration<K, V>> javax.cache.Cache createCache(String cacheName, C configuration) throws IllegalArgumentException {
+        return new Cache<>();
     }
 
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
+    public <K, V> javax.cache.Cache getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
         return null;
     }
 
     @Override
-    public <K, V> Cache<K, V> getCache(String cacheName) {
+    public <K, V> javax.cache.Cache getCache(String cacheName) {
         return null;
     }
 

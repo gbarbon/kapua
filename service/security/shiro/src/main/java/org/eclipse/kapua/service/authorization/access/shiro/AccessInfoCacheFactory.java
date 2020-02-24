@@ -12,7 +12,7 @@
 package org.eclipse.kapua.service.authorization.access.shiro;
 
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
-import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
 public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
 

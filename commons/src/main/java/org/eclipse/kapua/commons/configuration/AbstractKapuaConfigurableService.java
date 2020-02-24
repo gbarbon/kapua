@@ -21,7 +21,7 @@ import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerContainer;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.service.internal.AbstractKapuaService;
-import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 import org.eclipse.kapua.commons.service.internal.ServiceDAO;
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;

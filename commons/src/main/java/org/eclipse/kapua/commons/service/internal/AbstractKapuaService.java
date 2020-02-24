@@ -15,6 +15,7 @@ import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.event.ServiceEventBusManager;
 import org.eclipse.kapua.commons.jpa.EntityManagerFactory;
 import org.eclipse.kapua.commons.jpa.EntityManagerSession;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 import org.eclipse.kapua.event.ServiceEventBusException;
 import org.eclipse.kapua.event.ServiceEventBusListener;
 import org.eclipse.kapua.service.KapuaService;

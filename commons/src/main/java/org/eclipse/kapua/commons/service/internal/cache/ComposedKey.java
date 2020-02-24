@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.service.internal.cache;
 
 import org.eclipse.kapua.model.id.KapuaId;
 

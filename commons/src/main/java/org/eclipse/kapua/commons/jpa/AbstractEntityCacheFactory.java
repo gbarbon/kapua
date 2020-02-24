@@ -11,7 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.jpa;
 
-import org.eclipse.kapua.commons.service.internal.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
 public abstract class AbstractEntityCacheFactory implements CacheFactory {
 

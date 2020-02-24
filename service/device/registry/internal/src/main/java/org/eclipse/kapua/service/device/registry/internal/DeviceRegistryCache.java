@@ -11,8 +11,8 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.device.registry.internal;
 
-import org.eclipse.kapua.commons.service.internal.EntityCache;
-import org.eclipse.kapua.commons.service.internal.KapuaCacheManager;
+import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
+import org.eclipse.kapua.commons.service.internal.cache.KapuaCacheManager;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.id.KapuaId;
 import org.eclipse.kapua.service.device.registry.Device;

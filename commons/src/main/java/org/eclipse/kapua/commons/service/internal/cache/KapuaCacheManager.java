@@ -9,7 +9,7 @@
  * Contributors:
  *     Eurotech - initial API and implementation
  *******************************************************************************/
-package org.eclipse.kapua.commons.service.internal;
+package org.eclipse.kapua.commons.service.internal.cache;
 
 import org.eclipse.kapua.commons.setting.system.SystemSetting;
 import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
@@ -24,10 +24,10 @@ import java.util.Map;
 public class KapuaCacheManager {
 
     private static final SystemSetting SYSTEM_SETTING = SystemSetting.getInstance();
-    private static final String DUMMY_CACHING_PROVIDER =
-            "org.eclipse.kapua.commons.service.internal.dummycache.DummyCachingProvider";
+    private static final String DEFAULT_CACHING_PROVIDER =
+            "org.eclipse.kapua.commons.service.internal.cache.dummy.CachingProvider";
     private static final String CACHING_PROVIDER_CLASS_NAME = SYSTEM_SETTING.getString(SystemSettingKey.CACHING_PROVIDER,
-            DUMMY_CACHING_PROVIDER);  // use the dummy cache if no provider exists
+            DEFAULT_CACHING_PROVIDER);  // use the dummy cache if no provider exists
 
     private static Map<String, Cache<Serializable, Serializable>> cacheMap = new HashMap<>();
 
