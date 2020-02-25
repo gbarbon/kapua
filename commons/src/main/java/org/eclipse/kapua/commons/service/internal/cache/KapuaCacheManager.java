@@ -18,8 +18,8 @@ import javax.cache.Cache;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KapuaCacheManager {
 
@@ -29,20 +29,20 @@ public class KapuaCacheManager {
     private static final String CACHING_PROVIDER_CLASS_NAME = SYSTEM_SETTING.getString(SystemSettingKey.CACHING_PROVIDER,
             DEFAULT_CACHING_PROVIDER);  // use the dummy cache if no provider exists
 
-    private static Map<String, Cache<Serializable, Serializable>> cacheMap = new HashMap<>();
+    private static final Map<String, Cache<Serializable, Serializable>> CACHE_MAP = new ConcurrentHashMap<>();
 
     private KapuaCacheManager() {
     }
 
     public static Cache<Serializable, Serializable> getCache(String cacheName) {
-        Cache<Serializable, Serializable> cache = cacheMap.get(cacheName);
+        Cache<Serializable, Serializable> cache = CACHE_MAP.get(cacheName);
         if (cache == null) {
-            synchronized (cacheMap) {
-                cache = cacheMap.get(cacheName);
+            synchronized (CACHE_MAP) {
+                cache = CACHE_MAP.get(cacheName);
                 if (cache == null) {
                     MutableConfiguration<Serializable, Serializable> config = new MutableConfiguration<>();
                     cache = Caching.getCachingProvider(CACHING_PROVIDER_CLASS_NAME).getCacheManager().createCache(cacheName, config);
-                    cacheMap.put(cacheName, cache);
+                    CACHE_MAP.put(cacheName, cache);
                 }
             }
         }
@@ -51,7 +51,7 @@ public class KapuaCacheManager {
 
     // TODO: only used by tests?
     public static void invalidateAll() {
-        cacheMap.forEach((cacheKey, cache) -> cache.clear());
+        CACHE_MAP.forEach((cacheKey, cache) -> cache.clear());
     }
 
     // TODO: create an invalidateByAccount?
