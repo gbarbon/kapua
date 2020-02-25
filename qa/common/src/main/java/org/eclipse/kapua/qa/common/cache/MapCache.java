@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.kapua.qa.common.cache;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.eclipse.kapua.model.query.KapuaListResult;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ import javax.cache.configuration.Configuration;
 import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
-import java.lang.reflect.Constructor;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -207,7 +208,8 @@ public class MapCache<K, V> implements Cache<K, V> {
 
     private Object clone(Object object) throws InvocationTargetException, IllegalAccessException,
             InstantiationException {
-        if (object != null) {
+        return SerializationUtils.clone((Serializable) object);
+ /*       if (object != null) {
             try {
                 Class<?> objectClass = object.getClass();
                 Constructor<?> objectConstructor = objectClass.getDeclaredConstructor();
@@ -250,7 +252,7 @@ public class MapCache<K, V> implements Cache<K, V> {
                 return object;
             }
         }
-        return null;
+        return null;*/
     }
 
     public boolean isGetter(Method method) {
