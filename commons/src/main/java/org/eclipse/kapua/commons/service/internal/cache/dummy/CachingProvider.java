@@ -18,7 +18,7 @@ import java.util.Properties;
 public class CachingProvider implements javax.cache.spi.CachingProvider {
     @Override
     public javax.cache.CacheManager getCacheManager(URI uri, ClassLoader classLoader, Properties properties) {
-        return null;
+        return getCacheManager();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class CachingProvider implements javax.cache.spi.CachingProvider {
 
     @Override
     public javax.cache.CacheManager getCacheManager(URI uri, ClassLoader classLoader) {
-        return null;
+        return getCacheManager();
     }
 
     @Override

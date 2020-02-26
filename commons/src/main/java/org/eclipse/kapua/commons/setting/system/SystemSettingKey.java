@@ -265,7 +265,11 @@ public enum SystemSettingKey implements SettingKey {
     /**
      * Size of the local cache for the KapuaTmetadata
      */
-    TMETADATA_LOCAL_CACHE_SIZE_MAXIMUM("commons.cache.local.tmetadata.maxsize");
+    TMETADATA_LOCAL_CACHE_SIZE_MAXIMUM("commons.cache.local.tmetadata.maxsize"),
+    /**
+     * Provide the JCache CacheManager config file URL
+     */
+    JCACHE_CONFIG_URL("commons.cache.jcache.config.url");
 
     private String key;
 

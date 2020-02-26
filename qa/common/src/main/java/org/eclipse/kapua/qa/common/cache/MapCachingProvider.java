@@ -34,7 +34,7 @@ public class MapCachingProvider implements CachingProvider {
 
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader classLoader, Properties properties) {
-        throw new UnsupportedOperationException();
+        return getCacheManager();
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MapCachingProvider implements CachingProvider {
 
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader classLoader) {
-        throw new UnsupportedOperationException();
+        return getCacheManager();
     }
 
     @Override
