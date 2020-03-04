@@ -11,9 +11,11 @@
  *******************************************************************************/
 package org.eclipse.kapua.commons.jpa;
 
+import com.codahale.metrics.Counter;
 import org.eclipse.kapua.KapuaEntityExistsException;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.commons.event.ServiceEventScope;
+import org.eclipse.kapua.commons.metric.MetricServiceFactory;
 import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.service.event.store.api.EventStoreRecord;
 import org.eclipse.kapua.commons.service.event.store.api.ServiceEventUtil;
@@ -24,6 +26,9 @@ import org.eclipse.kapua.commons.util.KapuaExceptionUtils;
 import org.eclipse.kapua.model.KapuaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Entity manager session reference implementation.
@@ -39,6 +44,12 @@ public class EntityManagerSession {
 
     private TransactionManager transacted = new TransactionManagerTransacted();
     private TransactionManager notTransacted = new TransactionManagerNotTransacted();
+
+    private AtomicInteger counter = new AtomicInteger(0);
+    private static final String MODULE = "commons";
+    private static final String COMPONENT = "cache";
+    private static final String ENTITY = "entity";
+    private static final String COUNT = "count";
 
     /**
      * Constructor
@@ -92,6 +103,12 @@ public class EntityManagerSession {
         if (container.onBefore != null) {
             instance = container.onBefore.onBefore();
         }
+        if (counter.getAndIncrement() % 100 == 0) {
+            Counter cacheMiss = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "miss", COUNT);
+            Counter cacheHit = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "hit", COUNT);
+            Counter cacheRemoval = MetricServiceFactory.getInstance().getCounter(MODULE, COMPONENT, ENTITY, "removal", COUNT);
+            logger.warn("### Cache status. Hit {}. Miss {}. Removal {}.", cacheHit.getCount(), cacheMiss.getCount(), cacheRemoval.getCount());
+        };
         if (instance == null) {
             EntityManager manager = entityManagerFactory.createEntityManager();
             try {
