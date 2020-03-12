@@ -13,6 +13,9 @@ package org.eclipse.kapua.commons.configuration;
 
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 
+/**
+ * Cache factory for the {@link AbstractKapuaConfigurableService}
+ */
 public class AbstractKapuaConfigurableServiceCache extends AbstractEntityCacheFactory {
 
     private AbstractKapuaConfigurableServiceCache() {

@@ -130,7 +130,7 @@ public class AccountDAO {
      * @param em
      * @param scopeId
      * @param accountId
-     * @return
+     * @return The deleted {@link Account}
      * @throws KapuaEntityNotFoundException
      *             If the {@link Account} is not found
      */

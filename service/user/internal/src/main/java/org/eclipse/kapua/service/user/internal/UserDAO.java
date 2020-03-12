@@ -135,7 +135,7 @@ public class UserDAO extends ServiceDAO {
      * @param em
      * @param scopeId
      * @param userId
-     * @return
+     * @return the deleted {@link User}
      * @throws KapuaEntityNotFoundException If {@link User} is not found.
      */
     public static User delete(EntityManager em, KapuaId scopeId, KapuaId userId)

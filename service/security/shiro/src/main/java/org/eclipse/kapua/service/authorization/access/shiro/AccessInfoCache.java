@@ -20,6 +20,12 @@ import org.eclipse.kapua.service.authorization.access.AccessInfo;
 import javax.cache.Cache;
 import java.io.Serializable;
 
+/**
+ * {@link AccessInfoServiceImpl} dedicated cache.
+ * Extends the {@link EntityCache} by providing a further {@link Cache} object, called {@code accessInfoByUserIdCache}.
+ * The {@code accessInfoByUserIdCache} cache adopts the userId as key and the entity id as value.
+ * In such a way the correspondence with {@link EntityCache#idCache} is preserved.
+ */
 public class AccessInfoCache extends EntityCache {
 
     protected Cache<Serializable, Serializable> accessInfoByUserIdCache;

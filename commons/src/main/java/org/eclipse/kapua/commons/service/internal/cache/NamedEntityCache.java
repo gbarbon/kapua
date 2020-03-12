@@ -18,6 +18,11 @@ import org.eclipse.kapua.model.id.KapuaId;
 import javax.cache.Cache;
 import java.io.Serializable;
 
+/**
+ * Extends the {@link EntityCache} by providing a further {@link Cache} object, called {@code nameCache}.
+ * The {@code nameCache} cache adopts the entity name as key and the entity id as value.
+ * In such a way the correspondence with {@link EntityCache#idCache} is preserved.
+ */
 public class NamedEntityCache extends EntityCache {
 
     protected Cache<Serializable, Serializable> nameCache;

@@ -91,7 +91,7 @@ public class AccessPermissionDAO extends ServiceDAO {
      * @param em
      * @param scopeId
      * @param accessPermissionId
-     * @return
+     * @return the deleted {@link AccessPermission}
      * @throws KapuaEntityNotFoundException
      *             If {@link AccessPermission} is not found.
      */

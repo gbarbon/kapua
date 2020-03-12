@@ -32,7 +32,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Dummy implementation of JCache using an hashmap, to be used only for tests!
+ * Implementation of JCache using an HashMap, to be used only for tests!
+ * Uses deep clone to mimic the serialization of a real cache instance.
  */
 public class MapCache<K, V> implements Cache<K, V> {
 
@@ -205,6 +206,16 @@ public class MapCache<K, V> implements Cache<K, V> {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Performs a deep clone of an object, in order to mimic the behaviour of the serialization with a real cache instance.
+     * It makes use of the getters to retrieve the object of each field, then use recursion in order to clone such objects.
+     *
+     * @param object the object to be cloned.
+     * @return a clone of the object passed as parameter.
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     private Object clone(Object object) throws InvocationTargetException, IllegalAccessException,
             InstantiationException {
         if (object != null) {

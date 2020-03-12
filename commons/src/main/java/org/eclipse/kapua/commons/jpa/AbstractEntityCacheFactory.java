@@ -13,6 +13,9 @@ package org.eclipse.kapua.commons.jpa;
 
 import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
+/**
+ * Abstract factory for {@link EntityCache} instances.
+ */
 public abstract class AbstractEntityCacheFactory implements CacheFactory {
 
     private String idCacheName;

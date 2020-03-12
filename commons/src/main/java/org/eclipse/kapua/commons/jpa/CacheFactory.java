@@ -13,7 +13,15 @@ package org.eclipse.kapua.commons.jpa;
 
 import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
+/**
+ * Cache factory definition
+ */
 public interface CacheFactory {
 
+    /**
+     * Creates the cache for the given service.
+     *
+     * @return an {@link EntityCache} instance.
+     */
     EntityCache createCache();
 }

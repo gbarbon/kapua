@@ -13,6 +13,9 @@ package org.eclipse.kapua.service.account.internal;
 
 import org.eclipse.kapua.commons.jpa.AbstractNamedEntityCacheFactory;
 
+/**
+ * Cache factory for the {@link AccountServiceImpl}
+ */
 public class AccountCacheFactory extends AbstractNamedEntityCacheFactory {
 
     private AccountCacheFactory() {

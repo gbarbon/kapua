@@ -14,12 +14,18 @@ package org.eclipse.kapua.service.device.registry.internal;
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
+/**
+ * Cache factory for the {@link DeviceRegistryServiceImpl}
+ */
 public class DeviceRegistryCacheFactory extends AbstractEntityCacheFactory {
 
     public DeviceRegistryCacheFactory() {
         super("DeviceId");
     }
 
+    /**
+     * @return a {@link DeviceRegistryCache} instance.
+     */
     @Override
     public EntityCache createCache() {
         return new DeviceRegistryCache(getEntityIdCacheName(), "DeviceClientId", "DeviceConnectionId");

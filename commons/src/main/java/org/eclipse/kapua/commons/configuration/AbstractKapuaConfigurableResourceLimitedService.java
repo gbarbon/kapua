@@ -50,6 +50,16 @@ public abstract class AbstractKapuaConfigurableResourceLimitedService<E extends 
         this(pid, domain, entityManagerFactory, null, serviceClass, factoryClass);
     }
 
+    /**
+     * The AbstractKapuaConfigurableResourceLimitedService constructor.
+     *
+     * @param pid
+     * @param domain
+     * @param entityManagerFactory the {@link EntityManagerFactory} to instance the entity manager.
+     * @param abstractCacheFactory the {@link AbstractEntityCacheFactory} to instance the cache.
+     * @param serviceClass
+     * @param factoryClass
+     */
     protected AbstractKapuaConfigurableResourceLimitedService(
             String pid,
             Domain domain,

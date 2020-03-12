@@ -17,6 +17,9 @@ import javax.cache.spi.CachingProvider;
 import java.net.URI;
 import java.util.Properties;
 
+/**
+ * Caching provider needed to instantiate {@link MapCache}
+ */
 public class MapCachingProvider implements CachingProvider {
 
     private static MapCachingProvider instance;

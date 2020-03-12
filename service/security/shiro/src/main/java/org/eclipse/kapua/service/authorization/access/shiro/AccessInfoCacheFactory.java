@@ -14,12 +14,18 @@ package org.eclipse.kapua.service.authorization.access.shiro;
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 import org.eclipse.kapua.commons.service.internal.cache.EntityCache;
 
+/**
+ * Cache factory for the {@link AccessInfoImpl}
+ */
 public class AccessInfoCacheFactory extends AbstractEntityCacheFactory {
 
     public AccessInfoCacheFactory() {
         super("AccessInfoId");
     }
 
+    /**
+     * @return an {@link AccessInfoCache}
+     */
     @Override
     public EntityCache createCache() {
         return new AccessInfoCache(getEntityIdCacheName(), "AccessInfoUserIdId");

@@ -13,6 +13,9 @@ package org.eclipse.kapua.service.authorization.role.shiro;
 
 import org.eclipse.kapua.commons.jpa.AbstractEntityCacheFactory;
 
+/**
+ * Cache factory for the {@link RoleServiceImpl}
+ */
 public class RoleCacheFactory extends AbstractEntityCacheFactory {
 
     private RoleCacheFactory() {

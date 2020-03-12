@@ -82,7 +82,7 @@ public abstract class AbstractKapuaConfigurableService extends AbstractKapuaServ
      * @param pid
      * @param domain
      * @param entityManagerFactory
-     * @param abstractCacheFactory
+     * @param abstractCacheFactory the {@link AbstractEntityCacheFactory} to instance the cache.
      */
     protected AbstractKapuaConfigurableService(String pid, Domain domain, EntityManagerFactory entityManagerFactory, AbstractEntityCacheFactory abstractCacheFactory) {
         super(entityManagerFactory, abstractCacheFactory);

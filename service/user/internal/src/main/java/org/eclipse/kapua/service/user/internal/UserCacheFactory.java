@@ -13,6 +13,9 @@ package org.eclipse.kapua.service.user.internal;
 
 import org.eclipse.kapua.commons.jpa.AbstractNamedEntityCacheFactory;
 
+/**
+ * Cache factory for the {@link UserServiceImpl}
+ */
 public class UserCacheFactory extends AbstractNamedEntityCacheFactory {
 
     private UserCacheFactory() {
