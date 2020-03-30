@@ -180,8 +180,9 @@ public class JMSServiceEventBus implements ServiceEventBus, ServiceEventBusDrive
         // restart the event bus connection bridge with a new instance
         // so no synchronization is needed
         EventBusJMSConnectionBridge instanceToCleanUp = null;
+        EventBusJMSConnectionBridge newInstance = null;
         try {
-            EventBusJMSConnectionBridge newInstance = new EventBusJMSConnectionBridge(this);
+            newInstance = new EventBusJMSConnectionBridge(this);
             newInstance.start();
             // restore subscriptions
             for (Subscription subscription : subscriptionList) {
@@ -190,6 +191,12 @@ public class JMSServiceEventBus implements ServiceEventBus, ServiceEventBusDrive
             instanceToCleanUp = eventBusJMSConnectionBridge;
             eventBusJMSConnectionBridge = newInstance;
         } catch (Throwable t) {
+            //try to cleanup the messy instance
+            if (newInstance!=null) {
+                LOGGER.warn("Stopping inconsistent new event bus instance...");
+                newInstance.stop();
+                LOGGER.warn("Stopping inconsistent new event bus instance... DONE");
+            }
             throw new ServiceEventBusException(t);
         } finally {
             try {
