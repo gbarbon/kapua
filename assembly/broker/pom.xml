@@ -57,6 +57,10 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.kapua</groupId>
+            <artifactId>kapua-dummy-internal</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.kapua</groupId>
             <artifactId>kapua-datastore-internal</artifactId>
         </dependency>
         <dependency>

@@ -18,7 +18,12 @@ import org.eclipse.kapua.broker.core.router.EndPointContainer;
 import org.eclipse.kapua.broker.core.router.ParentEndPoint;
 import org.eclipse.kapua.broker.core.router.SimpleEndPoint;
 import org.eclipse.kapua.commons.configuration.metatype.TscalarImpl;
+import org.eclipse.kapua.commons.service.event.store.api.EventStoreRecordCreator;
+import org.eclipse.kapua.commons.service.event.store.api.EventStoreRecordListResult;
+import org.eclipse.kapua.commons.service.event.store.api.EventStoreRecordQuery;
+import org.eclipse.kapua.commons.service.event.store.api.EventStoreXmlRegistry;
 import org.eclipse.kapua.commons.util.xml.JAXBContextProvider;
+import org.eclipse.kapua.event.ServiceEvent;
 import org.eclipse.kapua.job.engine.commons.model.JobTargetSublist;
 import org.eclipse.kapua.model.config.metatype.KapuaTad;
 import org.eclipse.kapua.model.config.metatype.KapuaTdesignate;
@@ -140,7 +145,14 @@ public class TestJAXBContextProvider implements JAXBContextProvider {
                         EndPointContainer.class,
                         SimpleEndPoint.class,
                         ParentEndPoint.class,
-                        EndChainEndPoint.class
+                        EndChainEndPoint.class,
+
+                        // KapuaEvent
+                        ServiceEvent.class,
+                        EventStoreRecordCreator.class,
+                        EventStoreRecordListResult.class,
+                        EventStoreRecordQuery.class,
+                        EventStoreXmlRegistry.class
                 }, null);
             }
             return context;

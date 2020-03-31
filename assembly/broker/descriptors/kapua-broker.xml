@@ -220,6 +220,8 @@
                 <include>org.springframework.security:spring-security-core</include>
                 <include>org.yaml:snakeyaml</include>
 
+                <include>${pom.groupId}:kapua-dummy-api</include>
+                <include>${pom.groupId}:kapua-dummy-internal</include>
                 <include>${pom.groupId}:kapua-account-api</include>
                 <include>${pom.groupId}:kapua-account-internal</include>
                 <include>${pom.groupId}:kapua-broker-api</include>

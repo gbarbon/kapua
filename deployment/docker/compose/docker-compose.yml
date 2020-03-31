@@ -27,6 +27,7 @@ services:
       - 1883:1883
       - 8883:8883
       - 61614:61614
+      - 5005:5005
     depends_on:
       - db
       - es
@@ -39,39 +40,39 @@ services:
       - KAPUA_KEY_PASSWORD
       - KAPUA_KEYSTORE
       - KAPUA_KEYSTORE_PASSWORD
-  kapua-console:
-    image: kapua/kapua-console:${IMAGE_VERSION}
-    ports:
-      - 8080:8080
-      - 8443:8443
-    depends_on:
-      - broker
-      - db
-      - es
-      - events-broker
-    environment:
-      - KAPUA_DISABLE_SSL
-      - KAPUA_CA
-      - KAPUA_CRT
-      - KAPUA_KEY
-      - KAPUA_KEY_PASSWORD
-      - KAPUA_KEYSTORE
-      - KAPUA_KEYSTORE_PASSWORD
-  kapua-api:
-    image: kapua/kapua-api:${IMAGE_VERSION}
-    ports:
-      - 8081:8080
-      - 8444:8443
-    depends_on:
-      - broker
-      - db
-      - es
-      - events-broker
-    environment:
-      - KAPUA_DISABLE_SSL
-      - KAPUA_CA
-      - KAPUA_CRT
-      - KAPUA_KEY
-      - KAPUA_KEY_PASSWORD
-      - KAPUA_KEYSTORE
-      - KAPUA_KEYSTORE_PASSWORD
+#  kapua-console:
+#    image: kapua/kapua-console:${IMAGE_VERSION}
+#    ports:
+#      - 8080:8080
+#      - 8443:8443
+#    depends_on:
+#      - broker
+#      - db
+#      - es
+#      - events-broker
+#    environment:
+#      - KAPUA_DISABLE_SSL
+#      - KAPUA_CA
+#      - KAPUA_CRT
+#      - KAPUA_KEY
+#      - KAPUA_KEY_PASSWORD
+#      - KAPUA_KEYSTORE
+#      - KAPUA_KEYSTORE_PASSWORD
+#  kapua-api:
+#    image: kapua/kapua-api:${IMAGE_VERSION}
+#    ports:
+#      - 8081:8080
+#      - 8444:8443
+#    depends_on:
+#      - broker
+#      - db
+#      - es
+#      - events-broker
+#    environment:
+#      - KAPUA_DISABLE_SSL
+#      - KAPUA_CA
+#      - KAPUA_CRT
+#      - KAPUA_KEY
+#      - KAPUA_KEY_PASSWORD
+#      - KAPUA_KEYSTORE
+#      - KAPUA_KEYSTORE_PASSWORD

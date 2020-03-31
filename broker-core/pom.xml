@@ -49,6 +49,11 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.kapua</groupId>
+            <artifactId>kapua-dummy-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.kapua</groupId>
             <artifactId>kapua-security-shiro</artifactId>
             <scope>provided</scope>
         </dependency>

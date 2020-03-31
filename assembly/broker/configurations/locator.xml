@@ -111,6 +111,10 @@
 
         <api>org.eclipse.kapua.commons.service.event.store.api.EventStoreFactory</api>
 
+        <!-- test services only here -->
+        <api>org.eclipse.kapua.service.dummy.DummyEventListenerService</api>
+        <api>org.eclipse.kapua.service.dummy.DummyEventRaiserService</api>
+
         <provide>
             <interceptor>annotation</interceptor>
             <with>Impl</with>

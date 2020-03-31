@@ -54,5 +54,7 @@ if [ "${KAPUA_DISABLE_SSL}" == "false" ]; then
     export ACTIVEMQ_SSL_OPTS
 fi
 
+export ACTIVEMQ_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+
 # Run broker
 /opt/activemq/bin/activemq console
