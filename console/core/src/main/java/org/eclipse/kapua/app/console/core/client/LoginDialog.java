@@ -72,6 +72,8 @@ public class LoginDialog extends Dialog {
         return this.allowMainScreen;
     }
 
+    final TwoFADialog twoFADialog = new TwoFADialog(this);
+
     public LoginDialog() {
         FormLayout layout = new FormLayout();
 
@@ -149,6 +151,10 @@ public class LoginDialog extends Dialog {
 
     public GwtSession getCurrentSession() {
         return currentSession;
+    }
+
+    public void setCurrentSession(GwtSession session) {
+        currentSession = session;
     }
 
     @Override
@@ -237,7 +243,31 @@ public class LoginDialog extends Dialog {
             getButtonBar().disable();
             username.disable();
             password.disable();
-            performLogin();
+
+            // FIXME: is this correct to retrieve information about a user without being authenticated?
+            gwtAuthorizationService.has2FACodeAuth(username.getValue(), new AsyncCallback<Boolean>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    ConsoleInfo.display(CORE_MSGS.loginError(), caught.getLocalizedMessage());
+                    resetDialog();
+                }
+
+                @Override
+                public void onSuccess(Boolean has2FAAuth) {
+
+                    // Open the 2FA if needed
+                    if (has2FAAuth) {
+                        // TODO: check trust key (no trustKey on cookie for the moment, add it later)
+                        twoFADialog.show();
+                    } else {
+                        // TODO: remove obsolete trust cookie if exists
+
+                        status.show();
+                        getButtonBar().disable();
+                        performLogin();
+                    }
+                }
+            });
         }
     }
 
@@ -260,6 +290,10 @@ public class LoginDialog extends Dialog {
                 currentSession = gwtSession;
                 callMainScreen();
                 ConsoleInfo.hideInfo();
+
+                // TODO: is it dangerous to put such a login here? Maybe, could the callback be 'hacked' by a malicious user in order to disable the 2FA for a
+                //  given user?
+                // TODO: in EC4 the 'performLogin' method was called with a parameter containing the trustKey
             }
         });
     }
@@ -295,10 +329,10 @@ public class LoginDialog extends Dialog {
         login.setEnabled(true);
         reset.setEnabled(hasValue(username) &&
                 hasValue(password));
-        if(hasValue(username)) {
+        if (hasValue(username)) {
             username.clearInvalid();
         }
-        if(hasValue(password)) {
+        if (hasValue(password)) {
             password.clearInvalid();
         }
     }
@@ -314,5 +348,15 @@ public class LoginDialog extends Dialog {
         reset.disable();
         password.clearInvalid();
     }
+
+
+    public TextField<String> getUsername() {
+        return username;
+    }
+
+    public TextField<String> getPassword() {
+        return password;
+    }
+
 
 }
