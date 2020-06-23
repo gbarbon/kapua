@@ -97,6 +97,7 @@ public class CredentialAddDialog extends EntityAddEditDialog {
         credentialType.setTriggerAction(ComboBox.TriggerAction.ALL);
         credentialType.add(GwtCredentialType.PASSWORD);
         credentialType.add(GwtCredentialType.API_KEY);
+        credentialType.add(GwtCredentialType.AUTH_KEY);
         credentialType.setEmptyText(MSGS.credentialTypePlaceHolder());
         credentialType.getMessages().setBlankText(MSGS.credentialTypeBlankText());
         credentialType.addSelectionChangedListener(new SelectionChangedListener<SimpleComboValue<GwtCredentialType>>() {
@@ -122,7 +123,7 @@ public class CredentialAddDialog extends EntityAddEditDialog {
                     confirmPassword.clear();
                     confirmPassword.disable();
                 }
-             }
+            }
         });
         credentialFormPanel.add(credentialType);
 
@@ -251,6 +252,11 @@ public class CredentialAddDialog extends EntityAddEditDialog {
                     exitMessage = MSGS.dialogAddConfirmationAPI();
                 } else if (gwtCredentialCreator.getCredentialType() == GwtCredentialType.PASSWORD) {
                     exitMessage = MSGS.dialogAddConfirmationPassword();
+                } else if (gwtCredentialCreator.getCredentialType() == GwtCredentialType.AUTH_KEY) {
+                    AuthenticationKeyConfirmationDialog apiKeyConfirmationDialog = new AuthenticationKeyConfirmationDialog(arg0.getCredentialKey(),
+                            selectedUserName, currentSession.getSelectedAccountName());
+                    apiKeyConfirmationDialog.show();
+                    exitMessage = MSGS.dialogAddConfirmationAuthenticationKey();
                 }
                 exitStatus = true;
                 hide();

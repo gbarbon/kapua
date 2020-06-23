@@ -39,6 +39,8 @@ public class CredentialDeleteDialog extends EntityDeleteDialog {
             return MSGS.dialogDeleteHeaderAPI();
         } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
             return MSGS.dialogDeleteHeaderPassword();
+        } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+            return MSGS.dialogDeleteHeaderAuthenticationKey();
         } else {
             return "";
         }
@@ -50,6 +52,8 @@ public class CredentialDeleteDialog extends EntityDeleteDialog {
             return MSGS.dialogDeleteInfoAPI();
         } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
             return MSGS.dialogDeleteInfoPassword();
+        } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+            return MSGS.dialogDeleteInfoAuthenticationKey();
         } else {
             return "";
         }
@@ -67,6 +71,8 @@ public class CredentialDeleteDialog extends EntityDeleteDialog {
                     exitMessage = MSGS.dialogDeleteConfirmationAPI();
                 } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
                     exitMessage = MSGS.dialogDeleteConfirmationPassword();
+                } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+                    exitMessage = MSGS.dialogDeleteConfirmationAuthenticationKey();
                 }
 
                 hide();
@@ -81,6 +87,8 @@ public class CredentialDeleteDialog extends EntityDeleteDialog {
                         exitMessage = MSGS.dialogDeleteErrorAPI(cause.getLocalizedMessage());
                     } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
                         exitMessage = MSGS.dialogDeleteErrorPassword(cause.getLocalizedMessage());
+                    } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+                        exitMessage = MSGS.dialogDeleteErrorAuthenticationKey(cause.getLocalizedMessage());
                     }
                 }
                 hide();

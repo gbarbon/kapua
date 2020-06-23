@@ -72,6 +72,8 @@ public class CredentialEditDialog extends CredentialAddDialog {
                     exitMessage = MSGS.dialogEditConfirmationAPI();
                 } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
                     exitMessage = MSGS.dialogEditConfirmationPassword();
+                } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+                    exitMessage = MSGS.dialogEditConfirmationAuthenticationKey();
                 }
 
                 hide();
@@ -98,6 +100,10 @@ public class CredentialEditDialog extends CredentialAddDialog {
             DialogUtils.resizeDialog(CredentialEditDialog.this, 400, 355);
             expirationDate.setToolTip(MSGS.dialogAddFieldExpirationDatePasswordTooltip());
             credentialStatus.setToolTip(MSGS.dialogAddStatusPasswordTooltip());
+        } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+            // TODO: I need to reload the QR code here
+            expirationDate.setToolTip(MSGS.dialogAddFieldExpirationDateAuthenticationKeyTooltip());
+            credentialStatus.setToolTip(MSGS.dialogAddStatusAuthenticationKeyTooltip());
         }
     }
 
@@ -124,6 +130,8 @@ public class CredentialEditDialog extends CredentialAddDialog {
             lockedUntil.setText(MSGS.dialogEditLockedUntil(DateUtils.formatDateTime(selectedCredential.getLockoutReset())));
             credentialFormPanel.add(lockedUntil);
         }
+
+        // TODO: it should be possible to generate another QR code in case of AUTH_KEY in the Edit Dialog
     }
 
     @Override
@@ -150,6 +158,8 @@ public class CredentialEditDialog extends CredentialAddDialog {
             return MSGS.dialogEditApiKeyHeader(selectedCredential.getUsername());
         } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
             return MSGS.dialogEditPasswordHeader(selectedCredential.getUsername());
+        } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+            return MSGS.dialogEditAuthenticationKeyHeader(selectedCredential.getUsername());
         }
         return MSGS.dialogEditHeader(selectedCredential.getUsername());
     }
@@ -160,6 +170,8 @@ public class CredentialEditDialog extends CredentialAddDialog {
             return MSGS.dialogEditApiKeyInfo();
         } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.PASSWORD) {
             return MSGS.dialogEditPasswordInfo();
+        } else if (selectedCredential.getCredentialTypeEnum() == GwtCredentialType.AUTH_KEY) {
+            return MSGS.dialogEditAuthenticationKeyInfo();
         }
         return MSGS.dialogEditInfo();
     }
