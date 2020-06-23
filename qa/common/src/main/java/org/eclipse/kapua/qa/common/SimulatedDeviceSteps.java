@@ -136,7 +136,7 @@ public class SimulatedDeviceSteps {
 
     @Given("My credentials are username \"(.*)\" and password \"(.*)\"")
     public void setUsernamePasswordCredentials(final String username, final String password) {
-        session.setCredentials(KapuaLocator.getInstance().getFactory(CredentialsFactory.class).newUsernamePasswordCredentials(username, password));
+        session.setCredentials(KapuaLocator.getInstance().getFactory(CredentialsFactory.class).newUsernamePasswordCredentials(username, password, null));
     }
 
     @When("I start the simulator")

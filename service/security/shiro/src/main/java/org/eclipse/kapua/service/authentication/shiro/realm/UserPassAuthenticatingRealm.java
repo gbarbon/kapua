@@ -142,9 +142,9 @@ public class UserPassAuthenticatingRealm extends AuthenticatingRealm {
         //
         // Find credentials
         // FIXME: manage multiple credentials and multiple credentials type
-        Credential credential;
+        Credential passwordCredential;
         try {
-            credential = KapuaSecurityUtils.doPrivileged(() -> {
+            passwordCredential = KapuaSecurityUtils.doPrivileged(() -> {
                 CredentialListResult credentialList = credentialService.findByUserId(user.getScopeId(), user.getId());
 
                 if (credentialList != null && !credentialList.isEmpty()) {
@@ -166,19 +166,58 @@ public class UserPassAuthenticatingRealm extends AuthenticatingRealm {
             throw new ShiroException("Error while find credentials!", e);
         }
 
+        // TODO: simplify this, is basically the same code as above...
+        // TODO: not only authenticationKeyCredential, also the scratch codes should be available!
+        Credential authenticationKeyCredential;
+        try {
+            authenticationKeyCredential = KapuaSecurityUtils.doPrivileged(() -> {
+                CredentialListResult credentialList = credentialService.findByUserId(user.getScopeId(), user.getId());
+
+                if (credentialList != null && !credentialList.isEmpty()) {
+                    Credential credentialMatched = null;
+                    for (Credential c : credentialList.getItems()) {
+                        if (CredentialType.AUTH_KEY.equals(c.getCredentialType())) {
+                            credentialMatched = c;
+                            break;
+                        }
+                    }
+                    return credentialMatched;
+                } else {
+                    return null;
+                }
+            });
+        } catch (AuthenticationException ae) {
+            throw ae;
+        } catch (Exception e) {
+            throw new ShiroException("Error while find credentials!", e);
+        }
+
         // Check existence
-        if (credential == null) {
+        if (passwordCredential == null) {
             throw new UnknownAccountException();
         }
 
         // Check credential disabled
-        if (CredentialStatus.DISABLED.equals(credential.getStatus())) {
+        if (CredentialStatus.DISABLED.equals(passwordCredential.getStatus())) {
             throw new DisabledAccountException();
         }
 
         // Check if credential expired
-        if (credential.getExpirationDate() != null && !credential.getExpirationDate().after(new Date())) {
+        if (passwordCredential.getExpirationDate() != null && !passwordCredential.getExpirationDate().after(new Date())) {
             throw new ExpiredCredentialsException();
+        }
+
+        // authentication key checks
+        if (authenticationKeyCredential!=null) {
+            // FIXME: does a disabled authentication key mean that the user cannot authenticate? Or that he can authenticate using only the password?
+            if (CredentialStatus.DISABLED.equals(authenticationKeyCredential.getStatus())) {
+                // FIXME: now this implies that the user cannot login, even if the password is not disabled
+                throw new DisabledAccountException();
+            }
+
+            if (authenticationKeyCredential.getExpirationDate() != null && !authenticationKeyCredential.getExpirationDate().after(new Date())) {
+                throw new ExpiredCredentialsException();
+            }
         }
 
         // Check if lockout policy is blocking credential
@@ -188,8 +227,8 @@ public class UserPassAuthenticatingRealm extends AuthenticatingRealm {
             boolean lockoutPolicyEnabled = (boolean) credentialServiceConfig.get("lockoutPolicy.enabled");
             if (lockoutPolicyEnabled) {
                 Date now = new Date();
-                if (credential.getLockoutReset() != null && now.before(credential.getLockoutReset())) {
-                    throw new TemporaryLockedAccountException(credential.getLockoutReset());
+                if (passwordCredential.getLockoutReset() != null && now.before(passwordCredential.getLockoutReset())) {
+                    throw new TemporaryLockedAccountException(passwordCredential.getLockoutReset());
                 }
             }
         } catch (KapuaException kex) {
@@ -201,7 +240,8 @@ public class UserPassAuthenticatingRealm extends AuthenticatingRealm {
         return new LoginAuthenticationInfo(getName(),
                 account,
                 user,
-                credential,
+                passwordCredential,
+                authenticationKeyCredential,
                 credentialServiceConfig);
     }
 

@@ -53,4 +53,18 @@ public interface UsernamePasswordCredentials extends LoginCredentials {
      * @param password
      */
     void setPassword(String password);
+
+    /**
+     * return the authenticationCode
+     *
+     * @return
+     */
+    String getAuthenticationCode();
+
+    /**
+     * Set the authenticationCode
+     *
+     * @param authenticationCode
+     */
+    void setAuthenticationCode(String authenticationCode);
 }

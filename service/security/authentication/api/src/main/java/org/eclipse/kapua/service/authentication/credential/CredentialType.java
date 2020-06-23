@@ -30,5 +30,10 @@ public enum CredentialType {
     /**
      * Json Web Token
      */
-    JWT;
+    JWT,
+
+    /**
+     * 2FA Authentication Key
+     */
+    AUTH_KEY;
 }

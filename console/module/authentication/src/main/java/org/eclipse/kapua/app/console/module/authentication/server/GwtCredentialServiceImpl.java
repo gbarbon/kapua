@@ -220,7 +220,7 @@ public class GwtCredentialServiceImpl extends KapuaRemoteServiceServlet implemen
             }
             username = user.getName();
             final String finalUsername = username;
-            LoginCredentials loginCredentials = CREDENTIALS_FACTORY.newUsernamePasswordCredentials(finalUsername, oldPassword);
+            LoginCredentials loginCredentials = CREDENTIALS_FACTORY.newUsernamePasswordCredentials(finalUsername, oldPassword, null);
 
             AUTHENTICATION_SERVICE.verifyCredentials(loginCredentials);
 

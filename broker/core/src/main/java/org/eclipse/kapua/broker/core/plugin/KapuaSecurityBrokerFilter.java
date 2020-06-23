@@ -392,7 +392,7 @@ public class KapuaSecurityBrokerFilter extends BrokerFilter {
         try {
             logger.info("User name {} - client id: {}, connection id: {}", kcc.getUserName(), kcc.getClientId(), kcc.getConnectionId());
             Context loginShiroLoginTimeContext = loginMetric.getShiroLoginTime().time();
-            LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(kcc.getUserName(), info.getPassword());
+            LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(kcc.getUserName(), info.getPassword(), null);
             AccessToken accessToken = authenticationService.login(credentials);
 
             final Account account = getAccount(accessToken.getScopeId());

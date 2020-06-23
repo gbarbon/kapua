@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.kapua.service.authentication.credential.shiro;
 
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import org.apache.shiro.codec.Base64;
 import org.eclipse.kapua.KapuaEntityNotFoundException;
 import org.eclipse.kapua.KapuaException;
@@ -75,7 +77,7 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
         ArgumentValidator.notNull(credentialCreator.getUserId(), "credentialCreator.userId");
         ArgumentValidator.notNull(credentialCreator.getCredentialType(), "credentialCreator.credentialType");
         ArgumentValidator.notNull(credentialCreator.getCredentialStatus(), "credentialCreator.credentialStatus");
-        if (credentialCreator.getCredentialType() != CredentialType.API_KEY) {
+        if (credentialCreator.getCredentialType() != CredentialType.API_KEY && credentialCreator.getCredentialType() != CredentialType.AUTH_KEY) {
             ArgumentValidator.notEmptyOrNull(credentialCreator.getCredentialPlainKey(), "credentialCreator.credentialKey");
         }
 
@@ -137,6 +139,23 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
                             credentialCreator.getExpirationDate());
 
                     break;
+                case AUTH_KEY:
+
+                    // TODO: this is just a test, needs to be checked
+                    GoogleAuthenticator gAuth = new GoogleAuthenticator();
+                    GoogleAuthenticatorKey gKey = gAuth.createCredentials();
+                    fullKey = gKey.getKey();
+
+                    credentialCreator = new CredentialCreatorImpl(credentialCreator.getScopeId(),
+                            credentialCreator.getUserId(),
+                            credentialCreator.getCredentialType(),
+                            fullKey,
+                            credentialCreator.getCredentialStatus(),
+                            credentialCreator.getExpirationDate());
+
+                    // TODO: should scratch codes also be generated here? Or should they be handled with another call?
+
+                    break;
                 case PASSWORD:
                 default:
                     // Don't do nothing special
@@ -153,6 +172,9 @@ public class CredentialServiceImpl extends AbstractKapuaConfigurableService impl
             // Do post persist magic on key values
             switch (credentialCreator.getCredentialType()) {
                 case API_KEY:
+                    credential.setCredentialKey(fullKey);
+                    break;
+                case AUTH_KEY:
                     credential.setCredentialKey(fullKey);
                     break;
                 case PASSWORD:

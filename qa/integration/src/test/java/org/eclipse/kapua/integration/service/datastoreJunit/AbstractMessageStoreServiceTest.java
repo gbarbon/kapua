@@ -74,7 +74,7 @@ public abstract class AbstractMessageStoreServiceTest extends Assert {
 
             AuthenticationService authenticationService = locator.getService(AuthenticationService.class);
             CredentialsFactory credentialsFactory = locator.getFactory(CredentialsFactory.class);
-            authenticationService.login(credentialsFactory.newUsernamePasswordCredentials(username, password));
+            authenticationService.login(credentialsFactory.newUsernamePasswordCredentials(username, password, null));
 
             //
             // Get current user Id

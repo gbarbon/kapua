@@ -197,6 +197,7 @@ public class ApiKeyAuthenticatingRealm extends AuthenticatingRealm {
                 account,
                 user,
                 credential,
+                null,
                 credentialServiceConfig);
     }
 

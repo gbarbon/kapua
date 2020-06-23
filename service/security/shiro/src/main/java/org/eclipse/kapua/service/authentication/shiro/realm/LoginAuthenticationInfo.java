@@ -33,7 +33,10 @@ public class LoginAuthenticationInfo implements AuthenticationInfo {
     private String realmName;
     private Account account;
     private User user;
-    private Credential credentials;
+    // TODO: use a list of credentials?
+    private Credential passwordCredential;
+    private Credential authenticationKeyCredential;
+    // TODO: also the scratch codes should be maintained here?
     private Map<String, Object> credentialServiceConfig;
 
     /**
@@ -42,17 +45,19 @@ public class LoginAuthenticationInfo implements AuthenticationInfo {
      * @param realmName
      * @param account
      * @param user
-     * @param credentials
+     * @param passwordCredential
      */
     public LoginAuthenticationInfo(String realmName,
             Account account,
             User user,
-            Credential credentials,
+            Credential passwordCredential,
+            Credential authenticationKeyCredential,
             Map<String, Object> credentialServiceConfig) {
         this.realmName = realmName;
         this.account = account;
         this.user = user;
-        this.credentials = credentials;
+        this.passwordCredential = passwordCredential;
+        this.authenticationKeyCredential = authenticationKeyCredential;
         this.credentialServiceConfig = credentialServiceConfig;
     }
 
@@ -85,10 +90,16 @@ public class LoginAuthenticationInfo implements AuthenticationInfo {
 
     @Override
     public Object getCredentials() {
-        return credentials;
+        return passwordCredential;
+    }
+
+    public Credential getAuthenticationKeyCredential() {
+        return authenticationKeyCredential;
     }
 
     public Map<String, Object> getCredentialServiceConfig() {
         return credentialServiceConfig;
     }
+
+    // TODO: note that getter and setter in the old EC4 for the authenticationKeyCredential were using encrypt/decrypt algorithm.. should we do the same?
 }

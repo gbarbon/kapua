@@ -177,6 +177,7 @@ public class JwtAuthenticatingRealm extends AuthenticatingRealm implements Destr
                 account,
                 user,
                 credential,
+                null,
                 null);
     }
 

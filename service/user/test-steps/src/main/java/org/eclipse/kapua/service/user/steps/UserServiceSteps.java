@@ -637,7 +637,7 @@ public class UserServiceSteps extends TestBase {
     @When("^I login as user with name \"(.*)\" and password \"(.*)\"$")
     public void loginUser(String userName, String password) throws Exception {
 
-        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(userName, password);
+        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(userName, password, null);
         authenticationService.logout();
 
         primeException();
@@ -652,7 +652,7 @@ public class UserServiceSteps extends TestBase {
     public void loginUserNTimes(String userName, int n) throws Exception {
 
         String password = "wrongPassword";
-        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(userName, password);
+        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(userName, password, null);
         authenticationService.logout();
 
         for (int i = 0; i < n; i++) {

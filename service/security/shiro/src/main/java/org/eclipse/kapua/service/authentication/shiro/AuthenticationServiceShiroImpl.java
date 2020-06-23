@@ -128,7 +128,8 @@ public class AuthenticationServiceShiroImpl implements AuthenticationService {
         if (loginCredentials instanceof UsernamePasswordCredentialsImpl) {
             UsernamePasswordCredentialsImpl usernamePasswordCredentials = (UsernamePasswordCredentialsImpl) loginCredentials;
 
-            shiroAuthenticationToken = new UsernamePasswordCredentialsImpl(usernamePasswordCredentials.getUsername(), usernamePasswordCredentials.getPassword());
+            shiroAuthenticationToken = new UsernamePasswordCredentialsImpl(usernamePasswordCredentials.getUsername(),
+                    usernamePasswordCredentials.getPassword(), usernamePasswordCredentials.getAuthenticationCode());
         } else if (loginCredentials instanceof ApiKeyCredentialsImpl) {
             shiroAuthenticationToken = new ApiKeyCredentialsImpl(((ApiKeyCredentialsImpl) loginCredentials).getApiKey());
         } else if (loginCredentials instanceof JwtCredentialsImpl) {

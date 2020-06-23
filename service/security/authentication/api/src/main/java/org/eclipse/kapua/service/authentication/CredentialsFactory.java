@@ -24,9 +24,10 @@ public interface CredentialsFactory extends KapuaObjectFactory {
      *
      * @param username the name of the user
      * @param password the password of the user
+     * @param authenticationCode // TODO: document me!
      * @return the new credentials
      */
-    UsernamePasswordCredentials newUsernamePasswordCredentials(String username, String password);
+    UsernamePasswordCredentials newUsernamePasswordCredentials(String username, String password, String authenticationCode);
 
     /**
      * Creates a new {@link UsernamePasswordCredentials} instance based on username and password with no preset values
@@ -34,7 +35,7 @@ public interface CredentialsFactory extends KapuaObjectFactory {
      * @return the new, empty credentials instance
      */
     default UsernamePasswordCredentials newUsernamePasswordCredentials() {
-        return newUsernamePasswordCredentials(null, null);
+        return newUsernamePasswordCredentials(null, null, null);
     }
 
     /**

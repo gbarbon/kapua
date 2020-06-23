@@ -27,6 +27,7 @@ public class UsernamePasswordCredentialsImpl implements UsernamePasswordCredenti
 
     private String username;
     private String password;
+    private String authenticationCode;
 
     /**
      * Constructor
@@ -36,6 +37,18 @@ public class UsernamePasswordCredentialsImpl implements UsernamePasswordCredenti
     public UsernamePasswordCredentialsImpl(String username, String password) {
         this.username = username;
         this.password = password;
+        this.authenticationCode = null;
+    }
+
+    /**
+     * Constructor
+     *  @param username
+     * @param password
+     */
+    public UsernamePasswordCredentialsImpl(String username, String password, String authenticationCode) {
+        this.username = username;
+        this.password = password;
+        this.authenticationCode = authenticationCode;
     }
 
     @Override
@@ -56,6 +69,16 @@ public class UsernamePasswordCredentialsImpl implements UsernamePasswordCredenti
     @Override
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String getAuthenticationCode() {
+        return authenticationCode;
+    }
+
+    @Override
+    public void setAuthenticationCode(String authenticationCode) {
+        this.authenticationCode = authenticationCode;
     }
 
     @Override

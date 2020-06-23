@@ -153,7 +153,7 @@ public class AclSteps extends TestBase {
         waitInMillis(BROKER_START_WAIT_MILLIS);
         // Login with system user
         String passwd = SYS_PASSWORD;
-        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(SYS_USERNAME, passwd);
+        LoginCredentials credentials = credentialsFactory.newUsernamePasswordCredentials(SYS_USERNAME, passwd, null);
         authenticationService.login(credentials);
     }
 
