@@ -241,6 +241,17 @@
                 <artifactId>sanselan</artifactId>
                 <version>${sanselan.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.warrenstrange</groupId>
+                <artifactId>googleauth</artifactId>
+                <version>1.4.0</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.google.zxing/core -->
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>javase</artifactId>
+                <version>3.4.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

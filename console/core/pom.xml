@@ -200,6 +200,15 @@
         </dependency>
 
         <dependency>
+            <groupId>com.warrenstrange</groupId>
+            <artifactId>googleauth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+        </dependency>
+
+        <dependency>
             <!-- Apache Shiro security framework web support -->
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-web</artifactId>
