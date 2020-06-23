@@ -16,5 +16,6 @@ import java.io.Serializable;
 public enum GwtCredentialType implements Serializable {
     ALL,
     PASSWORD,
-    API_KEY
+    API_KEY,
+    AUTH_KEY
 }

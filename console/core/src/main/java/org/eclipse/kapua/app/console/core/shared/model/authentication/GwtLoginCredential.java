@@ -26,6 +26,14 @@ public class GwtLoginCredential extends KapuaBaseModel {
         this();
         setUsername(username);
         setPassword(password);
+        setAuthenticationCode(null);
+    }
+
+    public GwtLoginCredential(String username, String password, String authenticationCode) {
+        this();
+        setUsername(username);
+        setPassword(password);
+        setAuthenticationCode(authenticationCode);
     }
 
     public String getUsername() {
@@ -42,5 +50,17 @@ public class GwtLoginCredential extends KapuaBaseModel {
 
     public void setPassword(String password) {
         set("password", password);
+    }
+
+    public String getAuthenticationCode() {
+        if (get("authenticationCode") != null) {
+            // FIXME: do I really need the htmlUnescape here?
+            return KapuaSafeHtmlUtils.htmlUnescape(get("authenticationCode").toString());
+        }
+        return null;
+    }
+
+    public void setAuthenticationCode(String authenticationCode) {
+        set("authenticationCode", authenticationCode);
     }
 }

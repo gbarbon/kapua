@@ -66,4 +66,14 @@ public interface GwtAuthorizationService extends RemoteService {
     public void logout()
             throws GwtKapuaException;
 
+    /**
+     * Return true if the given User needs the 2FA authentication.
+     * This function will be used in the login phase.
+     *
+     * @param username FIXME: document this
+     * @throws GwtKapuaException FIXME: document this
+     * @return true if the user has the 2FA authentication enabled, false otherwise
+     */
+    Boolean has2FACodeAuth(String username) throws GwtKapuaException;
+
 }

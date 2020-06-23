@@ -46,6 +46,11 @@ import org.eclipse.kapua.service.authentication.AuthenticationService;
 import org.eclipse.kapua.service.authentication.CredentialsFactory;
 import org.eclipse.kapua.service.authentication.JwtCredentials;
 import org.eclipse.kapua.service.authentication.LoginCredentials;
+import org.eclipse.kapua.service.authentication.credential.Credential;
+import org.eclipse.kapua.service.authentication.credential.CredentialListResult;
+import org.eclipse.kapua.service.authentication.credential.CredentialService;
+import org.eclipse.kapua.service.authentication.credential.CredentialStatus;
+import org.eclipse.kapua.service.authentication.credential.CredentialType;
 import org.eclipse.kapua.service.authentication.registration.RegistrationService;
 import org.eclipse.kapua.service.authentication.shiro.KapuaAuthenticationErrorCodes;
 import org.eclipse.kapua.service.authentication.shiro.KapuaAuthenticationException;
@@ -105,8 +110,9 @@ public class GwtAuthorizationServiceImpl extends KapuaRemoteServiceServlet imple
             LoginCredentials credentials = null;
             AuthenticationService authenticationService = locator.getService(AuthenticationService.class);
             CredentialsFactory credentialsFactory = locator.getFactory(CredentialsFactory.class);
-            if(gwtLoginCredentials.getUsername() != null && gwtLoginCredentials.getPassword() != null) {
-                credentials = credentialsFactory.newUsernamePasswordCredentials(gwtLoginCredentials.getUsername(), gwtLoginCredentials.getPassword());
+            if (gwtLoginCredentials.getUsername() != null && gwtLoginCredentials.getPassword() != null) {
+                credentials = credentialsFactory.newUsernamePasswordCredentials(gwtLoginCredentials.getUsername(), gwtLoginCredentials.getPassword(),
+                        gwtLoginCredentials.getAuthenticationCode());
             }
 
             // Login
@@ -349,6 +355,53 @@ public class GwtAuthorizationServiceImpl extends KapuaRemoteServiceServlet imple
         } catch (Throwable t) {
             KapuaExceptionHandler.handle(t);
         }
+    }
+
+    @Override
+    public Boolean has2FACodeAuth(final String username) throws GwtKapuaException {
+        boolean hasAccess = false;
+        try {
+            if (username != null) {
+                if (!"".equals(username)) {
+                    final UserService userService = LOCATOR.getService(UserService.class);
+                    final CredentialService credentialService = LOCATOR.getService(CredentialService.class);
+                    // TODO : can i perform a doPrivileged here? (security concerns)
+                    final User user = KapuaSecurityUtils.doPrivileged(new Callable<User>() {
+
+                        @Override
+                        public User call() throws Exception {
+                            return userService.findByName(username);
+                        }
+
+                    });
+                    if (user != null) {
+                        // TODO : can i perform a doPrivileged here? (security concerns)
+                        CredentialListResult credentialList = KapuaSecurityUtils.doPrivileged(new Callable<CredentialListResult>() {
+
+                            @Override
+                            public CredentialListResult call() throws Exception {
+                                return credentialService.findByUserId(user.getScopeId(), user.getId());
+                            }
+
+                        });
+                        if (credentialList != null && !credentialList.isEmpty()) {
+                            for (Credential c : credentialList.getItems()) {
+                                if (CredentialType.AUTH_KEY.equals(c.getCredentialType())) {
+                                    if (c.getStatus().equals(CredentialStatus.ENABLED)) {
+                                        // FIXME: maybe it is not correct to do this...
+                                        hasAccess = true;  // return true only if enabled
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            KapuaExceptionHandler.handle(t);
+        }
+        return hasAccess;
     }
 
     /**
