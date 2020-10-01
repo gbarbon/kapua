@@ -36,6 +36,10 @@
             </column>
             <column name="trust_key" type="varchar(255)"/>
             <column name="trust_expiration_date" type="timestamp(3) NULL"/>
+            <column name="enforced" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activated_on_date" type="timestamp(3) NULL"/>
             <column name="created_on" type="timestamp(3) DEFAULT ${now}" defaultValueComputed="${now}">
                 <constraints nullable="false"/>
             </column>

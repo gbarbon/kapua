@@ -57,4 +57,11 @@ public interface MfaOptionService extends KapuaEntityService<MfaOption, MfaOptio
      * @param mfaOptionId the {@link KapuaId} of the {@link MfaOption}
      */
     void disableTrust(KapuaId scopeId, KapuaId mfaOptionId) throws KapuaException;
+
+    /**
+     * Activate the multi factor authentication for the given {@link MfaOption}
+     *
+     * @param mfaOption the {@link MfaOption}
+     */
+    void activateMfa(MfaOption mfaOption) throws KapuaException;
 }

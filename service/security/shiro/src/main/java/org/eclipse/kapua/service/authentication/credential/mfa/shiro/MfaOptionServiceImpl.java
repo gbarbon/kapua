@@ -147,6 +147,11 @@ public class MfaOptionServiceImpl extends AbstractKapuaService implements MfaOpt
 
             String fullKey = MFA_AUTHENTICATOR.generateKey();
             mfaOptionCreator = new MfaOptionCreatorImpl(mfaOptionCreator.getScopeId(), mfaOptionCreator.getUserId(), fullKey);
+
+            // check if the user is creating MFA for itself, or if it's an admin user that is creating it for the user
+            if (!mfaOptionCreator.getUserId().equals(session.getUserId())) {
+                mfaOptionCreator.setEnforced(true);
+            }
             mfaOption = MfaOptionDAO.create(em, mfaOptionCreator);
             mfaOption = MfaOptionDAO.find(em, mfaOption.getScopeId(), mfaOption.getId());
 
@@ -349,6 +354,17 @@ public class MfaOptionServiceImpl extends AbstractKapuaService implements MfaOpt
         mfaOption.setTrustKey(null);
         mfaOption.setTrustExpirationDate(null);
 
+        update(mfaOption);
+    }
+
+    @Override
+    public void activateMfa(MfaOption mfaOption) throws KapuaException {
+
+        // Argument Validation (fields validation is performed inside the 'update' method)
+        ArgumentValidator.notNull(mfaOption, "mfaOption");
+
+        Date activatedOn = new Date(System.currentTimeMillis());
+        mfaOption.setActivatedOnDate(activatedOn);
         update(mfaOption);
     }
 

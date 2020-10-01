@@ -70,6 +70,14 @@ public class MfaOptionImpl extends AbstractKapuaUpdatableEntity implements MfaOp
     @Transient
     private List<ScratchCode> scratchCodes;
 
+    @Basic
+    @Column(name = "enforced")
+    private Boolean enforced;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "activated_on_date")
+    protected Date activatedOnDate;
+
     /**
      * Constructor.
      */
@@ -111,6 +119,8 @@ public class MfaOptionImpl extends AbstractKapuaUpdatableEntity implements MfaOp
         setMfaSecretKey(mfaOption.getMfaSecretKey());
         setTrustKey(mfaOption.getTrustKey());
         setTrustExpirationDate(mfaOption.getTrustExpirationDate());
+        setEnforced(mfaOption.isEnforced());
+        setActivatedOnDate(mfaOption.getActivatedOnDate());
     }
 
     @Override
@@ -171,6 +181,26 @@ public class MfaOptionImpl extends AbstractKapuaUpdatableEntity implements MfaOp
     @Override
     public void setScratchCodes(List<ScratchCode> scratchCodes) {
         this.scratchCodes = scratchCodes;
+    }
+
+    @Override
+    public Boolean isEnforced() {
+        return enforced;
+    }
+
+    @Override
+    public void setEnforced(Boolean enforced) {
+        this.enforced = enforced;
+    }
+
+    @Override
+    public Date getActivatedOnDate() {
+        return activatedOnDate;
+    }
+
+    @Override
+    public void setActivatedOnDate(Date activatedOnDate) {
+        this.activatedOnDate = activatedOnDate;
     }
 
 }

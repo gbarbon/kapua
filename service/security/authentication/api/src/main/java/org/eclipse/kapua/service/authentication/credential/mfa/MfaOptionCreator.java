@@ -63,4 +63,19 @@ public interface MfaOptionCreator extends KapuaEntityCreator<MfaOption> {
      * @param mfaSecretKey
      */
     void setMfaSecretKey(String mfaSecretKey);
+
+    /**
+     * Gets the value of the enforced property.
+     *
+     * @return possible object is {@link Boolean }
+     */
+    @XmlElement(name = "enforced")
+    Boolean isEnforced();
+
+    /**
+     * Sets the value of the enforced property.
+     *
+     * @param enforced allowed object is {@link Boolean }
+     */
+    void setEnforced(Boolean enforced);
 }

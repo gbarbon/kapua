@@ -96,6 +96,10 @@ public class UserPassCredentialsMatcher implements CredentialsMatcher {
                         boolean isCodeValid;
                         try {
                             isCodeValid = MFA_AUTHENTICATOR.authorize(mfaOption.getMfaSecretKey(), Integer.parseInt(tokenAuthenticationCode));
+                            if (mfaOption.getActivatedOnDate() == null) {
+                                // this is needed to activate the MFA after the user collected the secret with the QR code
+                                MFA_OPTION_SERVICE.activateMfa(mfaOption);
+                            }
                         } catch (AuthenticationException ae) {
                             throw ae;
                         } catch (Exception e) {
@@ -155,6 +159,11 @@ public class UserPassCredentialsMatcher implements CredentialsMatcher {
                             // In case both the authenticationCode and the trustKey are null, the MFA login via Rest API must be triggered.
                             // Since this method only returns true or false, the MFA request via Rest API is handled through exceptions.
                             throw new MfaRequiredException();
+                        }
+
+                        // last possibility, check if the MFA is not yet enabled
+                        if (mfaOption.getActivatedOnDate() == null) {
+                            credentialMatch = true;
                         }
                     }
                 } else {

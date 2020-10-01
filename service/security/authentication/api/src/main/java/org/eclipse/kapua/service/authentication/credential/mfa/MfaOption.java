@@ -135,4 +135,35 @@ public interface MfaOption extends KapuaUpdatableEntity {
      * @param scratchCodes the list of {@link ScratchCode}
      */
     void setScratchCodes(List<ScratchCode> scratchCodes);
+
+    /**
+     * Gets the value of the enforced property.
+     *
+     * @return possible object is {@link Boolean }
+     */
+    @XmlElement(name = "enforced")
+    Boolean isEnforced();
+
+    /**
+     * Sets the value of the enforced property.
+     *
+     * @param enforced allowed object is {@link Boolean }
+     */
+    void setEnforced(Boolean enforced);
+
+    /**
+     * Gets the activation date
+     *
+     * @return the activation date
+     */
+    @XmlElement(name = "activatedOn")
+    @XmlJavaTypeAdapter(DateXmlAdapter.class)
+    Date getActivatedOnDate();
+
+    /**
+     * Sets the activation date
+     *
+     * @param activatedOnDate the activation date
+     */
+    void setActivatedOnDate(Date activatedOnDate);
 }

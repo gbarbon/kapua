@@ -26,6 +26,7 @@ public class MfaOptionCreatorImpl extends AbstractKapuaEntityCreator<MfaOption> 
 
     private KapuaId userId;
     private String mfaSecretKey;
+    private Boolean enforced = false;
 
     /**
      * Constructor
@@ -62,5 +63,15 @@ public class MfaOptionCreatorImpl extends AbstractKapuaEntityCreator<MfaOption> 
     @Override
     public void setMfaSecretKey(String mfaSecretKey) {
         this.mfaSecretKey = mfaSecretKey;
+    }
+
+    @Override
+    public Boolean isEnforced() {
+        return enforced;
+    }
+
+    @Override
+    public void setEnforced(Boolean enforced) {
+        this.enforced = enforced;
     }
 }
