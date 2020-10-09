@@ -32,6 +32,7 @@
         <module>account</module>
         <module>datastore</module>
         <module>device</module>
+        <module>email</module>
         <module>endpoint</module>
         <module>job</module>
         <module>scheduler</module>
