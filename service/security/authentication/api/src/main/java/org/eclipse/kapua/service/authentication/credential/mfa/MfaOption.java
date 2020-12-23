@@ -151,6 +151,7 @@ public interface MfaOption extends KapuaUpdatableEntity {
      */
     void setEnforced(Boolean enforced);
 
+    // FIXME: can we remove the  activated_on ?
     /**
      * Gets the activation date
      *
@@ -160,6 +161,7 @@ public interface MfaOption extends KapuaUpdatableEntity {
     @XmlJavaTypeAdapter(DateXmlAdapter.class)
     Date getActivatedOnDate();
 
+    // FIXME: can we remove the  activated_on ?
     /**
      * Sets the activation date
      *

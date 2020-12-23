@@ -96,6 +96,9 @@ public class UserPassCredentialsMatcher implements CredentialsMatcher {
                         boolean isCodeValid;
                         try {
                             isCodeValid = MFA_AUTHENTICATOR.authorize(mfaOption.getMfaSecretKey(), Integer.parseInt(tokenAuthenticationCode));
+
+                            // FIXME: this worked with the first draft of the enforced, I don't think that now this sill work
+                            //  However, I think that we can remove the activationDate
                             if (mfaOption.getActivatedOnDate() == null) {
                                 // this is needed to activate the MFA after the user collected the secret with the QR code
                                 MFA_OPTION_SERVICE.activateMfa(mfaOption);
@@ -162,9 +165,15 @@ public class UserPassCredentialsMatcher implements CredentialsMatcher {
                         }
 
                         // last possibility, check if the MFA is not yet enabled
+                        // FIXME: this worked with the first draft of the enforced, I don't think that now this sill work
+                        //  However, I think that we can remove the activationDate
                         if (mfaOption.getActivatedOnDate() == null) {
                             credentialMatch = true;
                         }
+                        // TODO: Instead, I think we should check if the MfaOption secret is still null: in that case it means that the MFA creation has been
+                        //  enforced by the admin, and the user is asked to create the MFA just after the login process.
+                        //  With the REST API this could be done via an exception (but not thrown here however...) or via a specific code/message in the REST
+                        //  API response. As for the GWT console, I don't have any ideas... 
                     }
                 } else {
                     credentialMatch = true;  // MFA service is enabled, but the user has no MFA enabled

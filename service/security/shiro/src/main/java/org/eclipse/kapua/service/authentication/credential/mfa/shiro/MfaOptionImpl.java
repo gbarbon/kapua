@@ -74,6 +74,7 @@ public class MfaOptionImpl extends AbstractKapuaUpdatableEntity implements MfaOp
     @Column(name = "enforced")
     private Boolean enforced;
 
+    // FIXME: can we remove the  activated_on ?
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "activated_on_date")
     protected Date activatedOnDate;

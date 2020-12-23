@@ -123,6 +123,10 @@ public class MfaOptionServiceImpl extends AbstractKapuaService implements MfaOpt
             throw new SelfManagedOnlyException();
         }
 
+        // TODO: maybe I should put the following part in a separate method, and call that in case the 'create' is called by the user itself
+        //  On the contrary, when the MFA is enforced by the admin, that part is not called. It will be called only at the first login of the user, in such a
+        //  way to make it possible to show him the QR Code image and the scratch codes (remember that those are only visible when they are first created
+
         //
         // Check that the user is an internal user (external users cannot have the MFA enabled)
         final MfaOptionCreator finalMfaOptionCreator = mfaOptionCreator;
@@ -149,9 +153,12 @@ public class MfaOptionServiceImpl extends AbstractKapuaService implements MfaOpt
             mfaOptionCreator = new MfaOptionCreatorImpl(mfaOptionCreator.getScopeId(), mfaOptionCreator.getUserId(), fullKey);
 
             // check if the user is creating MFA for itself, or if it's an admin user that is creating it for the user
+            // FIXME: this is actually never possible, since there is a check before with the 'throw new SelfManagedOnlyException()'
             if (!mfaOptionCreator.getUserId().equals(session.getUserId())) {
                 mfaOptionCreator.setEnforced(true);
+                // FIXME: also, how this should work? I mean, the 'isEnforced' method (responsible for reading this value) is never used
             }
+
             mfaOption = MfaOptionDAO.create(em, mfaOptionCreator);
             mfaOption = MfaOptionDAO.find(em, mfaOption.getScopeId(), mfaOption.getId());
 
@@ -357,12 +364,16 @@ public class MfaOptionServiceImpl extends AbstractKapuaService implements MfaOpt
         update(mfaOption);
     }
 
+    // TODO: this was intended to update the MfaOption with the activation date, in such a way to activate the MfaOption with the first login after the
+    //  MFA enforcement (if the enforcement was used)
     @Override
     public void activateMfa(MfaOption mfaOption) throws KapuaException {
 
         // Argument Validation (fields validation is performed inside the 'update' method)
         ArgumentValidator.notNull(mfaOption, "mfaOption");
 
+        // FIXME: this worked with the first draft of the enforced, I don't think that now this sill work
+        //  However, I think that we can remove the activationDate.
         Date activatedOn = new Date(System.currentTimeMillis());
         mfaOption.setActivatedOnDate(activatedOn);
         update(mfaOption);
