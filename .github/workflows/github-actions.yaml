@@ -23,7 +23,11 @@ jobs:
       - uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
-      - run: docker images
+        with:
+          key: ${{ matrix.module }}-docker-cache-{hash}
+          restore-keys: |
+            ${{ matrix.module }}-docker-cache-
+      - run: docker images -a
   build-kapua:
     needs: check-noKapuaImages
     runs-on: ubuntu-latest
@@ -45,6 +49,10 @@ jobs:
       - uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
+        with:
+          key: ${{ matrix.module }}-docker-cache-{hash}
+          restore-keys: |
+            ${{ matrix.module }}-docker-cache-
       - run: mvn -B ${BUILD_OPTS} -Pdocker -DskipTests clean install
       - run: bash <(curl -s https://codecov.io/bash)
   check-newKapuaImages:
@@ -64,4 +72,22 @@ jobs:
       - uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
-      - run: docker images
+        with:
+          key: ${{ matrix.module }}-docker-cache-{hash}
+          restore-keys: |
+            ${{ matrix.module }}-docker-cache-
+      - run: docker images -a
+  clean-cache:
+    if: always()
+    needs: check-newKapuaImages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+        with:
+          key: ${{ matrix.module }}-docker-cache-{hash}
+          restore-keys: |
+            ${{ matrix.module }}-docker-cache-
+      - run: yes | docker system prune -a
+      - run: docker images -a
+        # not sure this is safe
