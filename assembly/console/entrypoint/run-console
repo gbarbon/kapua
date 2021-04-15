@@ -13,6 +13,8 @@
 #        Eurotech
 ################################################################################
 
+echo "Bla"
+
 # Check for Keycloak OpenID Connect integration
 if [ -n "$KEYCLOAK_URL" ] && [ -n "$KAPUA_CONSOLE_URL" ]; then
    echo "Activating OpenID Connect Keycloak integration..."

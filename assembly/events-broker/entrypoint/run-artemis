@@ -13,6 +13,8 @@
 
 # Configure credentials
 
+echo "Bla"
+
 : ARTEMIS_USER=${ARTEMIS_USER:=kapua-sys}
 : ARTEMIS_PASS=${ARTEMIS_PASS:=kapua-password}
 
