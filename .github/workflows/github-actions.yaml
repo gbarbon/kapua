@@ -6,6 +6,7 @@ env:
   CONFIG_OVERRIDES: "-Dcommons.db.schema=kapuadb -Dcommons.settings.hotswap=true -Dbroker.host=localhost"
   MAVEN_OPTS: "-Xmx4096m"
 
+
 jobs:
   check-noKapuaImages:
     runs-on: ubuntu-latest
@@ -24,9 +25,9 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: ${{ matrix.module }}-docker-cache-{hash}
+          key: ${{ github.run_id }}-${{ github.run_number }}-docker-cache-{hash}
           restore-keys: |
-            ${{ matrix.module }}-docker-cache-
+            ${{ github.run_id }}-${{ github.run_number }}-docker-cache-
       - run: docker images -a
   build-kapua:
     needs: check-noKapuaImages
@@ -50,10 +51,11 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: ${{ matrix.module }}-docker-cache-{hash}
+          key: ${{ github.run_id }}-${{ github.run_number }}-docker-cache-{hash}
           restore-keys: |
-            ${{ matrix.module }}-docker-cache-
+            ${{ github.run_id }}-${{ github.run_number }}-docker-cache-
       - run: mvn -B ${BUILD_OPTS} -Pdocker -DskipTests clean install
+      - run: docker system prune -f
       - run: bash <(curl -s https://codecov.io/bash)
   check-newKapuaImages:
     needs: build-kapua
@@ -73,21 +75,7 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: ${{ matrix.module }}-docker-cache-{hash}
+          key: ${{ github.run_id }}-${{ github.run_number }}-docker-cache-{hash}
           restore-keys: |
-            ${{ matrix.module }}-docker-cache-
+            ${{ github.run_id }}-${{ github.run_number }}-docker-cache-
       - run: docker images -a
-  clean-cache:
-    if: always()
-    needs: check-newKapuaImages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-        with:
-          key: ${{ matrix.module }}-docker-cache-{hash}
-          restore-keys: |
-            ${{ matrix.module }}-docker-cache-
-      - run: yes | docker system prune -a
-      - run: docker images -a
-        # not sure this is safe
