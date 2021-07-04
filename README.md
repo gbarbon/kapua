@@ -1,5 +1,7 @@
 ![Eclipse Kapua™ logo](docs/user-manual/en/images/kapua-logo.png)
 
+# Commento stupido
+
 # Eclipse Kapua&trade;
 
 ![GitHub Release](https://img.shields.io/github/v/release/eclipse/kapua?label=Release)
